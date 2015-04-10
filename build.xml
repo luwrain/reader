@@ -1,4 +1,4 @@
-<project name="luwrain-app-preview" default="jar" basedir=".">
+<project name="luwrain-app-reader" default="jar" basedir=".">
   <path id="classpath">
     <pathelement location="."/>
      <fileset dir="lib">
@@ -24,10 +24,10 @@
   </target>
   <target name="jar" depends="compile">
     <mkdir dir="jar"/>
-    <jar jarfile="jar/luwrain-app-preview.jar">
+    <jar jarfile="jar/luwrain-app-reader.jar">
       <manifest>
         <section name="org/luwrain">
-          <attribute name="Extensions" value="org.luwrain.app.preview.Extension"/>
+          <attribute name="Extensions" value="org.luwrain.app.reader.Extension"/>
         </section>
       </manifest>
       <fileset dir="./build/main">
@@ -46,7 +46,7 @@
     </javac>
   </target>
   <target name="jar-tests" depends="compile-tests">
-    <jar jarfile="jar/luwrain-app-preview-tests.jar">
+    <jar jarfile="jar/luwrain-app-reader-tests.jar">
       <fileset dir="./build/tests">
         <include name="**/*.class"/>
       </fileset>
