@@ -1,3 +1,18 @@
+/*
+   Copyright 2012-2015 Michael Pozhidaev <msp@altlinux.org>
+
+   This file is part of the Luwrain.
+
+   Luwrain is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   Luwrain is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.app.preview.doctree;
 
@@ -10,13 +25,23 @@ public class Node
 
     private int type;
     private Node[] subnodes;
-    private String body = "";
-    private TextAttr attr = new TextAttr();
+    private String text = "";
     private String href = "";
+    private TextAttr textAttr = new TextAttr();
+
+    public int type()
+    {
+	return type;
+    }
 
     public String text()
     {
 	return text;
+    }
+
+    public String href()
+    {
+	return href != null?href:"";
     }
 
     public TextAttr textAttr()
@@ -24,7 +49,7 @@ public class Node
 	return textAttr;
     }
 
-    public subnodeCount()
+    public int subnodeCount()
     {
 	return subnodes != null?subnodes.length:0;
     }

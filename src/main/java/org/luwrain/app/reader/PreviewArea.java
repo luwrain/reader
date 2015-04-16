@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2014 Michael Pozhidaev <msp@altlinux.org>
+   Copyright 2012-2015 Michael Pozhidaev <msp@altlinux.org>
 
    This file is part of the Luwrain.
 
@@ -26,17 +26,17 @@ import org.luwrain.controls.*;
 public class PreviewArea extends NavigateArea
 {
     private Luwrain luwrain;
-    private StringConstructor stringConstructor;
-    private PreviewActions actions;
+    private Strings strings;
+    private Actions actions;
     private Filter filter;
 
     public PreviewArea(Luwrain luwrain,
-		       StringConstructor stringConstructor,
-		       PreviewActions actions)
+		       Strings strings,
+		       Actions actions)
     {
 	super(new DefaultControlEnvironment(luwrain));
 	this.luwrain = luwrain;
-	this.stringConstructor = stringConstructor;
+	this.strings = strings;
 	this.actions = actions;
     }
 
@@ -71,12 +71,12 @@ public class PreviewArea extends NavigateArea
 	switch(event.getCode())
 	{
 	case EnvironmentEvent.CLOSE:
-	    actions.closePreview();
+	    actions.closeApp();
 	    return true;
 	case EnvironmentEvent.INTRODUCE:
 	    if (filter != null)
-		Speech.say(stringConstructor.appName() + " " + getFileName()); else
-		Speech.say(stringConstructor.appName());
+		luwrain.say(strings.appName() + " " + getFileName()); else
+		luwrain.say(strings.appName());
 	    return true;
 	default:
 	    return false;
@@ -86,7 +86,7 @@ public class PreviewArea extends NavigateArea
     public String getName()
     {
 	if (filter == null)
-	    return stringConstructor.appName();
+	    return strings.appName();
 	return getFileName();
     }
 

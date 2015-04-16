@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2014 Michael Pozhidaev <msp@altlinux.org>
+   Copyright 2012-2015 Michael Pozhidaev <msp@altlinux.org>
 
    This file is part of the Luwrain.
 
@@ -16,7 +16,7 @@
 
 package org.luwrain.app.preview;
 
-public interface StringConstructor
+public interface Strings
 {
     String appName();
     String errorOpeningFile();

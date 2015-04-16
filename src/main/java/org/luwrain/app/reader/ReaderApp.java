@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2014 Michael Pozhidaev <msp@altlinux.org>
+   Copyright 2012-2015 Michael Pozhidaev <msp@altlinux.org>
 
    This file is part of the Luwrain.
 
@@ -18,37 +18,42 @@ package org.luwrain.app.preview;
 
 import org.luwrain.core.*;
 
-public class PreviewApp implements Application, PreviewActions
+public class ReaderApp implements Application, Actions
 {
     private Luwrain luwrain;
-    private StringConstructor stringConstructor;
+    private Strings strings;
     private PreviewArea area;
     private String arg;
 
-    public PreviewApp()
+    public ReaderApp()
     {
     }
 
-    public PreviewApp(String arg)
+    public ReaderApp(String arg)
     {
 	this.arg = arg;
     }
 
-    public boolean onLaunch(Luwrain luwrain)
+    @Override public boolean onLaunch(Luwrain luwrain)
     {
-	Object o = Langs.requestStringConstructor("preview");
-	if (o == null)
+	Object o = luwrain.i18n().getStrings("luwrain.reader");
+	if (o == null || !(o instanceof Strings))
 	    return false;
-	stringConstructor = (StringConstructor)o;
+	strings = (Strings)o;
 	this.luwrain = luwrain;
-	area = new PreviewArea(luwrain, stringConstructor, this);
+	area = new PreviewArea(luwrain, strings, this);
 	if (arg != null)
 	    if (!handleToPreview(arg))
 	    {
-		luwrain.message(stringConstructor.errorOpeningFile());
+		luwrain.message(strings.errorOpeningFile());
 		return false;
 	    }
 	return true;
+    }
+
+    @Override public String getAppName()
+    {
+	return "Reader";//FIXME:
     }
 
     private boolean handleToPreview(String fileName)
@@ -72,7 +77,7 @@ public class PreviewApp implements Application, PreviewActions
 	return new AreaLayout(area);
     }
 
-    public void closePreview()
+    @Override public void closeApp()
     {
 	luwrain.closeApp();
     }
