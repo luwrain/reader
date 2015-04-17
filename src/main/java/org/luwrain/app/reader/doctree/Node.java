@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2015 Michael Pozhidaev <msp@altlinux.org>
+   Copyright 2012-2015 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
    This file is part of the Luwrain.
 
@@ -14,7 +14,7 @@
    General Public License for more details.
 */
 
-package org.luwrain.app.preview.doctree;
+package org.luwrain.app.reader.doctree;
 
 public class Node
 {
@@ -24,10 +24,18 @@ public class Node
     public final static int RUN = 4;
 
     private int type;
-    private Node[] subnodes;
+    private Node[] subnodes = new Node[0];
     private String text = "";
     private String href = "";
     private TextAttr textAttr = new TextAttr();
+
+    public Node(int type, String text)
+    {
+	this.type = type;
+	this.text = text;
+	if (text == null)
+	    throw new NullPointerException("text may not be null");
+    }
 
     public int type()
     {
