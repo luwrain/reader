@@ -31,7 +31,7 @@ class Node
     public final static int  LIST_ITEM = 9;
 
     public int type;
-    private Node[] subnodes = new Node[0];
+    public Node[] subnodes = new Node[0];
 
     public int x = -1;
     public int y = -1;
@@ -48,29 +48,49 @@ class Node
 	width = 0;
 	switch (type)
 	{
-	case TABLE:
+	case TABLE_CELL:
+	    if (subnodes == null || subnodes.length < 1)
+	    {
+		width = recommended >= MIN_TABLE_CELL_WIDTH?recommended:MIN_TABLE_CELL_WIDTH;
+		break;
+	    }
 	    for(Node n: subnodes)
-		n.calcWidth(recommended);
-	    for(Node n: subnodes)
+	    {
+		n.calcWidth(recommended >= MIN_TABLE_CELL_WIDTH?recommended:MIN_TABLE_CELL_WIDTH);
 		if (width < n.width)
 		    width = n.width;
-	    break;
-	case TABLE_CELL:
-	    width = recommended >= MIN_TABLE_CELL_WIDTH?recommended:MIN_TABLE_CELL_WIDTH;
+	    }
 	    break;
 	case TABLE_ROW:
 	    for(Node n: subnodes)
-		n.calcWidth((recommended - subnodes.length) >= subnodes.length?(recommended - subnodes.length) / subnodes.length:1);
+		n.calcWidth((recommended - subnodes.length + 1) >= subnodes.length?(recommended - subnodes.length + 1) / subnodes.length:1);
 	    for(Node n: subnodes)
 		width += n.width;
-	    width += subnodes.length;//One additional empty column after each cell;
+	    width += (subnodes.length - 1);//One additional empty column after each cell;
+	    if (width < recommended)
+		width = recommended;
+	    break;
+	case PARAGRAPH:
+	    width = recommended;
 	    break;
 	case ROOT:
 	case SECTION:
 	case UNORDERED_LIST:
 	case ORDERED_LIST:
 	case LIST_ITEM:
-	    width = recommended;
+	case TABLE:
+	    if (subnodes == null || subnodes.length < 1)
+	    {
+		width = recommended;
+		break;
+	    }
+	    for(Node n: subnodes)
+	    {
+		n.calcWidth(recommended);
+		if (width < n.width)
+		    width = n.width;
+	    }
+	    break;
 	default:
 	    throw new IllegalArgumentException("unknown node type " + type);
 	}

@@ -22,4 +22,11 @@ public class Run
     public String href = "";
     public TextAttr textAttr = new TextAttr();
     public Paragraph parentParagraph;
+
+    public Run(String text)
+    {
+	this.text = text;
+	if (text == null)
+	    throw new NullPointerException("text may not be null");
+    }
 }

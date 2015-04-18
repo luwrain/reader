@@ -27,6 +27,15 @@ public class Paragraph extends Node
 	super(PARAGRAPH);
     }
 
+    public Paragraph(Run run)
+    {
+	super(PARAGRAPH);
+	if (run == null)
+	    throw new NullPointerException("run may not be null");
+	runs = new Run[]{run};
+	runs[0].parentParagraph = this;
+    }
+
     public void containsRow(int index)
     {
 	if (minRowIndex <= index && maxRowIndex >= index)
@@ -40,5 +49,13 @@ public class Paragraph extends Node
     @Override public void calcHeight()
     {
 	height = maxRowIndex - minRowIndex + 1;
+    }
+
+    public void setParentOfRuns()
+    {
+	if (runs == null)
+	    return;
+	for(Run r: runs)
+	    r.parentParagraph = this;
     }
 }
