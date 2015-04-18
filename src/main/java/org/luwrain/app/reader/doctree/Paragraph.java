@@ -16,20 +16,29 @@
 
 package org.luwrain.app.reader.doctree;
 
-public class LinePart
+public class Paragraph extends Node
 {
-    public Node node;
-    public int posFrom = 0;
-    public int posTo = 0;
-    public int lineNum = 0;
-    public boolean isSection = false;
-    public boolean isHRef = false;
-    public TextAttr textAttr = new TextAttr();
+    public Run[] runs;
+    public int minRowIndex = 0;
+    public int maxRowIndex = 0;
 
-    public String text()
+    public Paragraph()
     {
-	if (node == null)
-	    throw new NullPointerException("node may not be null");
-	return node.text().substring(posFrom, posTo);
+	super(PARAGRAPH);
+    }
+
+    public void containsRow(int index)
+    {
+	if (minRowIndex <= index && maxRowIndex >= index)
+	    return;
+	if (index < minRowIndex)
+	    minRowIndex = index;
+	if (index > maxRowIndex)
+	    maxRowIndex = index;
+    }
+
+    @Override public void calcHeight()
+    {
+	height = maxRowIndex - minRowIndex + 1;
     }
 }

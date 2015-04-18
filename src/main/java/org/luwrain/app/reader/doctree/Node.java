@@ -16,58 +16,89 @@
 
 package org.luwrain.app.reader.doctree;
 
-public class Node
+class Node
 {
+    private static final int MIN_TABLE_CELL_WIDTH = 8;
+
     public final static int ROOT = 1;
     public final static int SECTION = 2;
     public final static int PARAGRAPH = 3;
-    public final static int RUN = 4;
+    public final static int  TABLE = 4;
+    public final static int  TABLE_ROW = 5;
+    public final static int  TABLE_CELL = 6;
+    public final static int  UNORDERED_LIST = 7;
+    public final static int  ORDERED_LIST = 8;
+    public final static int  LIST_ITEM = 9;
 
-    private int type;
+    public int type;
     private Node[] subnodes = new Node[0];
-    private String text = "";
-    private String href = "";
-    private TextAttr textAttr = new TextAttr();
 
-    public Node(int type, String text)
+    public int x = -1;
+    public int y = -1;
+    public int width = 0;
+    public int height = 0;
+
+    public Node(int type)
     {
 	this.type = type;
-	this.text = text;
-	if (text == null)
-	    throw new NullPointerException("text may not be null");
     }
 
-    public int type()
+    public void calcWidth(int recommended)
     {
-	return type;
+	width = 0;
+	switch (type)
+	{
+	case TABLE:
+	    for(Node n: subnodes)
+		n.calcWidth(recommended);
+	    for(Node n: subnodes)
+		if (width < n.width)
+		    width = n.width;
+	    break;
+	case TABLE_CELL:
+	    width = recommended >= MIN_TABLE_CELL_WIDTH?recommended:MIN_TABLE_CELL_WIDTH;
+	    break;
+	case TABLE_ROW:
+	    for(Node n: subnodes)
+		n.calcWidth((recommended - subnodes.length) >= subnodes.length?(recommended - subnodes.length) / subnodes.length:1);
+	    for(Node n: subnodes)
+		width += n.width;
+	    width += subnodes.length;//One additional empty column after each cell;
+	    break;
+	case ROOT:
+	case SECTION:
+	case UNORDERED_LIST:
+	case ORDERED_LIST:
+	case LIST_ITEM:
+	    width = recommended;
+	default:
+	    throw new IllegalArgumentException("unknown node type " + type);
+	}
     }
 
-    public String text()
+    public void calcHeight()
     {
-	return text;
-    }
-
-    public String href()
-    {
-	return href != null?href:"";
-    }
-
-    public TextAttr textAttr()
-    {
-	return textAttr;
-    }
-
-    public int subnodeCount()
-    {
-	return subnodes != null?subnodes.length:0;
-    }
-
-    public Node subnode(int index)
-    {
-	if (subnodes == null)
-	    throw new NullPointerException("subnodes may not be null");
-	if (index < 0 || index > subnodes.length)
-	    throw new NullPointerException("index may not be less than zero or be equal or greater than " + subnodes.length + " (index = " + index + ")");
-	return subnodes[index];
+	for(Node n: subnodes)
+	    n.calcHeight();
+	height = 0;
+	switch (type)
+	{
+	case TABLE_ROW:
+	    for(Node n: subnodes)
+		if (height < n.height)
+		    height = n.height;
+	    break;
+	case ROOT:
+	case SECTION:
+	case TABLE:
+	case TABLE_CELL:
+	case UNORDERED_LIST:
+	case ORDERED_LIST:
+	case LIST_ITEM:
+	    for(Node n: subnodes)
+		height += n.height;
+	default:
+	    throw new IllegalArgumentException("unknown node type " + type);
+	}
     }
 }

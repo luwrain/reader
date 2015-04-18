@@ -16,35 +16,24 @@
 
 package org.luwrain.app.reader.doctree;
 
-public class Document 
+public class RowPart
 {
-    private Node root;
-    public RowPart[] rowParts;
-    private Row[] rows;
+    public Run run;
+    public int posFrom = 0;
+    public int posTo = 0;
+    public int rowNum = 0;
 
-    public Document(Node root)
+    public String text()
     {
-	this.root = root;
-	if (root == null)
-	    throw new NullPointerException("root may not be null");
+	if (run == null)
+	    throw new NullPointerException("run may not be null");
+	return run.text.substring(posFrom, posTo);
     }
 
-    public void buildView()
+    public TextAttr textAttr()
     {
-	/*
-	root.setParentOfSubnodes();
-	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder(50);//FIXME:50;
-	rowParts = rowPartsBuilder.parts();
-	if (rowParts == null)
-	    rowParts = new RowParts[0];
-	if (rowParts.length <= 0)
-	    return;
-
-	for(RowPart part: rowParts)
-	    part.node.containsRow(part.rowNum);
-	root.setHeightInRows();
-	rows = RowsBuilder.buildRows(rowParts);
-	*/
+	if (run == null)
+	    throw new NullPointerException("node may not be null");
+	return run.textAttr;
     }
-
 }
