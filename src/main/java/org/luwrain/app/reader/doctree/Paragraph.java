@@ -69,4 +69,9 @@ public class Paragraph extends Node
 	for(Run r: runs)
 	    r.parentParagraph = this;
     }
+
+    @Override public void setParentOfSubnodes()
+    {
+	setParentOfRuns();
+    }
 }

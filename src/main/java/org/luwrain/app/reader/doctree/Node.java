@@ -32,8 +32,12 @@ public class Node
 
     public int type;
     public Node[] subnodes = new Node[0];
+    public Node parentNode;
 
+    /**Absolute horizontal position in the area*/
     public int x = -1;
+
+    /**Absolute vertical position in the area*/
     public int y = -1;
     public int width = 0;
     public int height = 0;
@@ -43,6 +47,7 @@ public class Node
 	this.type = type;
     }
 
+    //Launched before everything, RowPartsBuilder goes next
     public void calcWidth(int recommended)
     {
 	width = 0;
@@ -96,6 +101,7 @@ public class Node
 	}
     }
 
+    //Launched after RowPartsBuilder;
     public void calcHeight()
     {
 	for(Node n: subnodes)
@@ -123,6 +129,7 @@ public class Node
 	}
     }
 
+    //Launched after calcHeight;
     public void calcPosition()
     {
 	int offset = 0;
@@ -160,5 +167,27 @@ public class Node
 	default:
 	    throw new IllegalArgumentException("unknown node type " + type);
 	}
+    }
+
+    public void setParentOfSubnodes()
+    {
+	if (subnodes == null)
+	    return;
+	for(Node n: subnodes)
+	{
+	    n.parentNode = this;
+	    n.setParentOfSubnodes();
+	}
+    }
+
+    //Returns -1 if it is impossible to know;
+    public int getIndexInParentSubnodes()
+    {
+	if (parentNode == null || parentNode.subnodes == null)
+	    return -1;
+	for(int i = 0;i < parentNode.subnodes.length;++i)
+	    if (parentNode.subnodes[i] == this)
+		return i;
+	return -1;
     }
 }

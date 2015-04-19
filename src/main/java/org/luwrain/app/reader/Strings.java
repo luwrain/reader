@@ -19,5 +19,7 @@ package org.luwrain.app.reader;
 public interface Strings
 {
     String appName();
+    String tableIntroduction(int rows, int cols, String text);
+    String tableCellIntroduction(int row, int col, String text);
     String errorOpeningFile();
 }

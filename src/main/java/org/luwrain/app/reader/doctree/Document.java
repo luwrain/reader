@@ -118,14 +118,31 @@ public class Document
 	return row.text(rowParts);
     }
 
+    public boolean isValidRowIndex(int index)
+    {
+	if (rows == null)
+	    return false;
+	return index >= 0 && index < rows.length;
+    }
+
     public int getRowIndexInParagraph(int index)
     {
 	if (rows == null)
-throw new NullPointerException("rows may not be null");
+	    throw new NullPointerException("rows may not be null");
 	final Row row = rows[index];
 	if (row.partsFrom < 0 || row.partsTo < 0)
 	    return 0;
 	final Paragraph para = rowParts[row.partsFrom].run.parentParagraph;
 	return index - para.minRowIndex;
+    }
+
+    public Paragraph getParagraph(int index)
+    {
+	if (rows == null)
+	    throw new NullPointerException("rows may not be null");
+	final Row row = rows[index];
+	if (row.partsFrom < 0 || row.partsTo < 0)
+	    return null;
+return rowParts[row.partsFrom].run.parentParagraph;
     }
 }

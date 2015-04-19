@@ -70,6 +70,7 @@ public class ReaderArea implements Area
 	table1.subnodes[1].subnodes[1].subnodes = new Node[]{new Paragraph(new Run("4"))};
 
 	root.subnodes = new Node[]{para, table1};
+	root.setParentOfSubnodes();
 
 	document = new Document(root);
 	document.buildView(50);
@@ -93,9 +94,14 @@ public class ReaderArea implements Area
 	    switch(event.getCommand())
 	    {
 	    case KeyboardEvent.ARROW_DOWN:
-		return onArrowDown(event);
+		return onArrowDown(event, false);
 	    case KeyboardEvent.ARROW_UP:
-		return onArrowUp(event);
+		return onArrowUp(event, false);
+	    case KeyboardEvent.ALTERNATIVE_ARROW_DOWN:
+		return onArrowDown(event, true);
+	    case KeyboardEvent.ALTERNATIVE_ARROW_UP:
+		return onArrowUp(event, true);
+
 	    case KeyboardEvent.ARROW_LEFT:
 		return onArrowLeft(event);
 	    case KeyboardEvent.ARROW_RIGHT:
@@ -133,7 +139,7 @@ public class ReaderArea implements Area
 	return strings.appName();
     }
 
-    private boolean onArrowDown(KeyboardEvent event)
+    private boolean onArrowDown(KeyboardEvent event, boolean briefIntroduction)
     {
 	if (noContentCheck())
 	    return true;
@@ -144,11 +150,11 @@ public class ReaderArea implements Area
 	    return false;
 	}
 	++hotPointY;
-	onNewHotPointY();
+	onNewHotPointY( briefIntroduction );
 	return true;
     }
 
-    private boolean onArrowUp(KeyboardEvent event)
+    private boolean onArrowUp(KeyboardEvent event, boolean briefIntroduction)
     {
 	if (noContentCheck())
 	    return true;
@@ -159,7 +165,7 @@ public class ReaderArea implements Area
 	    return true;
 	}
 	--hotPointY;
-	onNewHotPointY();
+	onNewHotPointY( briefIntroduction);
 	return true;
     }
 
@@ -251,7 +257,7 @@ public class ReaderArea implements Area
 	return true;
     }
 
-    private void onNewHotPointY()
+    private void onNewHotPointY(boolean briefIntroduction)
     {
 	final int count = document.getRowCount();
 	if (hotPointY > count)
@@ -264,18 +270,73 @@ public class ReaderArea implements Area
 	final String text = document.getRowText(hotPointY);
 	if (hotPointX > text.length())
 	    hotPointX = text.length();
-	introduceRow(hotPointY);
+	introduceRow(hotPointY, briefIntroduction);
 	environment.onAreaNewHotPoint(this);
     }
 
-    private void introduceRow(int index)
+    private void introduceRow(int index, boolean briefIntroduction)
     {
 	final String text = document.getRowText(index);
+	if (briefIntroduction || !document.isValidRowIndex(index))
+	{
+	    simpleIntroduction(text);
+	    return;
+	}
 	final int indexInParagraph = document.getRowIndexInParagraph(index);
+	if (indexInParagraph > 0)
+	{
+	    simpleIntroduction(text);
+	    return;
+	}
+	final Paragraph para = document.getParagraph(index);
+	if (para == null || para.parentNode == null)
+	{
+	    simpleIntroduction(text);
+	    return;
+	}
+	final int paragraphIndex = para.getIndexInParentSubnodes(); 
+	if (paragraphIndex > 0)
+	{
+	    simpleIntroduction(text);
+	    return;
+	}
+	final int  paraParentType = para.parentNode.type;
+	switch (paraParentType)
+	{
+	case Node.TABLE_CELL:
+	    introduceTableCell(para, text);
+	    return;
+	}
+	simpleIntroduction(text);
+    }
+
+    private void introduceTableCell(Paragraph para, String text)
+    {
+	if (para.parentNode == null ||  //Cell;
+	    para.parentNode.parentNode == null || //Row;
+	    para.parentNode.parentNode.parentNode == null) //Table itself;
+	{
+	    simpleIntroduction(text);
+	    return;
+	}
+	final int colIndex = para.parentNode.getIndexInParentSubnodes();
+	final int rowIndex = para.parentNode.parentNode.getIndexInParentSubnodes();
+	final int colCount = para.parentNode.parentNode.subnodes.length;
+	final int rowCount = para.parentNode.parentNode.parentNode.subnodes.length;
+	if (colIndex == 0 && rowIndex == 0)
+	{
+	    environment.say(strings.tableIntroduction(rowCount, colCount, text));
+	    return;
+	}
+	environment.say(strings.tableCellIntroduction(rowIndex + 1, colIndex + 1, text));
+	//	simpleIntroduction(text);
+    }
+
+    private void simpleIntroduction(String text)
+    {
 	if (!text.isEmpty())
 	    environment.say(text); else
 	    environment.hint(Hints.EMPTY_LINE);
-
     }
 
     private boolean noContentCheck()

@@ -23,6 +23,17 @@ public class Ru implements org.luwrain.app.reader.Strings
 	return "Просмотр документов";
     }
 
+    @Override public String tableIntroduction(int rows, int cols, String text)
+    {
+	return "Таблица Строк " + rows + " Столбцов " + cols + " " + text;
+    }
+
+    @Override public String tableCellIntroduction(int row, int col, String text)
+    {
+return "Строка " + row + " Столбец " + col + " " + text;
+    }
+
+
     @Override public String errorOpeningFile()
     {
 	return "Произошла ошибка открытия документа";
