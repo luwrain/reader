@@ -24,18 +24,23 @@ import org.luwrain.controls.*;
 
 import org.luwrain.app.reader.doctree.*;
 
-public class ReaderArea extends NavigateArea
+public class ReaderArea implements Area
 {
     private Luwrain luwrain;
+    private ControlEnvironment environment;
     private Strings strings;
     private Actions actions;
+
+    //This hot point isn't a real hot point in the area, it is the coordinates in rows;
+    private int hotPointX = 0;
+    private int hotPointY = 0;
+
     private Document document;
 
     public ReaderArea(Luwrain luwrain,
 		      Strings strings,
 		      Actions actions)
     {
-	super(new DefaultControlEnvironment(luwrain));
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.actions = actions;
@@ -45,6 +50,7 @@ public class ReaderArea extends NavigateArea
 	    throw new NullPointerException("stringss may not be null");
 	if (actions == null)
 	    throw new NullPointerException("actions may not be null");
+	environment = new DefaultControlEnvironment(luwrain);
 
 	Node root = new Node(Node.ROOT);
 	Paragraph para = new Paragraph();
@@ -79,6 +85,27 @@ public class ReaderArea extends NavigateArea
 	return index < document.getLineCount()?document.getLine(index):"";
     }
 
+    @Override public boolean onKeyboardEvent(KeyboardEvent event) 
+    {
+	if (event == null)
+	    throw new NullPointerException("event may not be null");
+	if (event.isCommand() && !event.isModified())
+	    switch(event.getCommand())
+	    {
+	    case KeyboardEvent.ARROW_DOWN:
+		return onArrowDown(event);
+	    case KeyboardEvent.ARROW_UP:
+		return onArrowUp(event);
+	    case KeyboardEvent.ARROW_LEFT:
+		return onArrowLeft(event);
+	    case KeyboardEvent.ARROW_RIGHT:
+		return onArrowRight(event);
+	    default:
+		return false;
+	    }
+	return false;
+    }
+
     @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
     {
 	switch(event.getCode())
@@ -91,8 +118,173 @@ public class ReaderArea extends NavigateArea
 	}
     }
 
+    @Override public int getHotPointX()
+    {
+	return 0;
+    }
+
+    @Override public int getHotPointY()
+    {
+	return -0;
+    }
+
     @Override public String getName()
     {
 	return strings.appName();
+    }
+
+    private boolean onArrowDown(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+	    environment.hint(Hints.NO_LINES_BELOW);
+	    return false;
+	}
+	++hotPointY;
+	onNewHotPointY();
+	return true;
+    }
+
+    private boolean onArrowUp(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY <= 0)
+	{
+	    environment.hint(Hints.NO_LINES_ABOVE);
+	    return true;
+	}
+	--hotPointY;
+	onNewHotPointY();
+	return true;
+    }
+
+    private boolean onArrowLeft(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+	    if (count == 0)
+	    {
+		hotPointX = 0;
+		hotPointY = 0;
+		environment.hint(Hints.BEGIN_OF_TEXT);
+		environment.onAreaNewHotPoint(this);
+		return true;
+	    }
+	    hotPointY = count - 1;
+	    final String text = document.getRowText(hotPointY);
+	    hotPointX = text.length();
+	    if (hotPointX == 0)
+		environment.hint(Hints.EMPTY_LINE); else
+		environment.hint(Hints.END_OF_LINE);
+	    environment.onAreaNewHotPoint(this);
+	    return true;
+	}
+	final String text = document.getRowText(hotPointY);
+	if (hotPointX > text.length())
+	    hotPointX = text.length();
+	if (hotPointX > 0)
+	{
+	    --hotPointX;
+	    environment.sayLetter(text.charAt(hotPointX));
+	    environment.onAreaNewHotPoint(this);
+	    return true;
+	}
+	if (hotPointY <= 0)
+	{
+	    environment.hint(Hints.BEGIN_OF_TEXT);
+	    return true;
+	}
+	--hotPointY;
+	final String prevRowText = document.getRowText(hotPointY);
+	hotPointX = prevRowText.length();
+	environment.hint(Hints.END_OF_LINE);
+	return true;
+    }
+
+    private boolean onArrowRight(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+	    environment.hint(Hints.END_OF_TEXT);
+	    return true;
+	}
+	final String text = document.getRowText(hotPointY);
+	if (hotPointX > text.length())
+	    hotPointX = text.length();
+	if (hotPointX < text.length())
+	{
+	    ++hotPointX;
+	    if (hotPointX < text.length())
+		environment.sayLetter(text.charAt(hotPointX)); else
+		environment.hint(Hints.END_OF_LINE);
+	    environment.onAreaNewHotPoint(this);
+	    return true;
+	}
+	if (hotPointY + 1 == count)
+	{
+	    environment.hint(Hints.END_OF_TEXT);
+	    hotPointX = 0;
+	    hotPointY = count;
+	    environment.onAreaNewHotPoint(this);
+	    return true;
+	}
+	++hotPointY;
+	final String nextRowText = document.getRowText(hotPointY);
+	hotPointX = 0;
+	//	System.out.println("here2");
+	if (nextRowText.isEmpty())
+	    environment.hint(Hints.END_OF_LINE); else
+	    environment.sayLetter(nextRowText.charAt(0));
+	//	System.out.println("after here2");
+	environment.onAreaNewHotPoint(this);
+	return true;
+    }
+
+    private void onNewHotPointY()
+    {
+	final int count = document.getRowCount();
+	if (hotPointY > count)
+	{
+	    environment.hint(Hints.EMPTY_LINE);
+	    hotPointX = 0;
+	    environment.onAreaNewHotPoint(this);
+	    return;
+	}
+	final String text = document.getRowText(hotPointY);
+	if (hotPointX > text.length())
+	    hotPointX = text.length();
+	introduceRow(hotPointY);
+	environment.onAreaNewHotPoint(this);
+    }
+
+    private void introduceRow(int index)
+    {
+	final String text = document.getRowText(index);
+	final int indexInParagraph = document.getRowIndexInParagraph(index);
+	if (!text.isEmpty())
+	    environment.say(text); else
+	    environment.hint(Hints.EMPTY_LINE);
+
+    }
+
+    private boolean noContentCheck()
+    {
+	if (document == null)
+	{
+	    environment.hint("no content");
+	    return true;
+	}
+	return false;
     }
 }

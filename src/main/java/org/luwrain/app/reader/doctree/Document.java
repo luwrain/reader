@@ -102,4 +102,30 @@ public class Document
 	}
 	return b.toString();
     }
+
+    public int getRowCount()
+    {
+	return rows != null?rows.length:0;
+    }
+
+    public String getRowText(int index)
+    {
+	if (rows == null || index < 0 || index >= rows.length)
+	    return "";
+	final Row row = rows[index];
+	if (row.partsFrom < 0 || row.partsTo < 0)
+	    return "";
+	return row.text(rowParts);
+    }
+
+    public int getRowIndexInParagraph(int index)
+    {
+	if (rows == null)
+throw new NullPointerException("rows may not be null");
+	final Row row = rows[index];
+	if (row.partsFrom < 0 || row.partsTo < 0)
+	    return 0;
+	final Paragraph para = rowParts[row.partsFrom].run.parentParagraph;
+	return index - para.minRowIndex;
+    }
 }
