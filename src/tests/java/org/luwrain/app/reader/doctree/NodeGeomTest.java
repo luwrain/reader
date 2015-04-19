@@ -71,4 +71,57 @@ public class NodeGeomTest extends Assert
 	assertTrue(testRoot.subnodes[1].subnodes[1].subnodes[0].width == 8);
 	assertTrue(testRoot.subnodes[1].subnodes[1].subnodes[1].width == 8);
     }
+
+    @Test public void height()
+    {
+	final int WIDTH = 20;
+	testRoot.calcWidth(WIDTH);
+	RowPartsBuilder partsBuilder = new RowPartsBuilder();
+	partsBuilder.onNode(testRoot);
+	RowPart[] parts = partsBuilder.parts();
+	for(RowPart p: parts)
+	    p.run.parentParagraph.containsRow(p.rowNum);
+	testRoot.calcHeight();
+	assertTrue(testRoot.height == 7);
+assertTrue(testRoot.subnodes[0].height == 3);
+	//Whole table;
+assertTrue(testRoot.subnodes[1].height == 4);
+	//Rows;
+assertTrue(testRoot.subnodes[1].subnodes[0].height == 2);
+assertTrue(testRoot.subnodes[1].subnodes[1].height == 2);
+    }
+
+    @Test public void position()
+    {
+	final int WIDTH = 20;
+	testRoot.calcWidth(WIDTH);
+	RowPartsBuilder partsBuilder = new RowPartsBuilder();
+	partsBuilder.onNode(testRoot);
+	RowPart[] parts = partsBuilder.parts();
+	for(RowPart p: parts)
+	    p.run.parentParagraph.containsRow(p.rowNum);
+	testRoot.calcHeight();
+	testRoot.calcPosition();
+	assertTrue(testRoot.x == 0);
+	assertTrue(testRoot.y == 0);
+	assertTrue(testRoot.subnodes[0].x == 0);
+	assertTrue(testRoot.subnodes[0].y == 0);
+	assertTrue(testRoot.subnodes[1].x == 0);
+	assertTrue(testRoot.subnodes[1].y == 3);
+	final Node table = testRoot.subnodes[1];
+	//Rows;
+	assertTrue(table.subnodes[0].x == 0);
+	assertTrue(table.subnodes[0].y == 3);
+	assertTrue(table.subnodes[1].x == 0);
+	assertTrue(table.subnodes[1].y == 5);
+	//Cells;
+		assertTrue(table.subnodes[0].subnodes[0].x == 0);
+		assertTrue(table.subnodes[0].subnodes[0].y == 3);
+		assertTrue(table.subnodes[0].subnodes[1].x == 10);
+		assertTrue(table.subnodes[0].subnodes[1].y == 3);
+		assertTrue(table.subnodes[1].subnodes[0].x == 0);
+		assertTrue(table.subnodes[1].subnodes[0].y == 5);
+		assertTrue(table.subnodes[1].subnodes[1].x == 10);
+		assertTrue(table.subnodes[1].subnodes[1].y == 5);
+    }
 }

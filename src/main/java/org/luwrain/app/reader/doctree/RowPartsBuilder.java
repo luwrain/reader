@@ -24,6 +24,39 @@ class RowPartsBuilder
     private int offset = 0;
     private Vector<RowPart> parts = new Vector<RowPart>();
 
+    public void onNode(Node node)
+    {
+	if (node == null)
+	    throw new NullPointerException("node may not be null");
+	if (node.width < 1)
+	    throw new IllegalArgumentException("node may not have width less than 1");
+	if (node.type == Node.PARAGRAPH)
+	{
+	    if (offset > 0)
+	    {
+		//Actually should never happen, just to reinsure;
+		offset = 0;
+		++index;
+	    }
+	    final int oldPartCount = parts.size();
+	    if (!(node instanceof Paragraph))
+		throw new IllegalArgumentException("node should be an instance of Paragraph");
+	    final Paragraph para = (Paragraph)node;
+	    if (para.runs != null)
+		for(Run r: para.runs)
+		    onRun(r, para.width);
+	    if (parts.size() > oldPartCount)
+	    {
+		offset = 0;
+		index += 2;
+	    }
+	    return;
+	}
+	if (node.subnodes != null)
+	    for(Node n: node.subnodes)
+		onNode(n);
+    }
+
     //Removes spaces only on row breaks and only if after the break there are non-spacing chars;
     public void onRun(Run run, int maxRowLen)
     {
@@ -43,8 +76,6 @@ class RowPartsBuilder
 		continue;
 	    }
 	    final int remains = text.length() - posFrom;
-	    //	    System.out.println("remains=" + remains);
-	    //	    System.out.println("available=" + available);
 	    //Both remains and available are greater than zero;
 	    if (remains <= available)
 	    {
@@ -65,7 +96,16 @@ class RowPartsBuilder
 		    ++nextWordEnd;
 	    }
 	    if (posTo == posFrom)//No word ends before the row end;
+	    {
+		if (offset > 0)
+		{
+		    //Trying to do the same once again from the beginning of the next line;
+		    offset = 0;
+		    ++index;
+		    continue;
+		}
 		posTo = posFrom + available;
+	    }
 	    save(makeRunPart(run, posFrom, posTo));
 	    ++index;
 	    offset = 0;

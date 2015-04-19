@@ -117,6 +117,46 @@ class Node
 	case LIST_ITEM:
 	    for(Node n: subnodes)
 		height += n.height;
+	    break;
+	default:
+	    throw new IllegalArgumentException("unknown node type " + type);
+	}
+    }
+
+    public void calcPosition()
+    {
+	int offset = 0;
+	switch (type)
+	{
+	case TABLE_ROW:
+	    offset = 0;
+	    for(Node n: subnodes)
+	    {
+		n.x = x + offset;
+		offset += (n.width + 1);
+		n.y = y;
+		n.calcPosition();
+	    }
+	    break;
+	case PARAGRAPH:
+	    break;
+	case ROOT:
+	    x = 0;
+	    y = 0;
+	case SECTION:
+	case TABLE:
+	case TABLE_CELL:
+	case UNORDERED_LIST:
+	case ORDERED_LIST:
+	case LIST_ITEM:
+	    for(Node n: subnodes)
+	    {
+		n.x = x;
+		n.y = y + offset;
+		offset += n.height;
+		n.calcPosition();
+	    }
+	    break;
 	default:
 	    throw new IllegalArgumentException("unknown node type " + type);
 	}

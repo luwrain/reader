@@ -19,8 +19,8 @@ package org.luwrain.app.reader.doctree;
 public class Paragraph extends Node
 {
     public Run[] runs;
-    public int minRowIndex = 0;
-    public int maxRowIndex = 0;
+    public int minRowIndex = -1;
+    public int maxRowIndex = -1;
 
     public Paragraph()
     {
@@ -38,6 +38,12 @@ public class Paragraph extends Node
 
     public void containsRow(int index)
     {
+	if (minRowIndex < 0 || maxRowIndex < 0)
+	{
+	    minRowIndex = index;
+	    maxRowIndex = index;
+	    return;
+	}
 	if (minRowIndex <= index && maxRowIndex >= index)
 	    return;
 	if (index < minRowIndex)
@@ -48,7 +54,12 @@ public class Paragraph extends Node
 
     @Override public void calcHeight()
     {
-	height = maxRowIndex - minRowIndex + 1;
+	if (minRowIndex < 0 || maxRowIndex < 0)
+	{
+	    height = 0;
+	    return;
+	}
+	height = maxRowIndex - minRowIndex + 2;
     }
 
     public void setParentOfRuns()
