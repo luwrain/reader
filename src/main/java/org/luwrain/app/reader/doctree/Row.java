@@ -1,7 +1,7 @@
 
 package org.luwrain.app.reader.doctree;
 
-public class Row
+class Row
 {
     /** Absolute horizontal position in the area*/
     public int x = 0;
@@ -11,4 +11,14 @@ public class Row
 
     public int partsFrom = -1;
     public int partsTo = -1;
+
+    public String text(RowPart[] parts)
+    {
+	StringBuilder b = new StringBuilder();
+	for(int i = partsFrom;i < partsTo;++i)
+	    b.append(parts[i].text());
+	return b.toString();
+    }
+    {
+    }
 }

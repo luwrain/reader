@@ -14,26 +14,17 @@
    General Public License for more details.
 */
 
-package org.luwrain.app.reader.doctree;
+package org.luwrain.app.reader.i18n;
 
-class RowPart
+public class Ru implements org.luwrain.app.reader.Strings
 {
-    public Run run;
-    public int posFrom = 0;
-    public int posTo = 0;
-    public int rowNum = 0;
-
-    public String text()
+    @Override public String appName()
     {
-	if (run == null)
-	    throw new NullPointerException("run may not be null");
-	return run.text.substring(posFrom, posTo);
+	return "Просмотр документов";
     }
 
-    public TextAttr textAttr()
+    @Override public String errorOpeningFile()
     {
-	if (run == null)
-	    throw new NullPointerException("node may not be null");
-	return run.textAttr;
+	return "Произошла ошибка открытия документа";
     }
 }

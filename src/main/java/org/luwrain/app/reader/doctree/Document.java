@@ -21,7 +21,7 @@ public class Document
     private Node root;
     public RowPart[] rowParts;
     private Row[] rows;
-    private Line[] lines;
+    private Line[] lines = new Line[0];
 
     public Document(Node root)
     {
@@ -32,18 +32,25 @@ public class Document
 
     public void buildView(int width)
     {
+	System.out.println("reader:starting Document.buildView()");
 	root.calcWidth(width);
 	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder();
+	rowPartsBuilder.onNode(root);
 	rowParts = rowPartsBuilder.parts();
+	System.out.println("reader:" + rowParts.length + " parts");
 	if (rowParts == null)
 	    rowParts = new RowPart[0];
 	if (rowParts.length <= 0)
 	    return;
 	for(RowPart part: rowParts)
 	    part.run.parentParagraph.containsRow(part.rowNum);
+	System.out.println("reader:parent paragraphs installed");
 	root.calcHeight();
-	//	root.calcPosition();
+	System.out.println("reader:root height = " + root.height);
+		root.calcPosition();
+		System.out.println("reader:positions calculated");
 	rows = RowsBuilder.buildRows(rowParts);
+	System.out.println("reader:" + rows.length + " rows");
 	int maxLineNum = 0;
 	for(Row r: rows)
 	{
@@ -61,7 +68,10 @@ public class Document
 	    if (r.y > maxLineNum)
 		maxLineNum = r.y;
 	}
-	lines = new Line[maxLineNum];
+	System.out.println("reader:maxLineNum=" + maxLineNum);
+	lines = new Line[maxLineNum + 1];
+	for(int i = 0;i < lines.length;++i)
+	    lines[i] = new Line();
 	for(int k = 0;k < rows.length;++k)
 	{
 	    final Line line = lines[rows[k].y];
@@ -74,4 +84,22 @@ public class Document
 	}
     }
 
+    public int getLineCount()
+    {
+	return lines != null?lines.length:0;
+    }
+
+    public String getLine(int index)
+    {
+	final Line line = lines[index];
+	StringBuilder b = new StringBuilder();
+	for(int r: line.rows)
+	{
+	    final Row row = rows[r];
+	    while(b.length() < row.x)
+		b.append(" ");
+	    b.append(row.text(rowParts));
+	}
+	return b.toString();
+    }
 }

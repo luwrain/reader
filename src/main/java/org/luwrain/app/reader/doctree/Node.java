@@ -16,7 +16,7 @@
 
 package org.luwrain.app.reader.doctree;
 
-class Node
+public class Node
 {
     private static final int MIN_TABLE_CELL_WIDTH = 8;
 

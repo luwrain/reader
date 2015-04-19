@@ -20,9 +20,11 @@ import org.luwrain.core.*;
 
 public class ReaderApp implements Application, Actions
 {
+    public static final String STRINGS_NAME = "luwrain.reader";
+
     private Luwrain luwrain;
     private Strings strings;
-    private PreviewArea area;
+    private ReaderArea area;
     private String arg;
 
     public ReaderApp()
@@ -41,7 +43,7 @@ public class ReaderApp implements Application, Actions
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	area = new PreviewArea(luwrain, strings, this);
+	area = new ReaderArea(luwrain, strings, this);
 	if (arg != null)
 	    if (!handleToPreview(arg))
 	    {
@@ -68,7 +70,7 @@ public class ReaderApp implements Application, Actions
 	    Log.error("preview", fileName + ":" + e.getMessage());
 	    return false;
 	}
-	area.setFilter(f);
+	//	area.setFilter(f);
 	return true;
     }
 
