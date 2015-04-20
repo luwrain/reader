@@ -17,6 +17,8 @@
 package org.luwrain.app.reader;
 
 import org.luwrain.core.*;
+import org.luwrain.app.reader.doctree.Document;
+import org.luwrain.app.reader.filters.Filters;
 
 public class ReaderApp implements Application, Actions
 {
@@ -25,7 +27,9 @@ public class ReaderApp implements Application, Actions
     private Luwrain luwrain;
     private Strings strings;
     private ReaderArea area;
-    private String arg;
+    private Document doc;
+
+    private String arg = null;
 
     public ReaderApp()
     {
@@ -34,22 +38,32 @@ public class ReaderApp implements Application, Actions
     public ReaderApp(String arg)
     {
 	this.arg = arg;
+	if (arg == null)
+	    throw new NullPointerException("arg may not be null");
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
+	if (arg != null)
+	    System.out.println("reader:launching for " + arg); else
+	    System.out.println("reader:launching without arg");
 	Object o = luwrain.i18n().getStrings("luwrain.reader");
 	if (o == null || !(o instanceof Strings))
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	area = new ReaderArea(luwrain, strings, this);
 	if (arg != null)
-	    if (!handleToPreview(arg))
+	{
+	    System.out.println("reader:launching filter");
+	    doc = Filters.read(arg, Filters.DOC);
+	    if (doc == null)
 	    {
-		luwrain.message(strings.errorOpeningFile());
+		System.out.println("reader:filter rejected");
+		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
 		return false;
 	    }
+	}
+	area = new ReaderArea(luwrain, strings, this, doc);
 	return true;
     }
 
@@ -58,23 +72,7 @@ public class ReaderApp implements Application, Actions
 	return "Reader";//FIXME:
     }
 
-    private boolean handleToPreview(String fileName)
-    {
-	Filter f = new FilterPoi();
-	try {
-	f.open(fileName);
-	}
-	catch(Exception e)
-	{
-	    e.printStackTrace();
-	    Log.error("preview", fileName + ":" + e.getMessage());
-	    return false;
-	}
-	//	area.setFilter(f);
-	return true;
-    }
-
-    public AreaLayout getAreasToShow()
+    @Override public AreaLayout getAreasToShow()
     {
 	return new AreaLayout(area);
     }

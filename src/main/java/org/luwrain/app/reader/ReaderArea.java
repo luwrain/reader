@@ -39,7 +39,8 @@ public class ReaderArea implements Area
 
     public ReaderArea(Luwrain luwrain,
 		      Strings strings,
-		      Actions actions)
+		      Actions actions,
+Document document)
     {
 	this.luwrain = luwrain;
 	this.strings = strings;
@@ -52,6 +53,9 @@ public class ReaderArea implements Area
 	    throw new NullPointerException("actions may not be null");
 	environment = new DefaultControlEnvironment(luwrain);
 
+	this.document = document;
+
+	/*
 	Node root = new Node(Node.ROOT);
 	Paragraph para = new Paragraph();
 	para.runs = new Run[]{
@@ -74,6 +78,7 @@ public class ReaderArea implements Area
 
 	document = new Document(root);
 	document.buildView(50);
+	*/
     }
 
     @Override public int getLineCount()

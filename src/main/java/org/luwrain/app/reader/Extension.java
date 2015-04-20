@@ -50,6 +50,8 @@ public class Extension extends org.luwrain.core.EmptyExtension
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
+		    if (args != null && args.length > 0)
+			return new Application[]{new ReaderApp(args[0])};
 		    return new Application[]{new ReaderApp()};
 		}
 	    };

@@ -14,12 +14,11 @@
    General Public License for more details.
 */
 
-package org.luwrain.app.reader;
+package org.luwrain.app.reader.filters;
+
+import org.luwrain.app.reader.doctree.*;
 
 public interface Filter
 {
-    void open(String fileName) throws Exception;
-    String getFileName();
-    int getLineCount();
-    String getLine(int index);
+    Document constructDocument();
 }
