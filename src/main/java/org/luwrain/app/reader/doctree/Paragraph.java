@@ -18,7 +18,7 @@ package org.luwrain.app.reader.doctree;
 
 public class Paragraph extends Node
 {
-    public Run[] runs;
+    public Run[] runs = new Run[0];
     public int minRowIndex = -1;
     public int maxRowIndex = -1;
 

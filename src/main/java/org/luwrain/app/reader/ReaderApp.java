@@ -55,7 +55,7 @@ public class ReaderApp implements Application, Actions
 	if (arg != null)
 	{
 	    System.out.println("reader:launching filter");
-	    doc = Filters.read(arg, Filters.DOC);
+	    doc = Filters.read(arg, Filters.HTML);
 	    if (doc == null)
 	    {
 		System.out.println("reader:filter rejected");

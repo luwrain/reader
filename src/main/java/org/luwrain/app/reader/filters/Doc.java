@@ -32,6 +32,7 @@ import org.apache.poi.hwpf.extractor.WordExtractor;
 class Doc implements Filter
 {
     private String fileName = "";
+    private String wholeText;
 
     public Doc(String fileName)
     {
@@ -66,21 +67,31 @@ class Doc implements Filter
 	private Document transform(HWPFDocument doc)
 	{
 	    //	    System.out.println();
-	    final String wholeText = doc.getDocumentText();
+wholeText = doc.getDocumentText();
 
-	    //	    Node root = new Node(Node.ROOT);
 	    Vector<Node> subnodes = new Vector<Node>();
 
 	    Range range = doc.getRange();
-	    //	    System.out.println("reader:" + range.getStartOffset() + ":" + range.getEndOffset());
 	    final int begin = range.getStartOffset();
 	    final int end = range.getEndOffset();
 	    System.out.println("reader:range:" + begin + ":" + end);
 	    System.out.println("reader:text len=" + wholeText.length() );
 	    for(int i = 0;i < range.numParagraphs();++i)
 	    {
-		//		System.out.println("reader:i=" + i);
 final Paragraph para = range.getParagraph(i);
+if (para.getTableLevel() > 0)
+{
+		Table table = range.getTable(para);
+		if (table != null)
+		{
+		    subnodes.add(onTable(table));
+		    continue;
+		}
+
+
+
+}
+
 final String paraText = wholeText.substring(para.getStartOffset(), para.getEndOffset());
 int k = 0;
 while(k < paraText.length() && !Character.isLetter(paraText.charAt(k)) && !Character.isDigit(paraText.charAt(k)))
@@ -97,4 +108,44 @@ if (k >= paraText.length())
 	    res.buildView(50);
 	    return res;
 	}
+
+    private Node onTable(Table table)
+    {
+	final Vector<Node> resRows = new Vector<Node>();
+	for(int i = 0;i < table.numRows();++i)
+	{
+	    final Vector<Node> resCells = new Vector<Node>();
+	    final TableRow row = table.getRow(i);
+	    for(int j = 0;j < row.numCells();++j)
+	    {
+		final TableCell cell = row.getCell(j);
+		resCells.add(new Node(Node.TABLE_CELL, transformRange(cell)));
+	    }
+	    resRows.add(new Node(Node.TABLE_ROW, resCells.toArray(new Node[resCells.size()])));
+	}
+	return new Node(Node.TABLE, resRows.toArray(new Node[resRows.size()]));
+    }
+
+    private Node[] transformRange(Range range)
+    {
+	LinkedList<Node> nodes = new LinkedList<Node>();
+	for(int i = 0;i < range.numParagraphs();++i)
+	{
+	    org.luwrain.app.reader.doctree.Paragraph para = onParagraph(range.getParagraph(i));
+	    if (para != null)
+		nodes.add(para);
+	}
+	return nodes.toArray(new Node[nodes.size()]);
+    }
+
+    private org.luwrain.app.reader.doctree.Paragraph onParagraph(Paragraph para)
+    {
+	final String paraText = wholeText.substring(para.getStartOffset(), para.getEndOffset());
+	int k = 0;
+	while(k < paraText.length() && !Character.isLetter(paraText.charAt(k)) && !Character.isDigit(paraText.charAt(k)))
+	    ++k;
+	if (k >= paraText.length())
+	    return null;
+	return new org.luwrain.app.reader.doctree.Paragraph(new org.luwrain.app.reader.doctree.Run(paraText));
+    }
 }

@@ -47,6 +47,13 @@ public class Node
 	this.type = type;
     }
 
+    public Node(int type, Node[] subnodes)
+    {
+	this.type = type;
+	this.subnodes = subnodes;
+    }
+
+
     //Launched before everything, RowPartsBuilder goes next
     public void calcWidth(int recommended)
     {

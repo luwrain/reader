@@ -6,6 +6,7 @@ import org.luwrain.app.reader.doctree.Document;
 public class Filters
 {
     public static final int DOC = 0;
+    public static final int HTML = 1;
 
     public static Document read(String fileName, int format)
     {
@@ -18,6 +19,9 @@ public class Filters
 	{
 	case DOC:
 	    filter = new Doc(fileName);
+	    break;
+	case HTML:
+	    filter = new Html(fileName);
 	    break;
 	default:
 	    throw new IllegalArgumentException("unknown format " + format);
