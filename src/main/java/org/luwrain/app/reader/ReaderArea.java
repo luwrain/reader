@@ -308,11 +308,41 @@ Document document)
 	final int  paraParentType = para.parentNode.type;
 	switch (paraParentType)
 	{
+	case Node.LIST_ITEM:
+	    introduceListItem(para, text);
+	    return;
 	case Node.TABLE_CELL:
 	    introduceTableCell(para, text);
 	    return;
 	}
 	simpleIntroduction(text);
+    }
+
+    private void introduceListItem(Paragraph para, String text)
+    {
+	if (para.parentNode == null ||  //List item;
+	    para.parentNode.parentNode == null) //List itself;
+	{
+	    simpleIntroduction(text);
+	    return;
+	}
+	final int itemIndex = para.parentNode.getIndexInParentSubnodes();
+	System.out.println("reader:itemIndex=" + itemIndex);
+	final int listType = para.parentNode.parentNode.type;
+	switch(listType)
+	{
+	case Node.ORDERED_LIST:
+	    //	    System.out.println("ordered");
+	    environment.say(strings.orderedListItemIntroduction(itemIndex, text));
+	    break;
+	case Node.UNORDERED_LIST:
+	    //	    System.out.println("unordered");
+	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
+	    break;
+	default:
+	    System.out.println("reader:warning:unknown list type on list item introduction:" + listType);
+	    simpleIntroduction(text);
+	}
     }
 
     private void introduceTableCell(Paragraph para, String text)
@@ -326,7 +356,7 @@ Document document)
 	}
 	final int colIndex = para.parentNode.getIndexInParentSubnodes();
 	final int rowIndex = para.parentNode.parentNode.getIndexInParentSubnodes();
-	final int colCount = para.parentNode.parentNode.subnodes.length;
+	final int colCount = countTableCols(para.parentNode.parentNode.parentNode);
 	final int rowCount = para.parentNode.parentNode.parentNode.subnodes.length;
 	if (colIndex == 0 && rowIndex == 0)
 	{
@@ -335,6 +365,20 @@ Document document)
 	}
 	environment.say(strings.tableCellIntroduction(rowIndex + 1, colIndex + 1, text));
 	//	simpleIntroduction(text);
+    }
+
+private int countTableCols(Node table)
+    {
+	if (table == null || table.subnodes == null)
+	    return 0;
+	int maxValue = 0;
+	for(Node n: table.subnodes)
+	{
+	    final int value = n.subnodes != null?n.subnodes.length:0;
+	    if (value > maxValue)
+		maxValue = value;
+	}
+	return maxValue;
     }
 
     private void simpleIntroduction(String text)

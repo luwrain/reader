@@ -30,8 +30,28 @@ public class Ru implements org.luwrain.app.reader.Strings
 
     @Override public String tableCellIntroduction(int row, int col, String text)
     {
-return "Строка " + row + " Столбец " + col + " " + text;
+	if (col == 1)
+return "Строка " + row + " " + text; else
+return "Столбец " + col + " " + text;
+
+
     }
+
+    @Override public String orderedListItemIntroduction(int index, String text)
+    {
+	if (index == 0)
+	    return "Нумерованный список " + text;
+	    return "элемент списка " + index + " " + text;
+    }
+
+    @Override public String unorderedListItemIntroduction(int index, String text)
+    {
+	if (index == 0)
+	    return "Ненумерованный список " + text;
+	return "элемент списка " + text;
+    }
+
+
 
 
     @Override public String errorOpeningFile()

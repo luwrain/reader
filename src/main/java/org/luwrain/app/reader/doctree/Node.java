@@ -34,6 +34,9 @@ public class Node
     public Node[] subnodes = new Node[0];
     public Node parentNode;
 
+    /** The exact meaning of a level depends on the node type*/
+    public int level = 0;
+
     /**Absolute horizontal position in the area*/
     public int x = -1;
 

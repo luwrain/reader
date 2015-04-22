@@ -47,7 +47,7 @@ class Html implements Filter
 	    return null;
 	root.setParentOfSubnodes();
 	Document doc = new Document(root);
-	doc.buildView(60);
+	doc.buildView(100);
 	return doc;
     }
 
