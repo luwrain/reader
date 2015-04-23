@@ -113,6 +113,18 @@ final String[] nonClosingTags = new String[]
     {
 	if (str == null || str.isEmpty())
 	    return;
+	if (isTagOpened("head"))
+	    return; 
+	String text = str;
+	if (runs.isEmpty())
+	{
+	    int firstNonSpace = 0;
+	    while (firstNonSpace < text.length() && Character.isSpace(text.charAt(firstNonSpace)))
+		++firstNonSpace;
+	    if (firstNonSpace >= text.length())
+		return;
+	    text = text.substring(firstNonSpace);
+	}
 	    runs.add(new Run(str));
     }
 
@@ -136,11 +148,6 @@ final String[] nonClosingTags = new String[]
     {
 	if (runs.isEmpty())
 	    return;
-	if (isTagOpened("head"))
-	{
-	    runs.clear();
-	    return; 
-}
 	final Paragraph para = new Paragraph();
 	para.runs = runs.toArray(new Run[runs.size()]);
 	runs.clear();

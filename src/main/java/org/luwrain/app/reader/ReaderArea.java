@@ -21,6 +21,7 @@ import java.io.File;
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
+import org.luwrain.util.WordIterator;
 
 import org.luwrain.app.reader.doctree.*;
 
@@ -106,11 +107,30 @@ Document document)
 		return onArrowDown(event, true);
 	    case KeyboardEvent.ALTERNATIVE_ARROW_UP:
 		return onArrowUp(event, true);
-
 	    case KeyboardEvent.ARROW_LEFT:
 		return onArrowLeft(event);
 	    case KeyboardEvent.ARROW_RIGHT:
 		return onArrowRight(event);
+	    case KeyboardEvent.ALTERNATIVE_ARROW_LEFT:
+		return onAltLeft(event);
+	    case KeyboardEvent.ALTERNATIVE_ARROW_RIGHT:
+		return onAltRight(event);
+	    case KeyboardEvent.HOME:
+		return onHome(event);
+	    case KeyboardEvent .END:
+		return onEnd(event);
+	    case KeyboardEvent.ALTERNATIVE_HOME:
+		return onAltHome(event);
+	    case KeyboardEvent .ALTERNATIVE_END:
+		return onAltEnd(event);
+	    case KeyboardEvent.PAGE_UP:
+		return onPageUp(event, false);
+	    case KeyboardEvent.PAGE_DOWN:
+		return onPageDown(event, false);
+	    case KeyboardEvent.ALTERNATIVE_PAGE_UP:
+		return onPageUp(event, true);
+	    case KeyboardEvent.ALTERNATIVE_PAGE_DOWN:
+		return onPageDown(event, true);
 	    default:
 		return false;
 	    }
@@ -119,6 +139,8 @@ Document document)
 
     @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
     {
+	if (event == null)
+	    throw new NullPointerException("event may not be null");
 	switch(event.getCode())
 	{
 	case EnvironmentEvent.CLOSE:
@@ -160,6 +182,59 @@ Document document)
     }
 
     private boolean onArrowUp(KeyboardEvent event, boolean briefIntroduction)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY <= 0)
+	{
+	    environment.hint(Hints.NO_LINES_ABOVE);
+	    return true;
+	}
+	--hotPointY;
+	onNewHotPointY( briefIntroduction);
+	return true;
+    }
+
+    private boolean onAltEnd(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	hotPointX = 0;
+	hotPointY = count;
+	onNewHotPointY( false);
+	return true;
+    }
+
+    private boolean onAltHome(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	hotPointX = 0;
+	hotPointY = 0;
+	onNewHotPointY( false);
+	return true;
+    }
+
+    //TODO:
+    private boolean onPageDown(KeyboardEvent event, boolean briefIntroduction)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+	    environment.hint(Hints.NO_LINES_BELOW);
+	    return false;
+	}
+	++hotPointY;
+	onNewHotPointY( briefIntroduction );
+	return true;
+    }
+
+    //TODO:
+    private boolean onPageUp(KeyboardEvent event, boolean briefIntroduction)
     {
 	if (noContentCheck())
 	    return true;
@@ -258,6 +333,90 @@ Document document)
 	    environment.hint(Hints.END_OF_LINE); else
 	    environment.sayLetter(nextRowText.charAt(0));
 	//	System.out.println("after here2");
+	environment.onAreaNewHotPoint(this);
+	return true;
+    }
+
+    private boolean onAltLeft(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+		environment.hint(Hints.EMPTY_LINE);
+	    return true;
+	}
+	final String text = document.getRowText(hotPointY);
+	final WordIterator it = new WordIterator(text, hotPointX);
+	if (!it.stepBackward())
+	{
+	    environment.hint(Hints.BEGIN_OF_LINE);
+	    return true;
+	}
+	hotPointX = it.pos();
+	environment.say(it.announce());
+	environment.onAreaNewHotPoint(this);
+	return true;
+    }
+
+    private boolean onAltRight(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+	    environment.hint(Hints.EMPTY_LINE);
+	    return true;
+	}
+	final String text = document.getRowText(hotPointY);
+	final WordIterator it = new WordIterator(text, hotPointX);
+	if (!it.stepForward())
+	{
+	    environment.hint(Hints.END_OF_LINE);
+	    return true;
+	}
+	hotPointX = it.pos();
+	if (it.announce().length() > 0)
+	    environment.say(it.announce()); else
+	    environment.hint(Hints.END_OF_LINE);
+	environment.onAreaNewHotPoint(this);
+	return true;
+    }
+
+    private boolean onHome(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+		environment.hint(Hints.EMPTY_LINE);
+	    return true;
+	}
+	final String text = document.getRowText(hotPointY);
+	hotPointX = 0;
+	if (!text.isEmpty())
+	    environment.sayLetter(text.charAt(0)); else
+	    environment.hint(Hints.EMPTY_LINE);
+	environment.onAreaNewHotPoint(this);
+	return true;
+    }
+
+    private boolean onEnd(KeyboardEvent event)
+    {
+	if (noContentCheck())
+	    return true;
+	final int count = document.getRowCount();
+	if (hotPointY >= count)
+	{
+	    environment.hint(Hints.EMPTY_LINE);
+	    return true;
+	}
+	final String text = document.getRowText(hotPointY);
+	hotPointX = text.length();
+	environment.hint(Hints.END_OF_LINE);
 	environment.onAreaNewHotPoint(this);
 	return true;
     }
