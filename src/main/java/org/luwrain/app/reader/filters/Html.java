@@ -72,7 +72,7 @@ class Html implements Filter
 		while (scanner.hasNextLine())
 		{
 		    b.append(scanner.nextLine());
-		    b.append(" ");
+		    b.append("\n");
 		}
 	    }
 	src = b.toString();

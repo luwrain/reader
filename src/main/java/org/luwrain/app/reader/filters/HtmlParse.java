@@ -21,13 +21,16 @@ class Level
 
 final String[] nonClosingTags = new String[]
 {
+    "!doctype",
     "br",
+    "link",
+    "img",
 "meta"
 }; 
 
     public LinkedList<Level> levels = new LinkedList<Level>();
     private LinkedList<Run> runs = new LinkedList<Run>();
-    private LinkedList<String> tagsStack = new LinkedList<String>();
+    //    private LinkedList<String> tagsStack = new LinkedList<String>();
 
     public HtmlParse(String text)
     {
@@ -38,10 +41,11 @@ final String[] nonClosingTags = new String[]
     @Override protected void onOpeningTag(String name)
     {
 	final String adjustedName = name.trim().toLowerCase();
-	if (!isNonClosingTag(adjustedName))
-	    tagsStack.add(adjustedName);
+	//	System.out.println("reader:debug:opening:" + adjustedName);
 
 	if (adjustedName.equals("span") ||
+	    adjustedName.equals("sup") ||
+	    adjustedName.equals("a") ||
 	    adjustedName.equals("font") ||
 	    adjustedName.equals("b") ||
 	    adjustedName.equals("i"))
@@ -56,7 +60,7 @@ final String[] nonClosingTags = new String[]
 	    type = Node.TABLE; else
 	    if (adjustedName.equals("tr"))
 		type = Node.TABLE_ROW; else
-		if (adjustedName.equals("td"))
+		if (adjustedName.equals("td") || adjustedName.equals("th"))
 		    type = Node.TABLE_CELL; else
 		    if (adjustedName.equals("ul"))
 			type = Node.UNORDERED_LIST; else
@@ -75,18 +79,18 @@ final String[] nonClosingTags = new String[]
     @Override protected void onClosingTag(String name)
     {
 	final String adjustedName = name.trim().toLowerCase();
-	final String lastTag = tagsStack.pollLast();
-	if (!lastTag.equals(adjustedName))
-	    System.out.println("reader:warning:expecting the closing tag to be \'" + lastTag + "\' but it is \'" + adjustedName + "\'");
+	//	System.out.println("reader:debug:closing:" + adjustedName);
 
 	if (adjustedName.equals("span") ||
+	    adjustedName.equals("a") ||
+	    adjustedName.equals("sup") ||
 	    adjustedName.equals("font") ||
 	    adjustedName.equals("b") ||
 	    adjustedName.equals("i"))
 	    return;
 
 	int type;
-	if (adjustedName.equals("td"))
+	if (adjustedName.equals("td") || adjustedName.equals("th"))
 	    type = Node.TABLE_CELL; else
 	    if (adjustedName.equals("tr"))
 		type = Node.TABLE_ROW; else
@@ -105,14 +109,14 @@ final String[] nonClosingTags = new String[]
 	commitLevel(type);
     }
 
-    @Override protected void onEntity(String name)
-    {
-    }
-
     @Override protected void onText(String str)
     {
 	if (str == null || str.isEmpty())
 	    return;
+
+	final String newText = str.replaceAll("\n", " ");
+	if (!newText.trim().isEmpty())
+	System.out.println("reader:text:" + str.trim());
 	if (isTagOpened("head"))
 	    return; 
 	String text = str;
@@ -125,12 +129,14 @@ final String[] nonClosingTags = new String[]
 		return;
 	    text = text.substring(firstNonSpace);
 	}
-	    runs.add(new Run(str));
+	    runs.add(new Run(text));
     }
 
+    /*
     @Override protected void onCdata(String value)
     {
     }
+    */
 
     private void commitLevel(int type)
     {
@@ -139,7 +145,7 @@ final String[] nonClosingTags = new String[]
 	commitPara();
 	final Level lastLevel = levels.pollLast();
 	if (type != lastLevel.type)
-	    System.out.println("reader:warning:expecting the last level on committing to be " + type + " but it is " + lastLevel.type);
+	    System.out.println("reader:warning:expecting the last level on committing to be " + type + " but it is " + lastLevel.type + " (line " + currentLine() + ")");
 	final Node node = new Node(lastLevel.type, lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()]));
 	levels.getLast().subnodes.add(node);
     }
@@ -172,28 +178,22 @@ lastLevelType == Node.UNORDERED_LIST)
 	return new Node(Node.ROOT, subnodes);
     }
 
-    private String getCurrentTag()
-    {
-	if (tagsStack == null || tagsStack.isEmpty())
-	    return null;
-	return tagsStack.getLast();
-    }
 
-    private boolean isTagOpened(String tag)
-    {
-	final String adjusted = tag.toLowerCase().trim();
-	for(String s: tagsStack)
-	    if (s.equals(adjusted))
-		return true;
-	return false;
-    }
-
-    private boolean isNonClosingTag(String tag)
+    @Override protected boolean tagMustBeClosed(String tag)
     {
 	final String adjusted = tag.toLowerCase().trim();
 	for(String s: nonClosingTags)
 	    if (s.equals(adjusted))
-		return true;
-	return false;
+		return false;
+	return true;
+    }
+
+    @Override protected boolean admissibleTag(String tag)
+    {
+	if (tag == null || tag.trim().isEmpty())
+	    return false;
+	if (getCurrentTag().toLowerCase().equals("script"))
+	    return false;
+	return true;
     }
 }

@@ -40,19 +40,16 @@ return "Столбец " + col + " " + text;
     @Override public String orderedListItemIntroduction(int index, String text)
     {
 	if (index == 0)
-	    return "Нумерованный список " + text;
+	    return "Начало нумерованного списка " + text;
 	    return "элемент списка " + index + " " + text;
     }
 
     @Override public String unorderedListItemIntroduction(int index, String text)
     {
 	if (index == 0)
-	    return "Ненумерованный список " + text;
-	return "элемент списка " + text;
+	    return "Начало ненумерованного списка " + text;
+	return "Ненумерованный элемент " + text;
     }
-
-
-
 
     @Override public String errorOpeningFile()
     {
