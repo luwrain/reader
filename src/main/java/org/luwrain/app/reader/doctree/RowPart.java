@@ -22,6 +22,7 @@ class RowPart
     public int posFrom = 0;
     public int posTo = 0;
     public int rowNum = 0;
+    public int relRowNum = 0;
 
     public String text()
     {

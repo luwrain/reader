@@ -32,23 +32,23 @@ public class Document
 
     public void buildView(int width)
     {
-	System.out.println("reader:starting Document.buildView()");
+	//	System.out.println("reader:starting Document.buildView()");
 	root.calcWidth(width);
 	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder();
 	rowPartsBuilder.onNode(root);
 	rowParts = rowPartsBuilder.parts();
-	System.out.println("reader:" + rowParts.length + " parts");
+	//	System.out.println("reader:" + rowParts.length + " parts");
 	if (rowParts == null)
 	    rowParts = new RowPart[0];
 	if (rowParts.length <= 0)
 	    return;
-	for(RowPart part: rowParts)
-	    part.run.parentParagraph.containsRow(part.rowNum);
-	System.out.println("reader:parent paragraphs installed");
+	//	for(RowPart part: rowParts)
+	//	    part.run.parentParagraph.containsRow(part.rowNum);
+	//	System.out.println("reader:parent paragraphs installed");
 	root.calcHeight();
-	System.out.println("reader:root height = " + root.height);
+	//	System.out.println("reader:root height = " + root.height);
 		root.calcPosition();
-		System.out.println("reader:positions calculated");
+		//		System.out.println("reader:positions calculated");
 	rows = RowsBuilder.buildRows(rowParts);
 	System.out.println("reader:" + rows.length + " rows");
 	int maxLineNum = 0;
@@ -64,7 +64,7 @@ public class Document
 	    if (paragraph == null)
 		throw new NullPointerException("paragraph may not be null");
 	    r.x = paragraph.x;
-	    r.y = paragraph.y + (rowParts[r.partsFrom].rowNum - paragraph.minRowIndex);
+	    //	    r.y = paragraph.y + (rowParts[r.partsFrom].rowNum - paragraph.minRowIndex);
 	    if (r.y > maxLineNum)
 		maxLineNum = r.y;
 	}
@@ -133,7 +133,7 @@ public class Document
 	if (row.partsFrom < 0 || row.partsTo < 0)
 	    return 0;
 	final Paragraph para = rowParts[row.partsFrom].run.parentParagraph;
-	return index - para.minRowIndex;
+	return index - para.topRowIndex;
     }
 
     public Paragraph getParagraph(int index)

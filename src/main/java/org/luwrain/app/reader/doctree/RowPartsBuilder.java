@@ -22,7 +22,9 @@ class RowPartsBuilder
 {
     private int index = 0;
     private int offset = 0;
-    private Vector<RowPart> parts = new Vector<RowPart>();
+    private LinkedList<RowPart> parts = new LinkedList<RowPart>();
+    private LinkedList<RowPart> currentParaParts = new LinkedList<RowPart>();
+    private LinkedList<Paragraph> paragraphs = new LinkedList<Paragraph>();
 
     public void onNode(Node node)
     {
@@ -32,23 +34,22 @@ class RowPartsBuilder
 	    throw new IllegalArgumentException("node may not have width less than 1");
 	if (node.type == Node.PARAGRAPH)
 	{
-	    if (offset > 0)
-	    {
-		//Actually should never happen, just to reinsure;
-		offset = 0;
-		++index;
-	    }
-	    final int oldPartCount = parts.size();
+	    offset = 0;
+	    index = 0;
+	    //	    final int oldPartCount = parts.size();
 	    if (!(node instanceof Paragraph))
 		throw new IllegalArgumentException("node should be an instance of Paragraph");
 	    final Paragraph para = (Paragraph)node;
+	    currentParaParts.clear();
 	    if (para.runs != null)
 		for(Run r: para.runs)
 		    onRun(r, para.width);
-	    if (parts.size() > oldPartCount)
+	    if (!currentParaParts.isEmpty())
 	    {
-		offset = 0;
-		index += 2;
+		para.rowParts = currentParaParts.toArray(new RowPart[currentParaParts.size()]);
+		paragraphs.add(para);
+		for(RowPart p: currentParaParts)
+		    parts.add(p);
 	    }
 	    return;
 	}
@@ -125,7 +126,7 @@ class RowPartsBuilder
     {
 	RowPart part = new RowPart();
 	part.run = run;
-	part.rowNum = index;
+	part.relRowNum = index;
 	part.posFrom = posFrom;
 	part.posTo = posTo;
 	return part;
@@ -135,7 +136,7 @@ class RowPartsBuilder
     {
 	if (part == null)
 	    throw new NullPointerException("part may not be null");
-	parts.add(part);
+	currentParaParts.add(part);
     }
 
     public RowPart[] parts()
@@ -143,5 +144,12 @@ class RowPartsBuilder
 	if (parts == null || parts.isEmpty())
 	    return new RowPart[0];
 	return parts.toArray(new RowPart[parts.size()]);
+    }
+
+    public Paragraph[] paragraphs()
+    {
+	if (paragraphs == null || paragraphs.size() < 1)
+	    return new Paragraph[0];
+	return paragraphs.toArray(new Paragraph[paragraphs.size()]);
     }
 }

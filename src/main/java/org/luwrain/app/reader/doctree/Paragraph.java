@@ -19,8 +19,10 @@ package org.luwrain.app.reader.doctree;
 public class Paragraph extends Node
 {
     public Run[] runs = new Run[0];
-    public int minRowIndex = -1;
-    public int maxRowIndex = -1;
+    public RowPart[] rowParts = new RowPart[0];
+    public int topRowIndex = -1;
+    //    public int minRowIndex = -1;
+    //    public int maxRowIndex = -1;
 
     public Paragraph()
     {
@@ -36,6 +38,7 @@ public class Paragraph extends Node
 	runs[0].parentParagraph = this;
     }
 
+    /*
     public void containsRow(int index)
     {
 	if (minRowIndex < 0 || maxRowIndex < 0)
@@ -51,15 +54,25 @@ public class Paragraph extends Node
 	if (index > maxRowIndex)
 	    maxRowIndex = index;
     }
+    */
 
     @Override public void calcHeight()
     {
-	if (minRowIndex < 0 || maxRowIndex < 0)
+	if (rowParts == null && rowParts.length < 1)
 	{
 	    height = 0;
 	    return;
 	}
-	height = maxRowIndex - minRowIndex + 2;
+	int maxRelRowNum = 0;
+	for(RowPart p: rowParts)
+	    if (p.relRowNum > maxRelRowNum)
+		maxRelRowNum = p.relRowNum;
+	height = maxRelRowNum + 1;
+	final int parentSubnodeCount = getParentSubnodeCount();
+	if (parentSubnodeCount == 1 &&
+	    (isInTableCell() || isInListItem()))
+	    return;
+	++height;
     }
 
     public void setParentOfRuns()
@@ -73,5 +86,15 @@ public class Paragraph extends Node
     @Override public void setParentOfSubnodes()
     {
 	setParentOfRuns();
+    }
+
+    public boolean isInListItem()
+    {
+	return parentNode != null && parentNode.type == LIST_ITEM;
+    }
+
+    public boolean isInTableCell()
+    {
+	return parentNode != null && parentNode.type == TABLE_CELL;
     }
 }

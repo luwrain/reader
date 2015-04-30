@@ -190,7 +190,13 @@ public class Node
 	}
     }
 
-    //Returns -1 if it is impossible to know;
+    /** @return -1 if there is no a parent node or there is a consistency error*/
+    public int getParentSubnodeCount()
+    {
+	return parentNode != null && parentNode.subnodes != null?parentNode.subnodes.length:-1;
+    }
+
+    /** @return -1 if it is impossible to understand;*/
     public int getIndexInParentSubnodes()
     {
 	if (parentNode == null || parentNode.subnodes == null)
@@ -199,5 +205,19 @@ public class Node
 	    if (parentNode.subnodes[i] == this)
 		return i;
 	return -1;
+    }
+
+    public boolean isFirstSubnode()
+    {
+	final int count = getParentSubnodeCount();
+	final int index = getIndexInParentSubnodes();
+	return count >= 0 && index == 0;
+    }
+
+    public boolean isLastSubnode()
+    {
+	final int count = getParentSubnodeCount();
+	final int index = getIndexInParentSubnodes();
+	return count >= 0 && index + 1 == count;
     }
 }
