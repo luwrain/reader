@@ -19,6 +19,7 @@ package org.luwrain.app.reader.doctree;
 public class Document 
 {
     private Node root;
+    private Paragraph[] paragraphs; //Only paragraphs which appear in document, no paragraphs without row parts
     public RowPart[] rowParts;
     private Row[] rows;
     private Line[] lines = new Line[0];
@@ -32,25 +33,49 @@ public class Document
 
     public void buildView(int width)
     {
-	//	System.out.println("reader:starting Document.buildView()");
 	root.calcWidth(width);
 	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder();
 	rowPartsBuilder.onNode(root);
 	rowParts = rowPartsBuilder.parts();
-	//	System.out.println("reader:" + rowParts.length + " parts");
 	if (rowParts == null)
 	    rowParts = new RowPart[0];
 	if (rowParts.length <= 0)
 	    return;
-	//	for(RowPart part: rowParts)
-	//	    part.run.parentParagraph.containsRow(part.rowNum);
-	//	System.out.println("reader:parent paragraphs installed");
+	paragraphs = rowPartsBuilder.paragraphs();
 	root.calcHeight();
-	//	System.out.println("reader:root height = " + root.height);
-		root.calcPosition();
-		//		System.out.println("reader:positions calculated");
+	root.calcPosition();
+	calcAbsRowNums
 	rows = RowsBuilder.buildRows(rowParts);
-	System.out.println("reader:" + rows.length + " rows");
+	final int lineCount = calcRowsPosition();
+	System.out.println("reader:maxLineNum=" + maxLineNum);
+	lines = new Line[lineCount];
+	for(int i = 0;i < lines.length;++i)
+	    lines[i] = new Line();
+	for(int k = 0;k < rows.length;++k)
+	{
+	    final Line line = lines[rows[k].y];
+	    final int[] oldRows = line.rows;
+	    line.rows = new int[oldRows.length + 1];
+	    for(int i = 0;i < oldRows.length;++i)
+		line.rows[i] = oldRows[i];
+	    line.rows[oldRows.length] = k;
+	}
+    }
+
+    private void calcAbsRowNums()
+    {
+	int currentParaTop = 0;
+	while(Paragraph p: paragraphs)
+	{
+	    p.topRowIndex = currentParaTop;
+	    for(RowPart r: p.rowParts)
+		r.absRowNum = r.relRowNum + currentParaTop;
+	    currentParaTop += p.height;
+	}
+    }
+
+    private int calcRowsPosition()
+    {
 	int maxLineNum = 0;
 	for(Row r: rows)
 	{
@@ -68,20 +93,7 @@ public class Document
 	    if (r.y > maxLineNum)
 		maxLineNum = r.y;
 	}
-	System.out.println("reader:maxLineNum=" + maxLineNum);
-	lines = new Line[maxLineNum + 1];
-	for(int i = 0;i < lines.length;++i)
-	    lines[i] = new Line();
-	for(int k = 0;k < rows.length;++k)
-	{
-	    final Line line = lines[rows[k].y];
-	    final int[] oldRows = line.rows;
-	    line.rows = new int[oldRows.length + 1];
-	    for(int i = 0;i < oldRows.length;++i)
-		line.rows[i] = oldRows[i];
-	    line.rows[oldRows.length] = k;
-
-	}
+	return maxLineNum + 1;
     }
 
     public int getLineCount()
