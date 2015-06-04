@@ -24,24 +24,24 @@ import org.luwrain.core.I18nExtension;
 import org.luwrain.core.Luwrain;
 import org.luwrain.core.Registry;
 
-public class Extension extends org.luwrain.core.EmptyExtension
+public class Extension extends org.luwrain.core.extensions.EmptyExtension
 {
-    @Override public Command[] getCommands(CommandEnvironment env)
+    @Override public Command[] getCommands(Luwrain luwrain)
     {
 	Command res = new Command(){
 		@Override public String getName()
 		{
 		    return "reader";
 		}
-		@Override public void onCommand(CommandEnvironment env)
+		@Override public void onCommand(Luwrain luwrain)
 		{
-		    env.launchApp("reader");
+		    luwrain.launchApp("reader");
 		}
 	    };
 	return new Command[]{res};
     }
 
-    @Override public Shortcut[] getShortcuts()
+    @Override public Shortcut[] getShortcuts(Luwrain luwrain)
     {
 	Shortcut res = new Shortcut() {
 		@Override public String getName()
@@ -58,7 +58,7 @@ public class Extension extends org.luwrain.core.EmptyExtension
 	return new Shortcut[]{res};
     }
 
-    @Override public void i18nExtension(I18nExtension i18nExt)
+    @Override public void i18nExtension(Luwrain luwrain, I18nExtension i18nExt)
     {
 	i18nExt.addCommandTitle("en", "reader", "Reader");
 	i18nExt.addCommandTitle("ru", "reader", "Просмотр документов");

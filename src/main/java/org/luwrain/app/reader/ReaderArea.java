@@ -151,6 +151,11 @@ Document document)
 	}
     }
 
+    @Override public boolean onAreaQuery(AreaQuery query)
+    {
+	return false;
+    }
+
     @Override public int getHotPointX()
     {
 	return 0;
@@ -161,7 +166,7 @@ Document document)
 	return -0;
     }
 
-    @Override public String getName()
+    @Override public String getAreaName()
     {
 	return strings.appName();
     }

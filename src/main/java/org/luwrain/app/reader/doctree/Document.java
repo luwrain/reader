@@ -44,10 +44,10 @@ public class Document
 	paragraphs = rowPartsBuilder.paragraphs();
 	root.calcHeight();
 	root.calcPosition();
-	calcAbsRowNums
+	//	calcAbsRowNums
 	rows = RowsBuilder.buildRows(rowParts);
 	final int lineCount = calcRowsPosition();
-	System.out.println("reader:maxLineNum=" + maxLineNum);
+	//	System.out.println("reader:maxLineNum=" + maxLineNum);
 	lines = new Line[lineCount];
 	for(int i = 0;i < lines.length;++i)
 	    lines[i] = new Line();
@@ -65,6 +65,7 @@ public class Document
     private void calcAbsRowNums()
     {
 	int currentParaTop = 0;
+	/*
 	while(Paragraph p: paragraphs)
 	{
 	    p.topRowIndex = currentParaTop;
@@ -72,6 +73,7 @@ public class Document
 		r.absRowNum = r.relRowNum + currentParaTop;
 	    currentParaTop += p.height;
 	}
+	*/
     }
 
     private int calcRowsPosition()
