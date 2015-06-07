@@ -179,16 +179,33 @@ public class Node
 	}
     }
 
-    public void setParentOfSubnodes()
+    public void commit()
     {
+	if (type == ROOT)
+	    parentNode = null;
 	if (subnodes == null)
 	    return;
 	for(Node n: subnodes)
 	{
 	    n.parentNode = this;
-	    n.setParentOfSubnodes();
+	    n.commit();
 	}
     }
+
+    public void saveStatistics(Statistics stat)
+    {
+	++stat.numNodes;
+	if (subnodes != null)
+	    for(Node n: subnodes)
+		n.saveStatistics(stat);
+    }
+
+    /** @return -1 if there is no a parent node or there is a consistency error*/
+    public int getParentType()
+    {
+	return parentNode != null && parentNode.subnodes != null?parentNode.type:-1;
+    }
+
 
     /** @return -1 if there is no a parent node or there is a consistency error*/
     public int getParentSubnodeCount()

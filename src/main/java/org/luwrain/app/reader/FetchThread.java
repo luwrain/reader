@@ -62,6 +62,9 @@ class FetchThread implements Runnable
         while ((inputLine = in.readLine()) != null)
 	    builder.append(inputLine);
         in.close();
+
 	luwrain.enqueueEvent(new FetchEvent(area, builder.toString()));
+
+	System.out.println("done");
     }
 }

@@ -103,7 +103,6 @@ if (k >= paraText.length())
 	    }
 	    Node root = new Node(Node.ROOT);
 	    root.subnodes = subnodes.toArray(new Node[subnodes.size()]);
-	    root.setParentOfSubnodes();
 	    Document res = new Document(root);
 	    res.buildView(50);
 	    return res;

@@ -115,8 +115,8 @@ final String[] nonClosingTags = new String[]
 	    return;
 
 	final String newText = str.replaceAll("\n", " ");
-	if (!newText.trim().isEmpty())
-	System.out.println("reader:text:" + str.trim());
+	//	if (!newText.trim().isEmpty())
+	//	System.out.println("reader:text:" + str.trim());
 	if (isTagOpened("head"))
 	    return; 
 	String text = str;

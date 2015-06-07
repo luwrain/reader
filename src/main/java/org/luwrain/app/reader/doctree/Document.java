@@ -33,6 +33,7 @@ public class Document
 
     public void buildView(int width)
     {
+	root.commit();
 	root.calcWidth(width);
 	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder();
 	rowPartsBuilder.onNode(root);
@@ -41,10 +42,19 @@ public class Document
 	    rowParts = new RowPart[0];
 	if (rowParts.length <= 0)
 	    return;
+	System.out.println("Constructed " + rowParts.length + " row parts");
+
 	paragraphs = rowPartsBuilder.paragraphs();
+	System.out.println("Constructed " + paragraphs.length + " paragraphs");
+
 	root.calcHeight();
+	calcAbsRowNums();
+
+	for(Paragraph p: paragraphs)
+	    System.out.println(p.topRowIndex);
+
+
 	root.calcPosition();
-	//	calcAbsRowNums
 	rows = RowsBuilder.buildRows(rowParts);
 	final int lineCount = calcRowsPosition();
 	//	System.out.println("reader:maxLineNum=" + maxLineNum);
@@ -65,15 +75,13 @@ public class Document
     private void calcAbsRowNums()
     {
 	int currentParaTop = 0;
-	/*
-	while(Paragraph p: paragraphs)
+	for(Paragraph p: paragraphs)
 	{
 	    p.topRowIndex = currentParaTop;
 	    for(RowPart r: p.rowParts)
 		r.absRowNum = r.relRowNum + currentParaTop;
-	    currentParaTop += p.height;
+	    currentParaTop += (p.height + (p.shouldHaveExtraLine()?1:0));
 	}
-	*/
     }
 
     private int calcRowsPosition()
@@ -158,5 +166,11 @@ public class Document
 	if (row.partsFrom < 0 || row.partsTo < 0)
 	    return null;
 return rowParts[row.partsFrom].run.parentParagraph;
+    }
+
+    public void saveStatistics(Statistics stat)
+    {
+	if (root != null)
+	    root.saveStatistics(stat);
     }
 }

@@ -23,6 +23,7 @@ import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.WordIterator;
 
+import org.luwrain.app.reader.filters.Filters;
 import org.luwrain.app.reader.doctree.*;
 
 public class ReaderArea implements Area
@@ -36,59 +37,40 @@ public class ReaderArea implements Area
     private int hotPointX = 0;
     private int hotPointY = 0;
 
+    private Filters filters;
     private Document document;
 
     public ReaderArea(Luwrain luwrain,
 		      Strings strings,
 		      Actions actions,
+		      Filters filters,
 Document document)
     {
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.actions = actions;
+	this.filters = filters;
 	if (luwrain == null)
 	    throw new NullPointerException("luwrain may not be null");
 	if (strings == null)
 	    throw new NullPointerException("stringss may not be null");
 	if (actions == null)
 	    throw new NullPointerException("actions may not be null");
+	if (filters == null)
+	    throw new NullPointerException("filters may not be null");
 	environment = new DefaultControlEnvironment(luwrain);
-
 	this.document = document;
-
-	/*
-	Node root = new Node(Node.ROOT);
-	Paragraph para = new Paragraph();
-	para.runs = new Run[]{
-		new Run("First testing run"),
-		    new Run("Second testing run")
-	    };
-	para.setParentOfRuns();
-
-	Node table1 = new Node(Node.TABLE);
-	table1.subnodes = new Node[]{new Node(Node.TABLE_ROW), new Node(Node.TABLE_ROW)};
-	table1.subnodes[0].subnodes = new Node[]{new Node(Node.TABLE_CELL), new Node(Node.TABLE_CELL)};
-	table1.subnodes[1].subnodes = new Node[]{new Node(Node.TABLE_CELL), new Node(Node.TABLE_CELL)};
-	table1.subnodes[0].subnodes[0].subnodes = new Node[]{new Paragraph(new Run("1"))};
-	table1.subnodes[0].subnodes[1].subnodes = new Node[]{new Paragraph(new Run("2"))};
-	table1.subnodes[1].subnodes[0].subnodes = new Node[]{new Paragraph(new Run("3"))};
-	table1.subnodes[1].subnodes[1].subnodes = new Node[]{new Paragraph(new Run("4"))};
-
-	root.subnodes = new Node[]{para, table1};
-	root.setParentOfSubnodes();
-
-	document = new Document(root);
-	document.buildView(50);
-	*/
     }
 
     @Override public int getLineCount()
     {
-	return document.getLineCount() + 1;
+	return document != null?document.getLineCount() + 1:1;
     }
 
     @Override public String getLine(int index)
     {
+	if (document == null)
+	    return "";
 	return index < document.getLineCount()?document.getLine(index):"";
     }
 
@@ -139,10 +121,12 @@ Document document)
 
     @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
     {
-	if (event == null)
+	    if (event == null)
 	    throw new NullPointerException("event may not be null");
 	switch(event.getCode())
 	{
+	case EnvironmentEvent.THREAD_SYNC:
+	    return onThreadSync(event);
 	case EnvironmentEvent.CLOSE:
 	    actions.closeApp();
 	    return true;
@@ -169,6 +153,26 @@ Document document)
     @Override public String getAreaName()
     {
 	return strings.appName();
+    }
+
+    private boolean onThreadSync(EnvironmentEvent event)
+    {
+	if (event instanceof FetchEvent)
+	{
+	    final FetchEvent fetchEvent = (FetchEvent)event;
+	    if (fetchEvent.getFetchCode() == FetchEvent.FAILED)
+	    {
+		luwrain.message(strings.errorFetching(), Luwrain.MESSAGE_ERROR);
+		return true;
+	    }
+	    document = filters.readText(Filters.HTML, fetchEvent.getText());
+	    Statistics stat = new Statistics();
+	    document.saveStatistics(stat);
+	    stat.print();
+	    luwrain.message("OK", Luwrain.MESSAGE_OK);
+	    return true;
+	}
+	return false;
     }
 
     private boolean onArrowDown(KeyboardEvent event, boolean briefIntroduction)

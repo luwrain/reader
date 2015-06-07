@@ -16,6 +16,8 @@
 
 package org.luwrain.app.reader;
 
+import java.net.*;
+
 import org.luwrain.core.*;
 import org.luwrain.app.reader.doctree.Document;
 import org.luwrain.app.reader.filters.Filters;
@@ -28,6 +30,7 @@ public class ReaderApp implements Application, Actions
     private Strings strings;
     private ReaderArea area;
     private Document doc;
+    private Filters filters = new Filters();
 
     private String arg = null;
 
@@ -53,17 +56,22 @@ public class ReaderApp implements Application, Actions
 	strings = (Strings)o;
 	this.luwrain = luwrain;
 	if (arg != null)
-	{
-	    System.out.println("reader:launching filter");
-	    doc = Filters.read(arg, Filters.HTML);
+ 	{
+	    doc = filters.readFromFile(arg, Filters.HTML);
 	    if (doc == null)
 	    {
-		System.out.println("reader:filter rejected");
 		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
 		return false;
 	    }
+ 	}
+	area = new ReaderArea(luwrain, strings, this, filters, doc);
+	try {
+	    new Thread(new FetchThread(luwrain, area, new URL("https://ru.wikipedia.org/wiki/"))).start();
 	}
-	area = new ReaderArea(luwrain, strings, this, doc);
+	catch (MalformedURLException e)
+	{
+	    e.printStackTrace();
+	}
 	return true;
     }
 

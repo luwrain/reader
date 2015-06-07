@@ -55,4 +55,9 @@ return "Столбец " + col + " " + text;
     {
 	return "Произошла ошибка открытия документа";
     }
+
+    @Override public String errorFetching()
+    {
+	return "Доставка запрошенной страницы невозможна";
+    }
 }

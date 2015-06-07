@@ -25,18 +25,27 @@ import org.luwrain.app.reader.doctree.*;
 
 class Html implements Filter
 {
-    private String fileName = "";
+    private String fileName;
     private String src;
 
-    public Html(String fileName)
+    public Html(boolean shouldRead, String arg)
     {
-	this.fileName = fileName;
-	if (fileName == null)
-	    throw new NullPointerException("fileName may not be null");
+	if (arg == null)
+	    throw new NullPointerException("arg may not be null");
+	if (shouldRead)
+	{
+	    fileName = arg;
+	    src = null;
+	} else
+	{
+	    fileName = "";
+	    src = arg;
+	}
     }
 
 	@Override public Document constructDocument()
     {
+	if (src == null)
 	read(StandardCharsets.UTF_8);
 	if (src == null)
 	    return null;
@@ -45,7 +54,6 @@ class Html implements Filter
 	Node root = parse.constructRoot();
 	if (root == null)
 	    return null;
-	root.setParentOfSubnodes();
 	Document doc = new Document(root);
 	doc.buildView(100);
 	return doc;

@@ -19,9 +19,17 @@ package org.luwrain.app.reader.doctree;
 class RowPart
 {
     public Run run;
+
+    /** Starting position in the text of the corresponding run*/
     public int posFrom = 0;
+
+    /** Ending position in the text of the corresponding run*/
     public int posTo = 0;
-    public int rowNum = 0;
+
+    /** Absolute row index in a document*/
+    public int absRowNum = 0;
+
+    /** Index in the corresponding paragraph*/
     public int relRowNum = 0;
 
     public String text()

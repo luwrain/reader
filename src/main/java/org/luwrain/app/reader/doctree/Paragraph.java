@@ -20,9 +20,9 @@ public class Paragraph extends Node
 {
     public Run[] runs = new Run[0];
     public RowPart[] rowParts = new RowPart[0];
+
+    /** Position of the first row in a document*/
     public int topRowIndex = -1;
-    //    public int minRowIndex = -1;
-    //    public int maxRowIndex = -1;
 
     public Paragraph()
     {
@@ -38,23 +38,24 @@ public class Paragraph extends Node
 	runs[0].parentParagraph = this;
     }
 
-    /*
-    public void containsRow(int index)
+    @Override public void commit()
     {
-	if (minRowIndex < 0 || maxRowIndex < 0)
+	subnodes = null;
+	if (runs == null)
+	    return;
+	for(Run r: runs)
 	{
-	    minRowIndex = index;
-	    maxRowIndex = index;
-	    return;
+	    r.parentParagraph = this;
+	    r.commit();
 	}
-	if (minRowIndex <= index && maxRowIndex >= index)
-	    return;
-	if (index < minRowIndex)
-	    minRowIndex = index;
-	if (index > maxRowIndex)
-	    maxRowIndex = index;
     }
-    */
+
+    @Override public void saveStatistics(Statistics stat)
+    {
+	++stat.numNodes;
+	++stat.numParagraphs;
+	stat.numRuns += (runs != null?runs.length:0);
+    }
 
     @Override public void calcHeight()
     {
@@ -68,24 +69,20 @@ public class Paragraph extends Node
 	    if (p.relRowNum > maxRelRowNum)
 		maxRelRowNum = p.relRowNum;
 	height = maxRelRowNum + 1;
+    }
+
+    public boolean shouldHaveExtraLine()
+    {
+	if (getParentType() == ROOT)
+	    return true;
+	return false;
+	/*
 	final int parentSubnodeCount = getParentSubnodeCount();
 	if (parentSubnodeCount == 1 &&
 	    (isInTableCell() || isInListItem()))
 	    return;
 	++height;
-    }
-
-    public void setParentOfRuns()
-    {
-	if (runs == null)
-	    return;
-	for(Run r: runs)
-	    r.parentParagraph = this;
-    }
-
-    @Override public void setParentOfSubnodes()
-    {
-	setParentOfRuns();
+	*/
     }
 
     public boolean isInListItem()

@@ -28,15 +28,10 @@ class RowPartsBuilder
 
     public void onNode(Node node)
     {
-	if (node == null)
-	    throw new NullPointerException("node may not be null");
-	if (node.width < 1)
-	    throw new IllegalArgumentException("node may not have width less than 1");
 	if (node.type == Node.PARAGRAPH)
 	{
 	    offset = 0;
 	    index = 0;
-	    //	    final int oldPartCount = parts.size();
 	    if (!(node instanceof Paragraph))
 		throw new IllegalArgumentException("node should be an instance of Paragraph");
 	    final Paragraph para = (Paragraph)node;

@@ -42,7 +42,7 @@ class FetchEvent extends ThreadSyncEvent
 	    throw new NullPointerException("text may not be null");
     }
 
-    public int getCode()
+    public int getFetchCode()
     {
 	return code;
     }
