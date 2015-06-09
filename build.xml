@@ -30,7 +30,7 @@
     <jar jarfile="jar/luwrain-app-reader.jar">
       <manifest>
         <section name="org/luwrain">
-          <attribute name="Extensions" value="org.luwrain.app.reader.Extension"/>
+          <attribute name="Extensions" value="org.luwrain.app.ReaderExtension"/>
         </section>
       </manifest>
       <fileset dir="./build/main">

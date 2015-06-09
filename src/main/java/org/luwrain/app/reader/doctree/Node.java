@@ -45,6 +45,8 @@ public class Node
     public int width = 0;
     public int height = 0;
 
+    public boolean empty = false;
+
     public Node(int type)
     {
 	this.type = type;
@@ -191,6 +193,8 @@ public class Node
 	    n.commit();
 	}
     }
+
+
 
     public void saveStatistics(Statistics stat)
     {

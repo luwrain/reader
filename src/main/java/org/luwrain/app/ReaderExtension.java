@@ -14,21 +14,18 @@
    General Public License for more details.
 */
 
-package org.luwrain.app.reader;
+package org.luwrain.app;
 
-import org.luwrain.core.Application;
-import org.luwrain.core.Shortcut;
-import org.luwrain.core.Command;
-import org.luwrain.core.CommandEnvironment;
-import org.luwrain.core.I18nExtension;
-import org.luwrain.core.Luwrain;
-import org.luwrain.core.Registry;
+import org.luwrain.core.*;
 
-public class Extension extends org.luwrain.core.extensions.EmptyExtension
+import org.luwrain.app.reader.ReaderApp;
+import org.luwrain.app.wiki.WikiApp;
+
+public class ReaderExtension extends org.luwrain.core.extensions.EmptyExtension
 {
     @Override public Command[] getCommands(Luwrain luwrain)
     {
-	Command res = new Command(){
+	Command reader = new Command(){
 		@Override public String getName()
 		{
 		    return "reader";
@@ -38,12 +35,22 @@ public class Extension extends org.luwrain.core.extensions.EmptyExtension
 		    luwrain.launchApp("reader");
 		}
 	    };
-	return new Command[]{res};
+	Command wiki = new Command(){
+		@Override public String getName()
+		{
+		    return "wiki";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    luwrain.launchApp("wiki");
+		}
+	    };
+	return new Command[]{reader, wiki};
     }
 
     @Override public Shortcut[] getShortcuts(Luwrain luwrain)
     {
-	Shortcut res = new Shortcut() {
+	final Shortcut reader = new Shortcut() {
 		@Override public String getName()
 		{
 		    return "reader";
@@ -55,13 +62,29 @@ public class Extension extends org.luwrain.core.extensions.EmptyExtension
 		    return new Application[]{new ReaderApp()};
 		}
 	    };
-	return new Shortcut[]{res};
+
+	final Shortcut wiki = new Shortcut() {
+		@Override public String getName()
+		{
+		    return "wiki";
+		}
+		@Override public Application[] prepareApp(String[] args)
+		{
+		    return new Application[]{new WikiApp()};
+		}
+	    };
+	return new Shortcut[]{reader, wiki};
     }
 
     @Override public void i18nExtension(Luwrain luwrain, I18nExtension i18nExt)
     {
 	i18nExt.addCommandTitle("en", "reader", "Reader");
 	i18nExt.addCommandTitle("ru", "reader", "Просмотр документов");
+
+	i18nExt.addCommandTitle("en", "wiki", "Search in Wikipedia");
+	i18nExt.addCommandTitle("ru", "wiki", "Поиск в Википедии");
+
 	i18nExt.addStrings("ru", ReaderApp.STRINGS_NAME, new org.luwrain.app.reader.i18n.Ru());
+	i18nExt.addStrings("ru", WikiApp.STRINGS_NAME, new org.luwrain.app.wiki.i18n.Ru());
     }
 }

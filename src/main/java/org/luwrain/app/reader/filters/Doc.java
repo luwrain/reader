@@ -41,7 +41,7 @@ class Doc implements Filter
 	    throw new NullPointerException("fileName may not be null");
     }
 
-	@Override public Document constructDocument()
+    @Override public Document constructDocument()
     {
 	System.out.println("reader:doc running");
 	FileInputStream  s = null;
@@ -62,100 +62,94 @@ class Doc implements Filter
 	    catch (IOException ee) {}
 	    return null;
 	}
-}
+    }
 
-	private Document transform(HWPFDocument doc)
+    private Document transform(HWPFDocument doc)
+    {
+	wholeText = doc.getDocumentText();
+	Vector<Node> subnodes = new Vector<Node>();
+	Range range = doc.getRange();
+	anyRangeAsParagraph(subnodes,range,0);
+	Node root = new Node(Node.ROOT);
+	root.subnodes = subnodes.toArray(new Node[subnodes.size()]);
+	Document res = new Document(root);
+	res.buildView(50);
+	return res;
+    }
+
+    /* рекурсивный метод, вызывается для любого места в документе, способного содержать несколько элементов, представляя их как список параграфов
+     * @param	subnodes	список нод на текущем уровне собираемой структуры, в этот список будут добавлены новые элементы
+     * @param	range	текущий элемент в документе
+     * @param	lvl	текущий уровень вложенности, для корневого элемента должен быть установлен в 0
+     */
+    public void anyRangeAsParagraph(Vector<Node> subnodes,Range range,int lvl)
+    {
+	int i=0,num=range.numParagraphs();
+	Boolean inTable=false;
+	while(i<num)
 	{
-		// System.out.println();
-		wholeText = doc.getDocumentText();
-
-		Vector<Node> subnodes = new Vector<Node>();
-
-		Range range = doc.getRange();
-		anyRangeAsParagraph(subnodes,range,0);
-		
-		Node root = new Node(Node.ROOT);
-		root.subnodes = subnodes.toArray(new Node[subnodes.size()]);
-		//		root.setParentOfSubnodes();
-		Document res = new Document(root);
-		res.buildView(50);
-		return res;
-	}
-
-	/* рекурсивный метод, вызывается для любого места в документе, способного содержать несколько элементов, представляя их как список параграфов
-	 * @param	subnodes	список нод на текущем уровне собираемой структуры, в этот список будут добавлены новые элементы
-	 * @param	range	текущий элемент в документе
-	 * @param	lvl	текущий уровень вложенности, для корневого элемента должен быть установлен в 0
-	 */
-	public void anyRangeAsParagraph(Vector<Node> subnodes,Range range,int lvl)
-	{
-		int i=0,num=range.numParagraphs();
-		Boolean inTable=false;
-		while(i<num)
+	    final Paragraph paragraph = range.getParagraph(i);
+	    if (paragraph.getTableLevel() > lvl)
+	    {
+		if(!inTable)
 		{
-			final Paragraph paragraph = range.getParagraph(i);
-			if (paragraph.getTableLevel() > lvl)
-			{
-				if(!inTable)
-				{
-					// первая ячейка таблицы, для остальных ячеек ЭТОЙ же таблицы, этот участок не вызывается
-					Node table_node = new Node(Node.TABLE);
-					Vector<Node> rows_subnodes = new Vector<Node>();
-					//
-					inTable=true;
-					Table table = range.getTable(paragraph);
-					System.out.println(lvl+", is a table: "+table.numRows()+" rows");
-					int rnum=table.numRows();
-					for(int r=0;r<rnum;r++)
-					{ // для каждой строки таблицы
-						// создаем элементы структуры Node и добавляем текущую ноду в список потомка
-						Node rowtable_node=new Node(Node.TABLE_ROW);
-						rows_subnodes.add(rowtable_node);
-						//
-						Vector<Node> cels_subnodes = new Vector<Node>();
-						//
-						TableRow trow=table.getRow(r);
-						int cnum=trow.numCells();
-						for(int c=0;c<cnum;c++)
-						{ // для каждой ячейки таблицы
-							// создаем элементы структуры Node
-							Node celltable_node=new Node(Node.TABLE_CELL);
-							Vector<Node> incell_subnodes = new Vector<Node>();
-							cels_subnodes.add(celltable_node);
-							//
-							System.out.print("* cell["+r+","+c+"]: ");
-							TableCell cell=trow.getCell(c);
-							// определим что содержимое ячейки просто текст
-							if(cell.numParagraphs()>1)
-							{
-								System.out.println("");
-								anyRangeAsParagraph(incell_subnodes,cell,lvl+1);
-								
-							} else
-							{
-								parseParagraph(incell_subnodes,cell.getParagraph(0));
-							}
-							celltable_node.subnodes = incell_subnodes.toArray(new Node[incell_subnodes.size()]);
-							//							celltable_node.setParentOfSubnodes();
-						}
-						rowtable_node.subnodes = cels_subnodes.toArray(new Node[cels_subnodes.size()]);
-						//						rowtable_node.setParentOfSubnodes();
-					}
-					table_node.subnodes = rows_subnodes.toArray(new Node[rows_subnodes.size()]);
-					//					table_node.setParentOfSubnodes();
-				}
-			} else
-			{
-				inTable=false;
-				System.out.print(lvl+", not table: ");
-				parseParagraph(subnodes,paragraph);
+		    // первая ячейка таблицы, для остальных ячеек ЭТОЙ же таблицы, этот участок не вызывается
+		    Node table_node = new Node(Node.TABLE);
+		    Vector<Node> rows_subnodes = new Vector<Node>();
+		    //
+		    inTable=true;
+		    Table table = range.getTable(paragraph);
+		    System.out.println(lvl+", is a table: "+table.numRows()+" rows");
+		    int rnum=table.numRows();
+		    for(int r=0;r<rnum;r++)
+		    { // для каждой строки таблицы
+			// создаем элементы структуры Node и добавляем текущую ноду в список потомка
+			Node rowtable_node=new Node(Node.TABLE_ROW);
+			rows_subnodes.add(rowtable_node);
+			Vector<Node> cels_subnodes = new Vector<Node>();
+			//
+			TableRow trow=table.getRow(r);
+			int cnum=trow.numCells();
+			for(int c=0;c<cnum;c++)
+			{ // для каждой ячейки таблицы
+			    // создаем элементы структуры Node
+			    Node celltable_node=new Node(Node.TABLE_CELL);
+			    Vector<Node> incell_subnodes = new Vector<Node>();
+			    cels_subnodes.add(celltable_node);
+			    //
+			    System.out.print("* cell["+r+","+c+"]: ");
+			    TableCell cell=trow.getCell(c);
+			    // определим что содержимое ячейки просто текст
+			    if(cell.numParagraphs()>1)
+			    {
+				System.out.println("");
+				anyRangeAsParagraph(incell_subnodes,cell,lvl+1);
+			    } else
+			    {
+				parseParagraph(incell_subnodes,cell.getParagraph(0));
+			    }
+			    celltable_node.subnodes = incell_subnodes.toArray(new Node[incell_subnodes.size()]);
+			    //							celltable_node.setParentOfSubnodes();
 			}
-			i++;
+			rowtable_node.subnodes = cels_subnodes.toArray(new Node[cels_subnodes.size()]);
+			//						rowtable_node.setParentOfSubnodes();
+		    }
+		    table_node.subnodes = rows_subnodes.toArray(new Node[rows_subnodes.size()]);
+		    //					table_node.setParentOfSubnodes();
 		}
+	    } else
+	    {
+		inTable=false;
+		System.out.print(lvl+", not table: ");
+		parseParagraph(subnodes,paragraph);
+	    }
+	    i++;
 	}
-	// listInfo[id of list][level]=counter;
-	public HashMap<Integer,HashMap<Integer,Integer>> listInfo=new HashMap<Integer, HashMap<Integer,Integer>>();
-	public int lastLvl=-1;
+    }
+
+    // listInfo[id of list][level]=counter;
+    public HashMap<Integer,HashMap<Integer,Integer>> listInfo=new HashMap<Integer, HashMap<Integer,Integer>>();
+    public int lastLvl=-1;
 	/* Анализирует тип параграфа и выделяет в соответствии с ним данные
 	 * @param	subnodes	список нод на текущем уровне собираемой структуры, в этот список будут добавлены новые элементы
 	 * @param	paragraph	элемент документа (параграф или элемент списка) или ячейка таблицы
