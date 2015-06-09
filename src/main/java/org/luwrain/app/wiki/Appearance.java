@@ -38,6 +38,7 @@ class Appearance implements ListItemAppearance
     {
 	if (item == null)
 	    return;
+	luwrain.playSound(Sounds.NEW_LIST_ITEM);
 	luwrain.say(item.toString());
     }
 

@@ -18,6 +18,7 @@ package org.luwrain.app.wiki;
 
 public interface Actions
 {
-    void closeApp();
+    boolean closeApp();
+    boolean search(String lang);
     void showQueryRes(Page[] pages);
 }

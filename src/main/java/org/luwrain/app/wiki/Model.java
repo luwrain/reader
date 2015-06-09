@@ -20,23 +20,23 @@ import org.luwrain.controls.*;
 
 class Model implements ListModel
 {
-    private Page[] pages = new Page[0];
+    private Object[] objs = new Object[0];
 
-    public void setPages(Page[] pages)
+    public void setObjects(Object[] objs)
     {
-	if (pages == null)
-	    throw new NullPointerException("pages may not be null");
-	this.pages = pages;
+	if (objs == null)
+	    throw new NullPointerException("objs may not be null");
+	this.objs = objs;
     }
 
     @Override public int getItemCount()
     {
-	return pages != null?pages.length:0;
+	return objs != null?objs.length:0;
     }
 
     @Override public Object getItem(int index)
     {
-	return pages != null?pages[index]:null;
+	return objs != null?objs[index]:null;
     }
 
     @Override public void refresh()

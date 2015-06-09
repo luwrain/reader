@@ -20,4 +20,11 @@ public interface Strings
 {
     String appName();
     String querySuccess(int count);
+    String errorSearching();
+    String nothingFound();
+    String searchEn();
+    String searchRu();
+    String queryResults();
+    String queryPopupName();
+    String queryPopupPrefix();
 }

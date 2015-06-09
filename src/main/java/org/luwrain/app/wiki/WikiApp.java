@@ -17,10 +17,12 @@
 package org.luwrain.app.wiki;
 
 import java.net.*;
+import java.util.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
+import org.luwrain.popups.Popups;
 
 public class WikiApp implements Application, Actions
 {
@@ -33,6 +35,9 @@ public class WikiApp implements Application, Actions
     private Model model;
     private Appearance appearance;
 
+    private String searchEn;
+    private String searchRu;
+
     @Override public boolean onLaunch(Luwrain luwrain)
     {
 	Object o = luwrain.i18n().getStrings(STRINGS_NAME);
@@ -40,12 +45,11 @@ public class WikiApp implements Application, Actions
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
+
+	searchEn = strings.searchEn();
+	searchRu = strings.searchRu();
 	createArea();
-
-	thread = new FetchThread(luwrain, area, "");
-	new Thread(thread).start();
-
-
+	model.setObjects(new String[]{searchRu, searchEn});
 	return true;
     }
 
@@ -53,17 +57,24 @@ public class WikiApp implements Application, Actions
     {
 	final Actions a = this;
 	final Strings s = strings;
+	final String sEn = searchEn;
+	final String sRu = searchRu;
 
 	model = new Model();
 	appearance = new Appearance(luwrain, strings);
 
 	final ListClickHandler handler = new ListClickHandler(){
 		private Actions actions = a;
+		private String searchEn = sEn;
+		private String searchRu = sRu;
 		@Override public boolean onListClick(ListArea area,
 						     int index,
 						     Object item)
 		{
-		    //FIXME:
+		    if (item == searchEn)
+			return actions.search("en");
+		    if (item == searchRu)
+			return actions.search("ru");
 		    return false;
 		}
 	    };
@@ -86,12 +97,16 @@ public class WikiApp implements Application, Actions
 		    switch(event.getCode())
 		    {
 		    case EnvironmentEvent.CLOSE:
-			actions.closeApp();
-			return true;
+			return actions.closeApp();
 		    case EnvironmentEvent.THREAD_SYNC:
 			if (event instanceof FetchEvent)
 			{
 			    final FetchEvent fetchEvent = (FetchEvent)event;
+			    if (fetchEvent.code() != FetchEvent.SUCCESS)
+			    {
+				luwrain.message(strings.errorSearching(), Luwrain.MESSAGE_ERROR);
+				return true;
+			    }
 			    actions.showQueryRes(fetchEvent.pages());
 			    return true;
 			} else
@@ -102,16 +117,41 @@ public class WikiApp implements Application, Actions
 	    };
     }
 
+    @Override public boolean search(String lang)
+    {
+	if (thread != null && !thread.done())
+	    return false;
+	final String query = Popups.simple(luwrain, strings.queryPopupName(), strings.queryPopupPrefix(), "");
+	if (query == null || query.trim().isEmpty())
+	    return true;
+	thread = new FetchThread(luwrain, area, lang, query);
+	new Thread(thread).start();
+	return true;
+    }
+
     @Override public void showQueryRes(Page[] pages)
     {
-	model.setPages(pages);
+	if (pages == null || pages.length < 1)
+	{
+	    luwrain.message(strings.nothingFound(), Luwrain.MESSAGE_OK);
+	    return;
+	}
+	LinkedList res = new LinkedList();
+	res.add(strings.queryResults());
+	for(Page p: pages)
+	    res.add(p);
+	res.add("");
+	res.add(searchRu);
+	res.add(searchEn);
+	model.setObjects(res.toArray(new Object[res.size()]));
 	area.refresh();
+	//FIXME:Bring hot point to the beginning of the list;
 	luwrain.message(strings.querySuccess(pages.length), Luwrain.MESSAGE_OK);
     }
 
     @Override public String getAppName()
     {
-	return "Reader";//FIXME:
+	return strings.appName();
     }
 
     @Override public AreaLayout getAreasToShow()
@@ -119,8 +159,11 @@ public class WikiApp implements Application, Actions
 	return new AreaLayout(area);
     }
 
-    @Override public void closeApp()
+    @Override public boolean closeApp()
     {
+	if (thread != null || !thread.done())
+	    return false;
 	luwrain.closeApp();
+	return true;
     }
 }

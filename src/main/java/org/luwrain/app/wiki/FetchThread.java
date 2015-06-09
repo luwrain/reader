@@ -30,28 +30,34 @@ class FetchThread implements Runnable
 {
     private Luwrain luwrain;
     private Area area;
+    private String lang = "";
     private String query = "";
     private boolean done = false;
     private LinkedList<Page> res = new LinkedList<Page>();
 
     public FetchThread(Luwrain luwrain,
 		       Area area,
+		       String lang,
 		       String query)
     {
 	this.luwrain = luwrain;
 	this.area = area;
+	this.lang = lang;
 	this.query = query;
 	this.done = false;
 	if (luwrain == null)
 	    throw new NullPointerException("luwrain may not be null");
 	if (area == null)
 	    throw new NullPointerException("area may not be null");
+	if (lang == null)
+	    throw new NullPointerException("lang may not be null");
 	if (query == null)
 	    throw new NullPointerException("query may not be null");
     }
 
     @Override public void run()
     {
+	done = false;
 	try {
 	    impl();
 	}
@@ -60,11 +66,12 @@ class FetchThread implements Runnable
 	    e.printStackTrace();
 	    luwrain.enqueueEvent(new FetchEvent(area));
 	}
+	done = true;
     }
 
     private void impl() throws Exception
     {
-	final URL url = new URL("http://en.wikipedia.org/w/api.php?action=query&list=search&&srsearch=&format=xml");
+	final URL url = new URL("https://" + lang + ".wikipedia.org/w/api.php?action=query&list=search&&srsearch=" + query + "&format=xml");//FIXME:
 	final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	final Document document = builder.parse(new InputSource(url.openStream()));
 	final NodeList nodes = document.getElementsByTagName("p");
@@ -82,5 +89,10 @@ class FetchThread implements Runnable
 	}
 	luwrain.enqueueEvent(new FetchEvent(area, res.toArray(new Page[res.size()])));
 	res.clear();
+    }
+
+    public boolean done()
+    {
+	return done;
     }
 }
