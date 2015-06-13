@@ -21,4 +21,9 @@ class Row
     }
     {
     }
+
+    public boolean hasAssociatedText()
+    {
+	return partsFrom >= 0 && partsTo >= 0;
+    }
 }

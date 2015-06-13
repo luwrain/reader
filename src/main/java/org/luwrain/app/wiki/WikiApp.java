@@ -18,6 +18,7 @@ package org.luwrain.app.wiki;
 
 import java.net.*;
 import java.util.*;
+import java.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
@@ -75,6 +76,11 @@ public class WikiApp implements Application, Actions
 			return actions.search("en");
 		    if (item == searchRu)
 			return actions.search("ru");
+		    if (item instanceof Page)
+		    {
+			final Page page = (Page)item;
+			return actions.openPage(page.lang(), page.title());
+		    }
 		    return false;
 		}
 	    };
@@ -129,6 +135,21 @@ public class WikiApp implements Application, Actions
 	return true;
     }
 
+    @Override public boolean openPage(String lang, String title)
+    {
+	try {
+	    final String url = "https://" + lang + ".wikipedia.org/wiki/" + URLEncoder.encode(title, "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
+	    System.out.println("opening " + url);
+	    luwrain.launchApp("reader", new String[]{"--URL", url});
+	}
+	catch (UnsupportedEncodingException e)
+	{
+	    e.printStackTrace();
+	    return false;
+	}
+	return true;
+    }
+
     @Override public void showQueryRes(Page[] pages)
     {
 	if (pages == null || pages.length < 1)
@@ -161,7 +182,7 @@ public class WikiApp implements Application, Actions
 
     @Override public boolean closeApp()
     {
-	if (thread != null || !thread.done())
+	if (thread != null && !thread.done())
 	    return false;
 	luwrain.closeApp();
 	return true;

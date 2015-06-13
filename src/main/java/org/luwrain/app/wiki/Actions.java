@@ -21,4 +21,5 @@ public interface Actions
     boolean closeApp();
     boolean search(String lang);
     void showQueryRes(Page[] pages);
+    boolean openPage(String lang, String pageTitle);
 }

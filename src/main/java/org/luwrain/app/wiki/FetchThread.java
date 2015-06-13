@@ -71,7 +71,8 @@ class FetchThread implements Runnable
 
     private void impl() throws Exception
     {
-	final URL url = new URL("https://" + lang + ".wikipedia.org/w/api.php?action=query&list=search&&srsearch=" + query + "&format=xml");//FIXME:
+	final URL url = new URL("https://" + lang + ".wikipedia.org/w/api.php?action=query&list=search&srsearch=" + URLEncoder.encode(query, "UTF-8") + "&format=xml");
+	//	System.out.println("url=" + url.toString());
 	final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	final Document document = builder.parse(new InputSource(url.openStream()));
 	final NodeList nodes = document.getElementsByTagName("p");
@@ -85,7 +86,7 @@ class FetchThread implements Runnable
 	    final Node title = attr.getNamedItem("title");
 	    final Node snippet = attr.getNamedItem("snippet");
 	    if (title != null)
-		res.add(new Page(title.getTextContent(), snippet != null?MlTagStrip.run(snippet.getTextContent()):""));
+		res.add(new Page(lang, title.getTextContent(), snippet != null?MlTagStrip.run(snippet.getTextContent()):""));
 	}
 	luwrain.enqueueEvent(new FetchEvent(area, res.toArray(new Page[res.size()])));
 	res.clear();

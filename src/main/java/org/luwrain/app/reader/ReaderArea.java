@@ -33,12 +33,12 @@ public class ReaderArea implements Area
     private Strings strings;
     private Actions actions;
 
-    //This hot point isn't a real hot point in the area, it is the coordinates in rows;
-    private int hotPointX = 0;
-    private int hotPointY = 0;
-
     private Filters filters;
+    private Introduction introduction;
+
     private Document document;
+    private Iterator iterator;
+    private int hotPointX = 0;
 
     public ReaderArea(Luwrain luwrain,
 		      Strings strings,
@@ -59,7 +59,20 @@ Document document)
 	if (filters == null)
 	    throw new NullPointerException("filters may not be null");
 	environment = new DefaultControlEnvironment(luwrain);
+	introduction = new Introduction(environment, strings);
 	this.document = document;
+	if (document != null)
+	    iterator = document.getIterator();
+    }
+
+    public void setDocument(Document document)
+    {
+	if (document == null)
+	    throw new NullPointerException("document may not be null");
+	this.document = document;
+	iterator = document.getIterator();
+	hotPointX = 0;
+	luwrain.onAreaNewContent(this);
     }
 
     @Override public int getLineCount()
@@ -142,17 +155,17 @@ Document document)
 
     @Override public int getHotPointX()
     {
-	return 0;
+	return 0;//FIXME:
     }
 
     @Override public int getHotPointY()
     {
-	return -0;
+	return 0;//FIXME:
     }
 
     @Override public String getAreaName()
     {
-	return strings.appName();
+	return strings.appName();//FIXME:Document.getTitle();
     }
 
     private boolean onThreadSync(EnvironmentEvent event)
@@ -165,11 +178,13 @@ Document document)
 		luwrain.message(strings.errorFetching(), Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
-	    document = filters.readText(Filters.HTML, fetchEvent.getText());
-	    Statistics stat = new Statistics();
-	    document.saveStatistics(stat);
-	    stat.print();
-	    luwrain.message("OK", Luwrain.MESSAGE_OK);
+	    final Document doc = filters.readText(Filters.HTML, fetchEvent.getText());
+	    if (doc != null)
+	    {
+		setDocument(doc);
+		luwrain.playSound(Sounds.GENERAL_OK);
+	    }  else
+		luwrain.message("problem parsing", Luwrain.MESSAGE_ERROR);//FIXME:
 	    return true;
 	}
 	return false;
@@ -179,13 +194,11 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (!iterator.moveNext())
 	{
 	    environment.hint(Hints.NO_LINES_BELOW);
 	    return false;
 	}
-	++hotPointY;
 	onNewHotPointY( briefIntroduction );
 	return true;
     }
@@ -194,13 +207,11 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY <= 0)
+	if (!iterator.movePrev())
 	{
 	    environment.hint(Hints.NO_LINES_ABOVE);
 	    return true;
 	}
-	--hotPointY;
 	onNewHotPointY( briefIntroduction);
 	return true;
     }
@@ -209,9 +220,8 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
+	iterator.moveEnd();
 	hotPointX = 0;
-	hotPointY = count;
 	onNewHotPointY( false);
 	return true;
     }
@@ -220,8 +230,8 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
+	iterator.moveHome();
 	hotPointX = 0;
-	hotPointY = 0;
 	onNewHotPointY( false);
 	return true;
     }
@@ -229,6 +239,7 @@ Document document)
     //TODO:
     private boolean onPageDown(KeyboardEvent event, boolean briefIntroduction)
     {
+	/*
 	if (noContentCheck())
 	    return true;
 	final int count = document.getRowCount();
@@ -239,12 +250,14 @@ Document document)
 	}
 	++hotPointY;
 	onNewHotPointY( briefIntroduction );
+	*/
 	return true;
     }
 
     //TODO:
     private boolean onPageUp(KeyboardEvent event, boolean briefIntroduction)
     {
+	/*
 	if (noContentCheck())
 	    return true;
 	final int count = document.getRowCount();
@@ -255,6 +268,7 @@ Document document)
 	}
 	--hotPointY;
 	onNewHotPointY( briefIntroduction);
+	*/
 	return true;
     }
 
@@ -262,27 +276,9 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (!iterator.isCurrentRowEmpty())
 	{
-	    if (count == 0)
-	    {
-		hotPointX = 0;
-		hotPointY = 0;
-		environment.hint(Hints.BEGIN_OF_TEXT);
-		environment.onAreaNewHotPoint(this);
-		return true;
-	    }
-	    hotPointY = count - 1;
-	    final String text = document.getRowText(hotPointY);
-	    hotPointX = text.length();
-	    if (hotPointX == 0)
-		environment.hint(Hints.EMPTY_LINE); else
-		environment.hint(Hints.END_OF_LINE);
-	    environment.onAreaNewHotPoint(this);
-	    return true;
-	}
-	final String text = document.getRowText(hotPointY);
+	final String text = iterator.getCurrentText();
 	if (hotPointX > text.length())
 	    hotPointX = text.length();
 	if (hotPointX > 0)
@@ -292,13 +288,14 @@ Document document)
 	    environment.onAreaNewHotPoint(this);
 	    return true;
 	}
-	if (hotPointY <= 0)
+    }
+	if (!iterator.canMovePrev())
 	{
 	    environment.hint(Hints.BEGIN_OF_TEXT);
 	    return true;
 	}
-	--hotPointY;
-	final String prevRowText = document.getRowText(hotPointY);
+	iterator.movePrev();
+	final String prevRowText = iterator.getCurrentText();
 	hotPointX = prevRowText.length();
 	environment.hint(Hints.END_OF_LINE);
 	return true;
@@ -308,40 +305,30 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (!iterator.isCurrentRowEmpty())
 	{
-	    environment.hint(Hints.END_OF_TEXT);
-	    return true;
-	}
-	final String text = document.getRowText(hotPointY);
-	if (hotPointX > text.length())
-	    hotPointX = text.length();
+	final String text = iterator.getCurrentText();
 	if (hotPointX < text.length())
 	{
 	    ++hotPointX;
 	    if (hotPointX < text.length())
 		environment.sayLetter(text.charAt(hotPointX)); else
 		environment.hint(Hints.END_OF_LINE);
-	    environment.onAreaNewHotPoint(this);
+	    environment.onAreaNewContent(this);
 	    return true;
 	}
-	if (hotPointY + 1 == count)
+}
+	if (!iterator.canMoveNext())
 	{
 	    environment.hint(Hints.END_OF_TEXT);
-	    hotPointX = 0;
-	    hotPointY = count;
-	    environment.onAreaNewHotPoint(this);
 	    return true;
 	}
-	++hotPointY;
-	final String nextRowText = document.getRowText(hotPointY);
+	iterator.moveNext();
+	final String nextRowText = iterator.getCurrentText();
 	hotPointX = 0;
-	//	System.out.println("here2");
 	if (nextRowText.isEmpty())
 	    environment.hint(Hints.END_OF_LINE); else
 	    environment.sayLetter(nextRowText.charAt(0));
-	//	System.out.println("after here2");
 	environment.onAreaNewHotPoint(this);
 	return true;
     }
@@ -350,13 +337,12 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (iterator.isCurrentRowEmpty())
 	{
-		environment.hint(Hints.EMPTY_LINE);
+	    environment.hint(Hints.EMPTY_LINE);
 	    return true;
 	}
-	final String text = document.getRowText(hotPointY);
+	final String text = iterator.getCurrentText();
 	final WordIterator it = new WordIterator(text, hotPointX);
 	if (!it.stepBackward())
 	{
@@ -373,13 +359,12 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (iterator.isCurrentRowEmpty())
 	{
 	    environment.hint(Hints.EMPTY_LINE);
 	    return true;
 	}
-	final String text = document.getRowText(hotPointY);
+	final String text = iterator.getCurrentText();
 	final WordIterator it = new WordIterator(text, hotPointX);
 	if (!it.stepForward())
 	{
@@ -398,13 +383,12 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (iterator.isCurrentRowEmpty())
 	{
-		environment.hint(Hints.EMPTY_LINE);
+	    environment.hint(Hints.EMPTY_LINE);
 	    return true;
 	}
-	final String text = document.getRowText(hotPointY);
+	final String text = iterator.getCurrentText();
 	hotPointX = 0;
 	if (!text.isEmpty())
 	    environment.sayLetter(text.charAt(0)); else
@@ -417,13 +401,13 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
+	if (iterator.isCurrentRowEmpty())
 	{
 	    environment.hint(Hints.EMPTY_LINE);
 	    return true;
 	}
-	final String text = document.getRowText(hotPointY);
+
+	final String text = iterator.getCurrentText();
 	hotPointX = text.length();
 	environment.hint(Hints.END_OF_LINE);
 	environment.onAreaNewHotPoint(this);
@@ -432,135 +416,18 @@ Document document)
 
     private void onNewHotPointY(boolean briefIntroduction)
     {
-	final int count = document.getRowCount();
-	if (hotPointY > count)
-	{
-	    environment.hint(Hints.EMPTY_LINE);
-	    hotPointX = 0;
-	    environment.onAreaNewHotPoint(this);
-	    return;
-	}
-	final String text = document.getRowText(hotPointY);
-	if (hotPointX > text.length())
-	    hotPointX = text.length();
-	introduceRow(hotPointY, briefIntroduction);
+	hotPointX = 0;
+	if (iterator.isCurrentRowEmpty())
+	    environment.hint(Hints.EMPTY_LINE); else
+	    introduction.introduce(iterator, briefIntroduction);
 	environment.onAreaNewHotPoint(this);
-    }
-
-    private void introduceRow(int index, boolean briefIntroduction)
-    {
-	final String text = document.getRowText(index);
-	if (briefIntroduction || !document.isValidRowIndex(index))
-	{
-	    simpleIntroduction(text);
-	    return;
 	}
-	final int indexInParagraph = document.getRowIndexInParagraph(index);
-	if (indexInParagraph > 0)
-	{
-	    simpleIntroduction(text);
-	    return;
-	}
-	final Paragraph para = document.getParagraph(index);
-	if (para == null || para.parentNode == null)
-	{
-	    simpleIntroduction(text);
-	    return;
-	}
-	final int paragraphIndex = para.getIndexInParentSubnodes(); 
-	if (paragraphIndex > 0)
-	{
-	    simpleIntroduction(text);
-	    return;
-	}
-	final int  paraParentType = para.parentNode.type;
-	switch (paraParentType)
-	{
-	case Node.LIST_ITEM:
-	    introduceListItem(para, text);
-	    return;
-	case Node.TABLE_CELL:
-	    introduceTableCell(para, text);
-	    return;
-	}
-	simpleIntroduction(text);
-    }
-
-    private void introduceListItem(Paragraph para, String text)
-    {
-	if (para.parentNode == null ||  //List item;
-	    para.parentNode.parentNode == null) //List itself;
-	{
-	    simpleIntroduction(text);
-	    return;
-	}
-	final int itemIndex = para.parentNode.getIndexInParentSubnodes();
-	System.out.println("reader:itemIndex=" + itemIndex);
-	final int listType = para.parentNode.parentNode.type;
-	switch(listType)
-	{
-	case Node.ORDERED_LIST:
-	    //	    System.out.println("ordered");
-	    environment.say(strings.orderedListItemIntroduction(itemIndex, text));
-	    break;
-	case Node.UNORDERED_LIST:
-	    //	    System.out.println("unordered");
-	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
-	    break;
-	default:
-	    System.out.println("reader:warning:unknown list type on list item introduction:" + listType);
-	    simpleIntroduction(text);
-	}
-    }
-
-    private void introduceTableCell(Paragraph para, String text)
-    {
-	if (para.parentNode == null ||  //Cell;
-	    para.parentNode.parentNode == null || //Row;
-	    para.parentNode.parentNode.parentNode == null) //Table itself;
-	{
-	    simpleIntroduction(text);
-	    return;
-	}
-	final int colIndex = para.parentNode.getIndexInParentSubnodes();
-	final int rowIndex = para.parentNode.parentNode.getIndexInParentSubnodes();
-	final int colCount = countTableCols(para.parentNode.parentNode.parentNode);
-	final int rowCount = para.parentNode.parentNode.parentNode.subnodes.length;
-	if (colIndex == 0 && rowIndex == 0)
-	{
-	    environment.say(strings.tableIntroduction(rowCount, colCount, text));
-	    return;
-	}
-	environment.say(strings.tableCellIntroduction(rowIndex + 1, colIndex + 1, text));
-	//	simpleIntroduction(text);
-    }
-
-private int countTableCols(Node table)
-    {
-	if (table == null || table.subnodes == null)
-	    return 0;
-	int maxValue = 0;
-	for(Node n: table.subnodes)
-	{
-	    final int value = n.subnodes != null?n.subnodes.length:0;
-	    if (value > maxValue)
-		maxValue = value;
-	}
-	return maxValue;
-    }
-
-    private void simpleIntroduction(String text)
-    {
-	if (!text.isEmpty())
-	    environment.say(text); else
-	    environment.hint(Hints.EMPTY_LINE);
-    }
 
     private boolean noContentCheck()
     {
 	if (document == null)
 	{
-	    environment.hint("no content");
+	    environment.hint(strings.noContent());
 	    return true;
 	}
 	return false;

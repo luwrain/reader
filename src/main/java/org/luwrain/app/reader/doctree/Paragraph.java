@@ -44,9 +44,35 @@ public class Paragraph extends Node
 	if (runs == null)
 	    return;
 	for(Run r: runs)
-	{
 	    r.parentParagraph = this;
-	    r.commit();
+    }
+
+    @Override public void setEmptyMark()
+    {
+	empty = true;
+	if (runs == null || runs.length < 1)
+	    return;
+	for(Run r: runs)
+	    if (r.text != null && !r.text.isEmpty())
+		empty = false;
+    }
+
+    @Override public void removeEmpty()
+    {
+	if (runs == null)
+	    return;
+	int k = 0;
+	for(int i = 0;i < runs.length;++i)
+	    if (runs[i].text.isEmpty() )
+		++k; else
+		runs[i - k] = runs[i];
+	if (k > 0)
+	{
+	    final int count = runs.length - k;
+	    Run[] newRuns = new Run[count];
+	    for(int i = 0;i < count;++i)
+		newRuns[i] = runs[i];
+	    runs = newRuns;
 	}
     }
 
@@ -93,5 +119,10 @@ public class Paragraph extends Node
     public boolean isInTableCell()
     {
 	return parentNode != null && parentNode.type == TABLE_CELL;
+    }
+
+    public int getParaIndex()
+    {
+	return getIndexInParentSubnodes();
     }
 }

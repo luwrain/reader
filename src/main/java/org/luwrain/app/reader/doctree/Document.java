@@ -34,6 +34,10 @@ public class Document
     public void buildView(int width)
     {
 	root.commit();
+	root.setEmptyMark();
+	root.removeEmpty();
+	if (!checkConsistency(true))
+	    return;
 	root.calcWidth(width);
 	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder();
 	rowPartsBuilder.onNode(root);
@@ -105,7 +109,6 @@ public class Document
 	}
 	return maxLineNum + 1;
     }
-
     public int getLineCount()
     {
 	return lines != null?lines.length:0;
@@ -132,45 +135,111 @@ public class Document
 
     public String getRowText(int index)
     {
-	if (rows == null || index < 0 || index >= rows.length)
-	    return "";
 	final Row row = rows[index];
 	if (row.partsFrom < 0 || row.partsTo < 0)
 	    return "";
 	return row.text(rowParts);
     }
 
-    public boolean isValidRowIndex(int index)
+    public int getRowContainerType(int index)
     {
-	if (rows == null)
-	    return false;
-	return index >= 0 && index < rows.length;
+	final Row row = rows[index];
+	if (!row.hasAssociatedText())
+	    return -1;
+	return getParagraphOfRow(row).parentNode.type;
     }
 
+    public Node getRowContainerNode(int index)
+    {
+	final Row row = rows[index];
+	if (!row.hasAssociatedText())
+	    return null;
+	return getParagraphOfRow(row).parentNode;
+    }
+
+
+    public boolean isEmptyRow(int index)
+    {
+	return !rows[index].hasAssociatedText();
+    }
+
+
+    /**@return -1 if there is no associated text*/
     public int getRowIndexInParagraph(int index)
     {
-	if (rows == null)
-	    throw new NullPointerException("rows may not be null");
 	final Row row = rows[index];
-	if (row.partsFrom < 0 || row.partsTo < 0)
-	    return 0;
-	final Paragraph para = rowParts[row.partsFrom].run.parentParagraph;
-	return index - para.topRowIndex;
+	if (!row.hasAssociatedText())
+	    return -1;
+	return rowParts[row.partsFrom].relRowNum;
     }
 
-    public Paragraph getParagraph(int index)
+    public Paragraph getParagraphByRowIndex(int index)
     {
-	if (rows == null)
-	    throw new NullPointerException("rows may not be null");
-	final Row row = rows[index];
-	if (row.partsFrom < 0 || row.partsTo < 0)
-	    return null;
-return rowParts[row.partsFrom].run.parentParagraph;
+	return getParagraphOfRow(rows[index]);
     }
 
     public void saveStatistics(Statistics stat)
     {
 	if (root != null)
 	    root.saveStatistics(stat);
+    }
+
+    public boolean checkConsistency(boolean stopImmediately)
+    {
+	boolean ok = true;
+	//All paragraphs must have valid parent node;
+	for(Paragraph p: paragraphs)
+	    if (p.parentNode == null)
+	{
+	    System.out.println("warning::doctree:have a paragraph with an empty parent node");
+	    if (stopImmediately)
+		return false;
+	    ok = false;
+	}
+	return ok;
+    }
+
+    public Table getTableByCell(Node cell)
+    {
+	if (cell == null || cell.type != Node.TABLE_CELL)
+	    return null;
+	if (cell.parentNode == null || cell.parentNode.parentNode == null)
+	    return null;
+	final Node n = cell.parentNode.parentNode;
+	if (!(n instanceof Table))
+	    return null;
+	return (Table)n;
+    }
+
+    public Iterator getIterator()
+    {
+	return new Iterator(this);
+    }
+
+    public Node getRoot()
+    {
+	return root;
+    }
+
+    public Paragraph[] getParagraphs()
+    {
+	return paragraphs;
+    }
+
+    public Row[] getRows()
+    {
+	return rows;
+    }
+
+    public RowPart[] getRowParts()
+    {
+	return rowParts;
+    }
+
+    private Paragraph getParagraphOfRow(Row row)
+    {
+	if (!row.hasAssociatedText())
+	    return null;
+	return rowParts[row.partsFrom].run.parentParagraph;
     }
 }

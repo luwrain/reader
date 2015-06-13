@@ -18,13 +18,19 @@ package org.luwrain.app.wiki;
 
 class Page
 {
+    private String lang;
     private String title = "";
     private String comment = "";
 
-    public Page(String title, String comment)
+    public Page(String lang,
+		String title,
+		String comment)
     {
+	this.lang = lang;
 	this.title = title;
 	this.comment = comment;
+	if (lang == null)
+	    throw new NullPointerException("lang may not be null");
 	if (title == null)
 	    throw new NullPointerException("title may not be null");
 	if (comment == null)
@@ -46,5 +52,10 @@ class Page
 	if (comment.trim().isEmpty())
 	    return title;
 	return title + ", " + comment;
+    }
+
+    public String lang()
+    {
+	return lang;
     }
 }

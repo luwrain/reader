@@ -194,7 +194,39 @@ public class Node
 	}
     }
 
+    public void setEmptyMark()
+    {
+	empty = true;
+	if (subnodes == null || subnodes.length < 1)
+	    return;
+	for(Node n:subnodes)
+	{
+	    n.setEmptyMark();
+	    if (!n.empty)
+		empty = false;
+	}
+    }
 
+    public void removeEmpty()
+    {
+	if (subnodes == null)
+	    return;
+	int k = 0;
+	for(int i = 0;i < subnodes.length;++i)
+	    if (subnodes[i].empty)
+		++k; else
+		subnodes[i - k] = subnodes[i];
+	if (k > 0)
+	{
+	    final int count = subnodes.length - k;
+	    Node[] newNodes = new Node[count];
+	    for(int i = 0;i < count;++i)
+		newNodes[i] = subnodes[i];
+	    subnodes = newNodes;
+	}
+	for(Node n: subnodes)
+	    n.removeEmpty();
+    }
 
     public void saveStatistics(Statistics stat)
     {

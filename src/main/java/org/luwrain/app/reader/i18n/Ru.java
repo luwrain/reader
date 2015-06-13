@@ -60,4 +60,9 @@ return "Столбец " + col + " " + text;
     {
 	return "Доставка запрошенной страницы невозможна";
     }
+
+    @Override public String noContent()
+    {
+	return "Содержимое документа отсутствует";
+    }
 }

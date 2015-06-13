@@ -26,35 +26,42 @@ public class ReaderApp implements Application, Actions
 {
     public static final String STRINGS_NAME = "luwrain.reader";
 
+    public static final int LOCAL = 1;;
+    public static final int URL = 2;
+
     private Luwrain luwrain;
     private Strings strings;
     private ReaderArea area;
     private Document doc;
     private Filters filters = new Filters();
 
-    private String arg = null;
+    private String arg;
+    private int argType;
 
     public ReaderApp()
     {
+	arg = null;
+	argType = LOCAL;
     }
 
-    public ReaderApp(String arg)
+    public ReaderApp(int type, String arg)
     {
+	this.argType = type;
 	this.arg = arg;
 	if (arg == null)
 	    throw new NullPointerException("arg may not be null");
+	if (type != LOCAL && type != URL)
+	    throw new IllegalArgumentException("type must be either ReaderApp.LOCAL or ReaderApp.URL");
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
-	if (arg != null)
-	    System.out.println("reader:launching for " + arg); else
-	    System.out.println("reader:launching without arg");
 	Object o = luwrain.i18n().getStrings("luwrain.reader");
 	if (o == null || !(o instanceof Strings))
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
+	/*
 	if (arg != null)
  	{
 	    doc = filters.readFromFile(arg, Filters.HTML);
@@ -64,15 +71,17 @@ public class ReaderApp implements Application, Actions
 		return false;
 	    }
  	}
+	*/
 	area = new ReaderArea(luwrain, strings, this, filters, doc);
+	    if (argType == URL && arg != null)
 	try {
-	    new Thread(new FetchThread(luwrain, area, new URL("https://ru.wikipedia.org/wiki/"))).start();
+	    new Thread(new FetchThread(luwrain, area, new URL(arg))).start();
 	}
 	catch (MalformedURLException e)
 	{
 	    e.printStackTrace();
 	}
-	return true;
+	    return true;
     }
 
     @Override public String getAppName()

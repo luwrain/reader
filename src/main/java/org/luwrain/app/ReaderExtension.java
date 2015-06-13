@@ -57,8 +57,16 @@ public class ReaderExtension extends org.luwrain.core.extensions.EmptyExtension
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
-		    if (args != null && args.length > 0)
-			return new Application[]{new ReaderApp(args[0])};
+		    if (args == null)
+			throw new NullPointerException("args may not be null");
+		    if (args.length < 1 || args.length > 2)
+			return new Application[]{new ReaderApp()};
+		    if (args.length == 1)
+			return new Application[]{new ReaderApp(ReaderApp.LOCAL, args[0])};
+		    if (args[0].equals("--URL"))
+			return new Application[]{new ReaderApp(ReaderApp.URL, args[1])};
+		    if (args[0].equals("--LOCAL"))
+			return new Application[]{new ReaderApp(ReaderApp.LOCAL, args[1])};
 		    return new Application[]{new ReaderApp()};
 		}
 	    };

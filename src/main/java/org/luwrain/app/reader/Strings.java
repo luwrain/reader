@@ -25,4 +25,5 @@ public interface Strings
     String unorderedListItemIntroduction(int index, String text);
     String errorOpeningFile();
     String errorFetching();
+    String noContent();
 }
