@@ -20,6 +20,7 @@ public interface Strings
 {
     String appName();
     String tableIntroduction(int rows, int cols, String text);
+    String tableIntroductionWithLevel(int level, int rows, int cols, String text);
     String tableCellIntroduction(int row, int col, String text);
     String orderedListItemIntroduction(int index, String text);
     String unorderedListItemIntroduction(int index, String text);

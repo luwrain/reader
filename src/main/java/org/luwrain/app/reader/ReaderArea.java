@@ -69,8 +69,12 @@ Document document)
     {
 	if (document == null)
 	    throw new NullPointerException("document may not be null");
+	//	System.out.println("new doc");
 	this.document = document;
+	new DumpInFileSystem(document.getRoot()).dump("/tmp/doc");
+	//	System.out.println("before new iterator");
 	iterator = document.getIterator();
+	//	System.out.println("after new iterator");
 	hotPointX = 0;
 	luwrain.onAreaNewContent(this);
     }
@@ -173,6 +177,7 @@ Document document)
 	if (event instanceof FetchEvent)
 	{
 	    final FetchEvent fetchEvent = (FetchEvent)event;
+	    //	    System.out.println("starting process new");
 	    if (fetchEvent.getFetchCode() == FetchEvent.FAILED)
 	    {
 		luwrain.message(strings.errorFetching(), Luwrain.MESSAGE_ERROR);
@@ -194,6 +199,27 @@ Document document)
     {
 	if (noContentCheck())
 	    return true;
+
+	if (iterator.isCurrentParaContainerTableCell())
+	{
+	    final Node cell = iterator.getCurrentParaContainer();
+	    final Table table = iterator.getTableOfCurrentParaContainer();
+	    final int col = table.getColIndexOfCell(cell);
+	    final int row = table.getRowIndexOfCell(cell);
+	    if (table.isSingleLineRow(row) && row + 1 < table.getRowCount())
+	    {
+		System.out.println("ready");
+		final Node nextRowCell = table.getCell(0, row + 1);
+		System.out.println("row=" + row);
+		if (iterator.moveNextUntilContainer(nextRowCell))
+		{
+	onNewHotPointY( briefIntroduction );
+	return true;
+		}
+		System.out.println("failed");
+	    }
+	}
+
 	if (!iterator.moveNext())
 	{
 	    environment.hint(Hints.NO_LINES_BELOW);

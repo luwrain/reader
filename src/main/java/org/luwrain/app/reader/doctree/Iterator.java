@@ -20,7 +20,26 @@ public class Iterator
 	this.paragraphs = document.getParagraphs();
 	this.rowParts = document.getRowParts();
 	this.rows = document.getRows();
+	current = 0;
     }
+
+    public Iterator(Document document, int index)
+    {
+	if (document == null)
+	    throw new NullPointerException("document may not be null");
+	this.document = document;
+	this.root = document.getRoot();
+	this.paragraphs = document.getParagraphs();
+	this.rowParts = document.getRowParts();
+	this.rows = document.getRows();
+	current = index;
+    }
+
+    @Override public Object clone()
+    {
+	return new Iterator(document, current);
+    }
+
 
     public Row getCurrentRow()
     {
@@ -54,8 +73,10 @@ public class Iterator
 
     public String getCurrentText()
     {
-	//FIXME:
-	return "";
+	final Row row = rows[current];
+	if (row.partsFrom < 0 || row.partsTo < 0)
+	    return "";
+	return row.text(rowParts);
     }
 
     public Node getCurrentParaContainer()
@@ -63,8 +84,18 @@ public class Iterator
 	return getCurrentParagraph().parentNode;
     }
 
+    public boolean hasContainerInParents(Node container)
+    {
+	Node n = getCurrentParagraph();
+	while (n != null && n != container)
+	    n = n.parentNode;
+	return n == container;
+    }
+
     public boolean isCurrentParaContainerTableCell()
     {
+	if (isCurrentRowEmpty())
+	    return false;
 	final Node container = getCurrentParaContainer();
 	return container.type == Node.TABLE_CELL &&
 	container.parentNode != null && container.parentNode.type == Node.TABLE_ROW &&
@@ -74,6 +105,9 @@ public class Iterator
 
     public Table getTableOfCurrentParaContainer()
     {
+	if (isCurrentRowEmpty())
+	    return null;
+
 	final Node container = getCurrentParaContainer();
 	if (container == null || container.type != Node.TABLE_CELL)
 	    return null;
@@ -87,6 +121,8 @@ public class Iterator
 
     public boolean isCurrentParaContainerListItem()
     {
+	if (isCurrentRowEmpty())
+	    return false;
 	final Node container = getCurrentParaContainer();
 	return container.type == Node.LIST_ITEM &&
 	container.parentNode != null &&
@@ -105,46 +141,57 @@ public class Iterator
 
     public boolean moveNext()
     {
-	//FIXME:
-	return false;
+	if (rowParts.length == 0 || current + 1 >= rowParts.length)
+	    return false;
+	++current;
+	return true;
+    }
+
+    public boolean moveNextUntilContainer(Node container)
+    {
+	final Iterator it = (Iterator)clone();
+	while (!it.hasContainerInParents(container))
+	    if (!it.moveNext())
+		break;
+	if (!it.hasContainerInParents(container))
+	    return false;
+	current = it.getCurrentRowAbsIndex();
+	return true;
     }
 
     public boolean movePrev()
     {
-	//FIXME:
-	return false;
+	if (current == 0)
+	    return false;
+	--current;
+	return true;
     }
 
     public void moveEnd()
     {
+	current = rowParts.length > 0?rowParts.length - 1:0;
     }
 
     public void moveHome()
     {
+	current = 0;
     }
 
+    /*
     public boolean isEmpty()
     {
 	//FIXME:
 	return true;
     }
+    */
 
     public boolean canMoveNext()
     {
-	//FIXME :
-	return false;
+	return current + 1 < rowParts.length;
     }
 
     public boolean canMovePrev()
     {
-	//FIXME:
-	return false;
+	return current > 0;
     }
-
-
-
-
-
-
-
 }

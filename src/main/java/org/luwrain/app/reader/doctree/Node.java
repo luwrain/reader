@@ -228,6 +228,20 @@ public class Node
 	    n.removeEmpty();
     }
 
+    @Override public String toString()
+    {
+	if (subnodes == null)
+	    return "";
+	String s = "";
+	for(Node n: subnodes)
+	{
+	    if (!s.isEmpty())
+		s += " ";
+	    s += n.toString();
+	}
+	return s;
+    }
+
     public void saveStatistics(Statistics stat)
     {
 	++stat.numNodes;
@@ -260,6 +274,7 @@ public class Node
 	return -1;
     }
 
+    /*
     public boolean isFirstSubnode()
     {
 	final int count = getParentSubnodeCount();
@@ -273,4 +288,5 @@ public class Node
 	final int index = getIndexInParentSubnodes();
 	return count >= 0 && index + 1 == count;
     }
+    */
 }

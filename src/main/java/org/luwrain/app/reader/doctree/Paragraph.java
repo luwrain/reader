@@ -125,4 +125,18 @@ public class Paragraph extends Node
     {
 	return getIndexInParentSubnodes();
     }
+
+    @Override public String toString()
+    {
+	if (runs == null)
+	    return "";
+	String s = "";
+	for(Run r: runs)
+	{
+	    if (!s.isEmpty())
+		s += " ";
+	    s += r.toString();
+	}
+	return s;
+    }
 }

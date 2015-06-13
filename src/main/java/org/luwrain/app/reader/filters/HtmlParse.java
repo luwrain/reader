@@ -140,13 +140,15 @@ final String[] nonClosingTags = new String[]
 
     private void commitLevel(int type)
     {
-	if (levels.isEmpty())
-	    System.out.println("reader:warning:trying to commit subnodes with an empty levels stack");
+	//	if (levels.isEmpty())
+	    //	    System.out.println("reader:warning:trying to commit subnodes with an empty levels stack");
 	commitPara();
 	final Level lastLevel = levels.pollLast();
-	if (type != lastLevel.type)
-	    System.out.println("reader:warning:expecting the last level on committing to be " + type + " but it is " + lastLevel.type + " (line " + currentLine() + ")");
-	final Node node = new Node(lastLevel.type, lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()]));
+	//	if (type != lastLevel.type)
+	//	    System.out.println("reader:warning:expecting the last level on committing to be " + type + " but it is " + lastLevel.type + " (line " + currentLine() + ")");
+	final Node node = lastLevel.type == Node.TABLE?
+	new Table(lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()])):
+new Node(lastLevel.type, lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()]));
 	levels.getLast().subnodes.add(node);
     }
 
@@ -163,7 +165,7 @@ lastLevelType == Node.TABLE_ROW ||
 lastLevelType == Node.ORDERED_LIST ||
 lastLevelType == Node.UNORDERED_LIST)
 	{
-	    System.out.println("reader:warning:ignoring to put a paragraph into a level with inappropriate type " + lastLevelType);
+	    //	    System.out.println("reader:warning:ignoring to put a paragraph into a level with inappropriate type " + lastLevelType);
 	    return;
 	}
 	levels.getLast().subnodes.add(para);
@@ -171,13 +173,12 @@ lastLevelType == Node.UNORDERED_LIST)
 
     public Node constructRoot()
     {
-	if (levels.size() > 1)
-	    System.out.println("reader:warning:constructing a root node but there are " + levels.size() + " levels");
+	//	if (levels.size() > 1)
+	//	    System.out.println("reader:warning:constructing a root node but there are " + levels.size() + " levels");
 	final Level firstLevel = levels.getFirst();
 	final Node[] subnodes = firstLevel.subnodes.toArray(new Node[firstLevel.subnodes.size()]);
 	return new Node(Node.ROOT, subnodes);
     }
-
 
     @Override protected boolean tagMustBeClosed(String tag)
     {

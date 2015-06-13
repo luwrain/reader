@@ -36,8 +36,8 @@ public class Document
 	root.commit();
 	root.setEmptyMark();
 	root.removeEmpty();
-	if (!checkConsistency(true))
-	    return;
+	//	if (!checkConsistency(true))
+	//	    return;
 	root.calcWidth(width);
 	RowPartsBuilder rowPartsBuilder = new RowPartsBuilder();
 	rowPartsBuilder.onNode(root);
@@ -56,7 +56,6 @@ public class Document
 
 	for(Paragraph p: paragraphs)
 	    System.out.println(p.topRowIndex);
-
 
 	root.calcPosition();
 	rows = RowsBuilder.buildRows(rowParts);
@@ -128,56 +127,6 @@ public class Document
 	return b.toString();
     }
 
-    public int getRowCount()
-    {
-	return rows != null?rows.length:0;
-    }
-
-    public String getRowText(int index)
-    {
-	final Row row = rows[index];
-	if (row.partsFrom < 0 || row.partsTo < 0)
-	    return "";
-	return row.text(rowParts);
-    }
-
-    public int getRowContainerType(int index)
-    {
-	final Row row = rows[index];
-	if (!row.hasAssociatedText())
-	    return -1;
-	return getParagraphOfRow(row).parentNode.type;
-    }
-
-    public Node getRowContainerNode(int index)
-    {
-	final Row row = rows[index];
-	if (!row.hasAssociatedText())
-	    return null;
-	return getParagraphOfRow(row).parentNode;
-    }
-
-
-    public boolean isEmptyRow(int index)
-    {
-	return !rows[index].hasAssociatedText();
-    }
-
-
-    /**@return -1 if there is no associated text*/
-    public int getRowIndexInParagraph(int index)
-    {
-	final Row row = rows[index];
-	if (!row.hasAssociatedText())
-	    return -1;
-	return rowParts[row.partsFrom].relRowNum;
-    }
-
-    public Paragraph getParagraphByRowIndex(int index)
-    {
-	return getParagraphOfRow(rows[index]);
-    }
-
     public void saveStatistics(Statistics stat)
     {
 	if (root != null)
@@ -197,18 +146,6 @@ public class Document
 	    ok = false;
 	}
 	return ok;
-    }
-
-    public Table getTableByCell(Node cell)
-    {
-	if (cell == null || cell.type != Node.TABLE_CELL)
-	    return null;
-	if (cell.parentNode == null || cell.parentNode.parentNode == null)
-	    return null;
-	final Node n = cell.parentNode.parentNode;
-	if (!(n instanceof Table))
-	    return null;
-	return (Table)n;
     }
 
     public Iterator getIterator()

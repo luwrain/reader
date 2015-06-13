@@ -21,7 +21,31 @@ public class Table extends Node
     public Table()
     {
 	super(TABLE);
-	type = TABLE;
+    }
+
+    public Table(Node[] subnodes)
+    {
+	super(TABLE, subnodes);
+    }
+
+    @Override public void commit()
+    {
+	super.commit();
+	for(Node n: subnodes)
+	{
+	    if (n.type != TABLE_ROW)
+		System.out.println("warning:doctree:table has a subnode with type different than TABLE_ROW");
+	    for(Node nn: n.subnodes)
+		if (nn.type != TABLE_CELL)
+		System.out.println("warning:doctree:table row has a subnode with type different than TABLE_CELL");
+	}
+    }
+
+    public Node getCell(int col, int row)
+    {
+	if (row >= subnodes.length || col >= subnodes[row].subnodes.length)
+	    return null;
+	return subnodes[row].subnodes[col];
     }
 
     public int getColIndexOfCell(Node cell)
@@ -50,5 +74,33 @@ public class Table extends Node
 	    if (maxValue < n.subnodes.length)
 		maxValue = n.subnodes.length;
 	return maxValue;
+    }
+
+    public int getTableLevel()
+    {
+	int count = 1;
+	Node n = parentNode;
+	while(n != null)
+	{
+	    if (n.type == TABLE)
+		++count;
+	    n = n.parentNode;
+	}
+	return count;
+    }
+
+    public boolean isSingleLineRow(int index)
+    {
+	for(Node n: subnodes[index].subnodes)
+	{
+	    if (n.subnodes.length > 1)
+		return false;
+	    if (n.subnodes[0].type != PARAGRAPH || !(n.subnodes[0] instanceof Paragraph))
+		return false;
+	    final Paragraph p = (Paragraph)n.subnodes[0];
+	    if (p.height > 1)
+		return false;
+	}
+	    return true;
     }
 }

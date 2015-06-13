@@ -51,8 +51,10 @@ class Introduction
 	if (iterator.isCurrentParaContainerTableCell())
 	    inTableCell(iterator); else
 	    if (iterator.isCurrentParaContainerListItem())
-		inListItem(iterator);
-	System.out.println("warning:reader:unhandled item:" + iterator.getCurrentText());
+		inListItem(iterator); else
+		environment.say("Параграф " + iterator.getCurrentText());
+		//		simple(iterator);
+	//	System.out.println("warning:reader:unhandled item:" + iterator.getCurrentText());
     }
 
     private void inListItem(Iterator iterator)
@@ -67,14 +69,34 @@ class Introduction
     private void inTableCell(Iterator iterator)
     {
 	final Table table = iterator.getTableOfCurrentParaContainer();
+	final int level = table.getTableLevel();
 	final Node cell = iterator.getCurrentParaContainer();
-	final String text = iterator.getCurrentText();
 	final int colIndex = table.getColIndexOfCell(cell);
 	final int rowIndex = table.getRowIndexOfCell(cell);
 	final int colCount = table.getColCount();
 	final int rowCount = table.getRowCount();
+	String text = "";
+	//If the row has only one line in height we speak all cells of this line;
+	if (colIndex == 0 && table.isSingleLineRow(rowIndex))
+	{
+	    StringBuilder s = new StringBuilder();
+	    for(int i = 0;i < colCount;++i)
+	    {
+		final Node n = table.getCell(i, rowIndex);
+		if (n != null)
+		    System.out.println("n=" + n.toString());
+	    if (n != null)
+		s.append(n.toString());
+	    }
+	    text = s.toString();
+	} else
+	    text = iterator.getCurrentText();
 	if (colIndex == 0 && rowIndex == 0)
-	    environment.say(strings.tableIntroduction(rowCount, colCount, text)); else
+	{
+	    if (level > 1)
+		environment.say(strings.tableIntroductionWithLevel(level, rowCount, colCount, text)); else 
+	    environment.say(strings.tableIntroduction(rowCount, colCount, text));
+	} else
 	    environment.say(strings.tableCellIntroduction(rowIndex + 1, colIndex + 1, text));
     }
 

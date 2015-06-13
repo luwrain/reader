@@ -28,6 +28,15 @@ public class Ru implements org.luwrain.app.reader.Strings
 	return "Таблица Строк " + rows + " Столбцов " + cols + " " + text;
     }
 
+    @Override public String tableIntroductionWithLevel(int level,
+						       int rows,
+						       int cols, String text)
+    {
+	return "Таблица уровня " + level + " Строк " + rows + " Столбцов " + cols + " " + text;
+    }
+
+
+
     @Override public String tableCellIntroduction(int row, int col, String text)
     {
 	if (col == 1)

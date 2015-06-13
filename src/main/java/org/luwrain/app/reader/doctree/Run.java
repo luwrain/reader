@@ -29,4 +29,9 @@ public class Run
 	if (text == null)
 	    throw new NullPointerException("text may not be null");
     }
+
+    @Override public String toString()
+    {
+	return text != null?text:"";
+    }
 }
