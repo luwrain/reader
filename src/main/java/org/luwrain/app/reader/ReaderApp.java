@@ -19,7 +19,7 @@ package org.luwrain.app.reader;
 import java.net.*;
 
 import org.luwrain.core.*;
-import org.luwrain.app.reader.doctree.Document;
+import org.luwrain.app.reader.doctree.*;
 import org.luwrain.app.reader.filters.Filters;
 
 public class ReaderApp implements Application, Actions
@@ -61,27 +61,37 @@ public class ReaderApp implements Application, Actions
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	/*
-	if (arg != null)
+	if (!handleArg())
+	    return false;
+	    return true;
+    }
+
+    private boolean handleArg()
+    {
+	if (arg != null && !arg.isEmpty() &&
+	    argType == LOCAL)
  	{
-	    doc = filters.readFromFile(arg, Filters.HTML);
+	    doc = filters.readFromFile(arg);
 	    if (doc == null)
 	    {
 		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
 		return false;
 	    }
+	new DumpInFileSystem(doc.getRoot()).dump("/tmp/doc");
  	}
-	*/
 	area = new ReaderArea(luwrain, strings, this, filters, doc);
-	    if (argType == URL && arg != null)
-	try {
-	    new Thread(new FetchThread(luwrain, area, new URL(arg))).start();
-	}
-	catch (MalformedURLException e)
-	{
-	    e.printStackTrace();
-	}
-	    return true;
+	if (arg != null && !arg.isEmpty() &&
+	    argType == URL)
+	    try {
+		new Thread(new FetchThread(luwrain, area, new URL(arg))).start();
+	    }
+	    catch (MalformedURLException e)
+	    {
+		e.printStackTrace();
+		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
+		return false;
+	    }
+	return true;
     }
 
     @Override public String getAppName()

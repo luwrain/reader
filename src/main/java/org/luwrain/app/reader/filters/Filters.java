@@ -1,19 +1,25 @@
 
 package org.luwrain.app.reader.filters;
 
+import org.luwrain.core.FileTypes;
 import org.luwrain.app.reader.doctree.Document;
 
 public class Filters
 {
-    public static final int DOC = 0;
-    public static final int HTML = 1;
+    public static final int UNRECOGNIZED = 0;
+    public static final int DOC = 1;
+    public static final int HTML = 2;
 
-    public Document readFromFile(String fileName, int format)
+    public Document readFromFile(String fileName)
     {
-	if (fileName == null)
-	    throw new NullPointerException("fileName may not be null");
-	if (fileName.isEmpty())
-	    throw new IllegalArgumentException("fileName may not be empty");
+	final int type = recognizeType(fileName);
+	if (type == UNRECOGNIZED)
+	    return null;
+	return readFromFile(fileName, type);
+    }
+
+    private Document readFromFile(String fileName, int format)
+    {
 	Filter filter = null;
 	switch (format)
 	{
@@ -26,13 +32,13 @@ public class Filters
 	default:
 	    throw new IllegalArgumentException("unknown format " + format);
 	}
-	return filter.constructDocument();
+	final Document res = filter.constructDocument();
+	res.buildView(100);//FIXME:
+	return res;
     }
 
     public Document readText(int format, String text)
     {
-	if (text == null)
-	    throw new NullPointerException("text may not be null");
 	Filter filter = null;
 	switch (format)
 	{
@@ -42,6 +48,24 @@ public class Filters
 	default:
 	    throw new IllegalArgumentException("unknown format " + format);
 	}
-	return filter.constructDocument();
+	final Document res = filter.constructDocument();
+	res.buildView(100);//FIXME:
+	return res;
+    }
+
+    static private int recognizeType(String path)
+    {
+	if (path == null)
+	    throw new NullPointerException("path may not be null");
+	if (path.isEmpty())
+	    throw new IllegalArgumentException("path may not be empty");
+	final String ext = FileTypes.getExtension(path);
+	if (ext == null || path.isEmpty())
+	    return UNRECOGNIZED;
+	if (ext.toLowerCase().equals("doc"))
+	    return DOC;
+	if (ext.toLowerCase().equals("html") || ext.toLowerCase().equals("htm"))
+	    return HTML;
+	return UNRECOGNIZED;
     }
 }

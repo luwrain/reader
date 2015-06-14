@@ -43,7 +43,6 @@ class Doc implements Filter
 
     @Override public Document constructDocument()
     {
-	System.out.println("reader:doc running");
 	FileInputStream  s = null;
 	try {
 	    File docFile=new File(fileName);
@@ -67,25 +66,27 @@ class Doc implements Filter
     private Document transform(HWPFDocument doc)
     {
 	wholeText = doc.getDocumentText();
-	Vector<Node> subnodes = new Vector<Node>();
+	LinkedList<Node> subnodes = new LinkedList<Node>();
 	Range range = doc.getRange();
 	anyRangeAsParagraph(subnodes,range,0);
-	Node root = new Node(Node.ROOT);
+	final Node root = new Node(Node.ROOT);
 	root.subnodes = subnodes.toArray(new Node[subnodes.size()]);
-	Document res = new Document(root);
-	res.buildView(50);
+	final Document res = new Document(root);
 	return res;
     }
 
     /* рекурсивный метод, вызывается для любого места в документе, способного содержать несколько элементов, представляя их как список параграфов
-     * @param	subnodes	список нод на текущем уровне собираемой структуры, в этот список будут добавлены новые элементы
-     * @param	range	текущий элемент в документе
-     * @param	lvl	текущий уровень вложенности, для корневого элемента должен быть установлен в 0
+     * @param	subnodes	The list of nodes to get all new on current level
+     * @param	range	The range to look through
+     * @param	lvl	Current recurse level (must be zero for the root)
      */
-    public void anyRangeAsParagraph(Vector<Node> subnodes,Range range,int lvl)
+    private void anyRangeAsParagraph(LinkedList<Node> subnodes,
+				    Range range,
+				    int lvl)
     {
-	int i=0,num=range.numParagraphs();
-	Boolean inTable=false;
+	int i=0;
+	final int num=range.numParagraphs();
+	Boolean inTable=false;//Allows to silently skip all table cells except of first;
 	while(i<num)
 	{
 	    final Paragraph paragraph = range.getParagraph(i);
@@ -93,68 +94,62 @@ class Doc implements Filter
 	    {
 		if(!inTable)
 		{
-		    // первая ячейка таблицы, для остальных ячеек ЭТОЙ же таблицы, этот участок не вызывается
-		    Node table_node = new Node(Node.TABLE);
-		    Vector<Node> rows_subnodes = new Vector<Node>();
-		    //
-		    inTable=true;
-		    Table table = range.getTable(paragraph);
+		    //We do this processing for the first cell only, skipping all others
+		    final Node table_node = new org.luwrain.app.reader.doctree.Table();
+		    subnodes.add(table_node);
+		    final LinkedList<Node> rows_subnodes = new LinkedList<Node>();
+		    inTable=true;//We came to the table;
+		    final Table table = range.getTable(paragraph);
 		    System.out.println(lvl+", is a table: "+table.numRows()+" rows");
-		    int rnum=table.numRows();
+		    final int rnum=table.numRows();
 		    for(int r=0;r<rnum;r++)
 		    { // для каждой строки таблицы
 			// создаем элементы структуры Node и добавляем текущую ноду в список потомка
-			Node rowtable_node=new Node(Node.TABLE_ROW);
+			final Node rowtable_node=new Node(Node.TABLE_ROW);
 			rows_subnodes.add(rowtable_node);
-			Vector<Node> cels_subnodes = new Vector<Node>();
-			//
-			TableRow trow=table.getRow(r);
-			int cnum=trow.numCells();
+			final LinkedList<Node> cels_subnodes = new LinkedList<Node>();
+			final TableRow trow=table.getRow(r);
+			final int cnum=trow.numCells();
 			for(int c=0;c<cnum;c++)
 			{ // для каждой ячейки таблицы
-			    // создаем элементы структуры Node
-			    Node celltable_node=new Node(Node.TABLE_CELL);
-			    Vector<Node> incell_subnodes = new Vector<Node>();
+			    //Creating a node for table cell
+			    final Node celltable_node=new Node(Node.TABLE_CELL);
+			    final LinkedList<Node> incell_subnodes = new LinkedList<Node>();
 			    cels_subnodes.add(celltable_node);
-			    //
 			    System.out.print("* cell["+r+","+c+"]: ");
-			    TableCell cell=trow.getCell(c);
-			    // определим что содержимое ячейки просто текст
+			    final TableCell cell=trow.getCell(c);
+			    //Trying to figure out that we have just a text in the table cell
 			    if(cell.numParagraphs()>1)
-			    {
-				System.out.println("");
-				anyRangeAsParagraph(incell_subnodes,cell,lvl+1);
-			    } else
-			    {
+				anyRangeAsParagraph(incell_subnodes,cell,lvl+1); else
 				parseParagraph(incell_subnodes,cell.getParagraph(0));
-			    }
 			    celltable_node.subnodes = incell_subnodes.toArray(new Node[incell_subnodes.size()]);
-			    //							celltable_node.setParentOfSubnodes();
-			}
+			    checkNodesNotNull(celltable_node.subnodes);
+			} //for(cells);
 			rowtable_node.subnodes = cels_subnodes.toArray(new Node[cels_subnodes.size()]);
-			//						rowtable_node.setParentOfSubnodes();
-		    }
+			checkNodesNotNull(rowtable_node.subnodes);
+		    } //for(rows);
 		    table_node.subnodes = rows_subnodes.toArray(new Node[rows_subnodes.size()]);
-		    //					table_node.setParentOfSubnodes();
-		}
-	    } else
+		    checkNodesNotNull(table_node.subnodes);
+		} // if(!inTable);
+	    } else //if(paragraph.getTableLevel() > lvl);
 	    {
-		inTable=false;
+		inTable=false;//We are not in table any more
 		System.out.print(lvl+", not table: ");
 		parseParagraph(subnodes,paragraph);
 	    }
 	    i++;
-	}
+	} //while();
     }
 
     // listInfo[id of list][level]=counter;
     public HashMap<Integer,HashMap<Integer,Integer>> listInfo=new HashMap<Integer, HashMap<Integer,Integer>>();
     public int lastLvl=-1;
+
 	/* Анализирует тип параграфа и выделяет в соответствии с ним данные
 	 * @param	subnodes	список нод на текущем уровне собираемой структуры, в этот список будут добавлены новые элементы
 	 * @param	paragraph	элемент документа (параграф или элемент списка) или ячейка таблицы
 	 */
-	public void parseParagraph(Vector<Node> subnodes,Paragraph paragraph)
+	public void parseParagraph(LinkedList<Node> subnodes,Paragraph paragraph)
 	{
 		String className=paragraph.getClass().getSimpleName();
 		String paraText="";
@@ -189,11 +184,9 @@ class Doc implements Filter
 				for(int lvl=0;lvl<=listLvl;lvl++) numstr+=listInfo.get(listId).get(lvl)+".";
 				paraText=paragraph.text().trim();
 				System.out.println("LIST ENTRY:"+listLvl+", "+listId+", "+numstr+"["+paraText+"]");
-				//
-				Vector<Node> item_subnodes = new Vector<Node>();
+				LinkedList<Node> item_subnodes = new LinkedList<Node>();
 				item_subnodes.add(new org.luwrain.app.reader.doctree.Paragraph(new org.luwrain.app.reader.doctree.Run(paraText)));
 				node.subnodes = item_subnodes.toArray(new Node[item_subnodes.size()]);
-				//				node.setParentOfSubnodes();
 			break;
 			case "Paragraph":
 				paraText=paragraph.text().trim();
@@ -217,110 +210,12 @@ class Doc implements Filter
 		}
 	}
 
-/*	
-	private Document transform(HWPFDocument doc)
-	{
-		// System.out.println();
-		wholeText = doc.getDocumentText();
-
-		Vector<Node> subnodes = new Vector<Node>();
-
-		Range range = doc.getRange();
-		final int begin = range.getStartOffset();
-		final int end = range.getEndOffset();
-		System.out.println("reader:range:" + begin + ":" + end);
-		System.out.println("reader:text len=" + wholeText.length());
-		anyRangeAsParagraph(subnodes,range);
-		
-		Node root = new Node(Node.ROOT);
-		root.subnodes = subnodes.toArray(new Node[subnodes.size()]);
-		root.setParentOfSubnodes();
-		Document res = new Document(root);
-		res.buildView(50);
-		return res;
-	}
-	
-	private void anyRangeAsParagraph(Vector<Node> subnodes, Range range)
-	{
-		int i=0,num=range.numParagraphs();
-		Boolean inTable=false;
-		while(i<num)
-		{
-			final Paragraph para = range.getParagraph(i);
-			if (para.getTableLevel() > 0)
-			{
-				if(!inTable)
-				{
-					inTable=true;
-					// первая ячейка таблицы, для следующих метод не вызывается
-					Table table = range.getTable(para);
-					if (table != null)
-					{
-						subnodes.add(onTable(table));
-						continue;
-					}
-
-				}
-			}
-
-			final String paraText = wholeText.substring(para.getStartOffset(),
-					para.getEndOffset());
-			int k = 0;
-			while (k < paraText.length()
-					&& !Character.isLetter(paraText.charAt(k))
-					&& !Character.isDigit(paraText.charAt(k)))
-				++k;
-			if (k >= paraText.length())
-				continue;
-
-			subnodes.add(new org.luwrain.app.reader.doctree.Paragraph(
-					new org.luwrain.app.reader.doctree.Run(paraText)));
-			i++;
-		}
-	}
-	private Node onTable(Table table)
-	{
-		final Vector<Node> resRows = new Vector<Node>();
-		for (int i = 0; i < table.numRows(); ++i)
-		{
-			final Vector<Node> resCells = new Vector<Node>();
-			final TableRow row = table.getRow(i);
-			for (int j = 0; j < row.numCells(); ++j)
-			{
-				final TableCell cell = row.getCell(j);
-				resCells.add(new Node(Node.TABLE_CELL, transformRange(cell)));
-			}
-			resRows.add(new Node(Node.TABLE_ROW, resCells
-					.toArray(new Node[resCells.size()])));
-		}
-		return new Node(Node.TABLE, resRows.toArray(new Node[resRows.size()]));
-	}
-
-	private Node[] transformRange(Range range)
-	{
-		LinkedList<Node> nodes = new LinkedList<Node>();
-		for (int i = 0; i < range.numParagraphs(); ++i)
-		{
-			org.luwrain.app.reader.doctree.Paragraph para = onParagraph(range
-					.getParagraph(i));
-			if (para != null)
-				nodes.add(para);
-		}
-		return nodes.toArray(new Node[nodes.size()]);
-	}
-
-	private org.luwrain.app.reader.doctree.Paragraph onParagraph(Paragraph para)
-	{
-		final String paraText = wholeText.substring(para.getStartOffset(),
-				para.getEndOffset());
-		int k = 0;
-		while (k < paraText.length() && !Character.isLetter(paraText.charAt(k))
-				&& !Character.isDigit(paraText.charAt(k)))
-			++k;
-		if (k >= paraText.length())
-			return null;
-		return new org.luwrain.app.reader.doctree.Paragraph(
-				new org.luwrain.app.reader.doctree.Run(paraText));
-	}
-*/
+    private void checkNodesNotNull(Node[] nodes)
+    {
+	if (nodes == null)
+	    throw new NullPointerException("nodes is null");
+	for(int i = 0;i < nodes.length;++i)
+	    if (nodes[i] == null)
+		throw new NullPointerException("nodes[" + i + "] is null");
+    }
 }

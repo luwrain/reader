@@ -55,7 +55,6 @@ class Html implements Filter
 	if (root == null)
 	    return null;
 	Document doc = new Document(root);
-	doc.buildView(100);
 	return doc;
     }
 
