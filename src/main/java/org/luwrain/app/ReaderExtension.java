@@ -86,7 +86,7 @@ public class ReaderExtension extends org.luwrain.core.extensions.EmptyExtension
 
     @Override public void i18nExtension(Luwrain luwrain, I18nExtension i18nExt)
     {
-	i18nExt.addCommandTitle("en", "reader", "Reader");
+	i18nExt.addCommandTitle("en", "reader", "Documents reader");
 	i18nExt.addCommandTitle("ru", "reader", "Просмотр документов");
 
 	i18nExt.addCommandTitle("en", "wiki", "Search in Wikipedia");

@@ -52,9 +52,7 @@ class Introduction
 	    inTableCell(iterator); else
 	    if (iterator.isCurrentParaContainerListItem())
 		inListItem(iterator); else
-		environment.say("Параграф " + iterator.getCurrentText());
-		//		simple(iterator);
-	//	System.out.println("warning:reader:unhandled item:" + iterator.getCurrentText());
+		environment.say(iterator.getCurrentText());
     }
 
     private void inListItem(Iterator iterator)

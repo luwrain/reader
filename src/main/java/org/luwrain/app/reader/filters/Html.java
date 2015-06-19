@@ -22,6 +22,7 @@ import java.nio.file.*;
 import java.nio.charset.*;
 
 import org.luwrain.app.reader.doctree.*;
+import org.luwrain.util.*;
 
 class Html implements Filter
 {
@@ -49,12 +50,12 @@ class Html implements Filter
 	read(StandardCharsets.UTF_8);
 	if (src == null)
 	    return null;
-	HtmlParse parse = new HtmlParse(src);
-	parse.strip();
+	HtmlParse parse = new HtmlParse();
+	new MlReader(parse, parse, src).read();
 	Node root = parse.constructRoot();
 	if (root == null)
 	    return null;
-	Document doc = new Document(root);
+	Document doc = new Document(parse.getTitle(), root);
 	return doc;
     }
 

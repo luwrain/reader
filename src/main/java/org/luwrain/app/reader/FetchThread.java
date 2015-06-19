@@ -20,6 +20,8 @@ import java.net.*;
 import java.io.*;
 
 import org.luwrain.core.*;
+import org.luwrain.util.MlReader;
+import org.luwrain.app.reader.filters.HtmlEncoding;
 
 class FetchThread implements Runnable
 {
@@ -63,8 +65,26 @@ class FetchThread implements Runnable
 	    builder.append(inputLine);
         in.close();
 
+	final String encoding = htmlEncoding(builder.toString());
+	//Not elegant, needs to be rewritten;
+	if (!encoding.trim().isEmpty())
+	{
+	    in = new BufferedReader(new InputStreamReader(url.openStream(), encoding));
+builder = new StringBuilder();
+        while ((inputLine = in.readLine()) != null)
+	    builder.append(inputLine);
+        in.close();
+    }
+
 	luwrain.enqueueEvent(new FetchEvent(area, builder.toString()));
 
-	System.out.println("done");
+	//	System.out.println("done");
+    }
+
+    private static String htmlEncoding(String text)
+    {
+	HtmlEncoding encoding = new HtmlEncoding();
+	new MlReader(encoding, encoding, text).read();
+	return encoding.getEncoding();
     }
 }

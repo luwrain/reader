@@ -17,19 +17,21 @@
 package org.luwrain.app.reader;
 
 import java.io.File;
+import java.util.LinkedList;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
-import org.luwrain.util.WordIterator;
+import org.luwrain.util.*;
 
 import org.luwrain.app.reader.filters.Filters;
 import org.luwrain.app.reader.doctree.*;
 
-public class ReaderArea implements Area
+public class ReaderArea implements Area, CopyCutRequest
 {
     private Luwrain luwrain;
     private ControlEnvironment environment;
+    private CopyCutInfo copyCutInfo = new CopyCutInfo(this);
     private Strings strings;
     private Actions actions;
 
@@ -141,6 +143,10 @@ Document document)
 	{
 	case EnvironmentEvent.THREAD_SYNC:
 	    return onThreadSync(event);
+	case EnvironmentEvent.COPY_CUT_POINT:
+	    return copyCutInfo.copyCutPoint(getHotPointX(), getHotPointY());
+	case EnvironmentEvent.COPY:
+	    return copyCutInfo.copy(getHotPointX(), getHotPointY());
 	case EnvironmentEvent.CLOSE:
 	    actions.closeApp();
 	    return true;
@@ -156,17 +162,28 @@ Document document)
 
     @Override public int getHotPointX()
     {
-	return 0;//FIXME:
+	if (document == null || iterator == null)
+	    return 0;
+	return iterator.getCurrentRow().x + hotPointX;
     }
 
     @Override public int getHotPointY()
     {
-	return 0;//FIXME:
+	if (document == null || iterator == null)
+	    return 0;
+	return iterator.getCurrentRow().y;
     }
 
     @Override public String getAreaName()
     {
-	return strings.appName();//FIXME:Document.getTitle();
+	if (document != null)
+	{
+	    final String title = document.getTitle();
+	    if (title == null || title.trim().isEmpty())
+		return strings.appName();
+	    return title.trim();
+	}
+	return strings.appName();
     }
 
     private boolean onThreadSync(EnvironmentEvent event)
@@ -440,7 +457,63 @@ Document document)
 	    environment.hint(Hints.EMPTY_LINE); else
 	    introduction.introduce(iterator, briefIntroduction);
 	environment.onAreaNewHotPoint(this);
+    }
+
+    @Override public boolean onCopyAll()
+    {
+	if (document == null || iterator == null)
+	    return false;
+	LinkedList<String> res = new LinkedList<String>();
+	final int count = document.getLineCount();
+	for(int i = 0;i < count;++i)
+	{
+	    final String line = document.getLine(i);
+	    if (line != null)
+		res.add(line); else
+		res.add("");
 	}
+	environment.say(environment.staticStr(Langs.COPIED_LINES) + (res.size()));
+	environment.setClipboard(res.toArray(new String[res.size()]));
+	return true;
+    }
+
+    @Override public boolean onCopy(int fromX, int fromY, int toX, int toY)
+    {
+	if (document == null || iterator == null)
+	    return false;
+	if (fromY >= document.getLineCount() || toY > document.getLineCount())
+	    return false;
+	if (fromY == toY)
+	{
+	    final String line = document.getLine(fromY);
+	    if (line.isEmpty())
+		return false;
+	    final int fromPos = fromX < line.length()?fromX:line.length();
+	    final int toPos = toX < line.length()?toX:line.length();
+	    if (fromPos >= toPos)
+		throw new IllegalArgumentException("fromPos should be less than toPos");
+	    environment.say(line.substring(fromPos, toPos));
+	    environment.setClipboard(new String[]{line.substring(fromPos, toPos)});
+	    return true;
+	}
+	LinkedList<String> res = new LinkedList<String>();
+	for(int i = fromY;i < toY;++i)
+	{
+	    final String line = document.getLine(i);
+	    if (line != null)
+		res.add(line); else
+		res.add("");
+	}
+	if (res.size() == 2)
+	    environment.say(environment.staticStr(Langs.COPIED_LINES) + (res.size()));
+	environment.setClipboard(res.toArray(new String[res.size()]));
+	return true;
+    }
+
+    @Override public boolean onCut(int fromX, int fromY, int toX, int toY)
+    {
+	return false;
+    }
 
     private boolean noContentCheck()
     {

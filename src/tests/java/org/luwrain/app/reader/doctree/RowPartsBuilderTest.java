@@ -30,7 +30,7 @@ public class RowPartsBuilderTest extends Assert
 		new Run("First testing run"),
 		    new Run("Second testing run")
 	    };
-	para.setParentOfRuns();
+	//	para.setParentOfRuns();
 
 	Node table1 = new Node(Node.TABLE);
 	table1.subnodes = new Node[]{new Node(Node.TABLE_ROW), new Node(Node.TABLE_ROW)};
@@ -64,11 +64,11 @@ public class RowPartsBuilderTest extends Assert
 	RowPart[] parts = builder.parts();
 	assertTrue(parts != null);
 	assertTrue(parts.length == 3);
-	assertTrue(parts[0].rowNum == 0);
+	//	assertTrue(parts[0].rowNum == 0);
 	assertTrue(parts[0].text().equals("abc abc abc "));
-	assertTrue(parts[1].rowNum == 0);
+	//	assertTrue(parts[1].rowNum == 0);
 	assertTrue(parts[1].text().equals("abc"));
-	assertTrue(parts[2].rowNum == 1);
+	//	assertTrue(parts[2].rowNum == 1);
 	assertTrue(parts[2].text().equals("abc abc"));
 	//Checking a space in the second node;
 	builder = new RowPartsBuilder();
@@ -77,11 +77,11 @@ public class RowPartsBuilderTest extends Assert
 	parts = builder.parts();
 	assertTrue(parts != null);
 	assertTrue(parts.length == 3);
-	assertTrue(parts[0].rowNum == 0);
+	//	assertTrue(parts[0].rowNum == 0);
 	assertTrue(parts[0].text().equals("abc abc abc"));
-	assertTrue(parts[1].rowNum == 0);
+	//	assertTrue(parts[1].rowNum == 0);
 	assertTrue(parts[1].text().equals(" abc"));
-	assertTrue(parts[2].rowNum == 1);
+	//	assertTrue(parts[2].rowNum == 1);
 	assertTrue(parts[2].text().equals("abc abc"));
     }
 
@@ -92,9 +92,9 @@ public class RowPartsBuilderTest extends Assert
 	RowPart[] parts = builder.parts();
 	assertTrue(parts != null);
 	assertTrue(parts.length == 2);
-	assertTrue(parts[0].rowNum == 0);
+	//	assertTrue(parts[0].rowNum == 0);
 	assertTrue(parts[0].text().equals("12345"));
-	assertTrue(parts[1].rowNum == 1);
+	//	assertTrue(parts[1].rowNum == 1);
 	assertTrue(parts[1].text().equals("6789"));
 	//Spaces only;
 	builder = new RowPartsBuilder();
@@ -102,9 +102,9 @@ public class RowPartsBuilderTest extends Assert
 	parts = builder.parts();
 	assertTrue(parts != null);
 	assertTrue(parts.length == 2);
-	assertTrue(parts[0].rowNum == 0);
+	//	assertTrue(parts[0].rowNum == 0);
 	assertTrue(parts[0].text().equals("     "));
-	assertTrue(parts[1].rowNum == 1);
+	//	assertTrue(parts[1].rowNum == 1);
 	assertTrue(parts[1].text().equals("  "));
     }
 
@@ -116,9 +116,9 @@ public class RowPartsBuilderTest extends Assert
 	RowPart[] parts = builder.parts();
 	assertTrue(parts != null);
 	assertTrue(parts.length == 3);
-	assertTrue(parts[0].rowNum == 0);
-	assertTrue(parts[1].rowNum == 1);
-	assertTrue(parts[2].rowNum == 2);
+	//	assertTrue(parts[0].rowNum == 0);
+	//	assertTrue(parts[1].rowNum == 1);
+	//	assertTrue(parts[2].rowNum == 2);
 	assertTrue(parts[0].text().equals("abc def 9"));
 	assertTrue(parts[1].text().equals("abcdef bb"));
 	assertTrue(parts[2].text().equals("12345"));
@@ -133,12 +133,12 @@ public class RowPartsBuilderTest extends Assert
 	RowPart[] parts = builder.parts();
 	assertTrue(parts != null);
 	assertTrue(parts.length == 7);
-	assertTrue(parts[0].rowNum == 0);
-	assertTrue(parts[1].rowNum == 0);
-	assertTrue(parts[2].rowNum == 1);
-	assertTrue(parts[3].rowNum == 3);
-	assertTrue(parts[4].rowNum == 5);
-	assertTrue(parts[5].rowNum == 7);
-	assertTrue(parts[6].rowNum == 9);
+	//	assertTrue(parts[0].rowNum == 0);
+	//	assertTrue(parts[1].rowNum == 0);
+	//	assertTrue(parts[2].rowNum == 1);
+	//	assertTrue(parts[3].rowNum == 3);
+	//	assertTrue(parts[4].rowNum == 5);
+	//	assertTrue(parts[5].rowNum == 7);
+	//	assertTrue(parts[6].rowNum == 9);
     }
 }

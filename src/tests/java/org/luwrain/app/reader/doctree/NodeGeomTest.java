@@ -30,7 +30,7 @@ public class NodeGeomTest extends Assert
 		new Run("First testing run"),
 		    new Run("Second testing run")
 	    };
-	para.setParentOfRuns();
+	//	para.setParentOfRuns();
 
 	Node table1 = new Node(Node.TABLE);
 	table1.subnodes = new Node[]{new Node(Node.TABLE_ROW), new Node(Node.TABLE_ROW)};
@@ -79,8 +79,10 @@ public class NodeGeomTest extends Assert
 	RowPartsBuilder partsBuilder = new RowPartsBuilder();
 	partsBuilder.onNode(testRoot);
 	RowPart[] parts = partsBuilder.parts();
+	/*
 	for(RowPart p: parts)
 	    p.run.parentParagraph.containsRow(p.rowNum);
+	*/
 	testRoot.calcHeight();
 	assertTrue(testRoot.height == 7);
 assertTrue(testRoot.subnodes[0].height == 3);
@@ -98,8 +100,10 @@ assertTrue(testRoot.subnodes[1].subnodes[1].height == 2);
 	RowPartsBuilder partsBuilder = new RowPartsBuilder();
 	partsBuilder.onNode(testRoot);
 	RowPart[] parts = partsBuilder.parts();
+	/*
 	for(RowPart p: parts)
 	    p.run.parentParagraph.containsRow(p.rowNum);
+	*/
 	testRoot.calcHeight();
 	testRoot.calcPosition();
 	assertTrue(testRoot.x == 0);

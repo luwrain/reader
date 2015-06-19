@@ -1,0 +1,3 @@
+#!/bin/sh -e
+
+java -cp ../jar/luwrain-app-reader-tests.jar:../jar/luwrain-app-reader.jar:../lib/luwrain.jar org.luwrain.app.reader.filters.UrlEncodingPrint "$@"

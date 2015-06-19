@@ -3,153 +3,183 @@ package org.luwrain.app.reader.filters;
 
 import java.util.*;
 
+import org.luwrain.util.*;
 import org.luwrain.app.reader.doctree.*;
-import org.luwrain.util.MlTagStrip;
 
-class HtmlParse extends MlTagStrip
+class HtmlParse implements MlReaderListener, MlReaderConfig
 {
-class Level
-{
-    public int type;
-    public LinkedList<Node> subnodes = new LinkedList<Node>();
-
-    public Level(int type)
+    private class Level
     {
-	this.type = type;
-    }
-}
+	public Node node;
+	public LinkedList<Node> subnodes = new LinkedList<Node>();
 
-final String[] nonClosingTags = new String[]
-{
-    "!doctype",
-    "br",
-    "link",
-    "img",
-"meta"
-}; 
+	public Level(Node node)
+	{
+	    this.node = node;
+	    if (node == null)
+		throw new NullPointerException("node may not be null");
+	}
+    }
+
+    final String[] nonClosingTags = new String[]{
+	"!doctype",
+	"input",
+	"br",
+	"link",
+	"img",
+	"meta"
+    }; 
 
     public LinkedList<Level> levels = new LinkedList<Level>();
     private LinkedList<Run> runs = new LinkedList<Run>();
-    //    private LinkedList<String> tagsStack = new LinkedList<String>();
+    private String title;
 
-    public HtmlParse(String text)
+    public HtmlParse()
     {
-	super(text);
-	levels.add(new Level(Node.ROOT));
+	levels.add(new Level(new Node(Node.ROOT)));
     }
 
-    @Override protected void onOpeningTag(String name)
+    @Override public void onMlTagOpen(String tagName, Map<String, String> attrs)
     {
-	final String adjustedName = name.trim().toLowerCase();
-	//	System.out.println("reader:debug:opening:" + adjustedName);
-
-	if (adjustedName.equals("span") ||
-	    adjustedName.equals("sup") ||
-	    adjustedName.equals("a") ||
-	    adjustedName.equals("font") ||
-	    adjustedName.equals("b") ||
-	    adjustedName.equals("i"))
-	    return;
-	if (adjustedName.equals("br"))
+	switch (tagName)
 	{
+	case "span":
+	case "sup":
+	case "a":
+	case "font":
+	case "b":
+	case "i":
+	    return;
+	case "br":
 	    runs.add(new Run(" "));
 	    return;
+	case "table":
+	    startLevel(Node.TABLE);
+	    return;
+	case "tr":
+	    startLevel(Node.TABLE_ROW);
+	    return;
+	case "th":
+	    startLevel(Node.TABLE_CELL);
+	    return;
+	case "ul":
+	    startLevel(Node.UNORDERED_LIST);
+	    return;
+	case "ol":
+	    startLevel(Node.ORDERED_LIST);
+	    return;
+	case "li":
+	    startLevel(Node.LIST_ITEM);
+	    return;
+	default:
+	    commitPara();
+	    System.out.println("html:unhandled tag:" + tagName);
 	}
-	int type;
-	if (adjustedName.equals("table"))
-	    type = Node.TABLE; else
-	    if (adjustedName.equals("tr"))
-		type = Node.TABLE_ROW; else
-		if (adjustedName.equals("td") || adjustedName.equals("th"))
-		    type = Node.TABLE_CELL; else
-		    if (adjustedName.equals("ul"))
-			type = Node.UNORDERED_LIST; else
-			if (adjustedName.equals("ol"))
-			    type = Node.ORDERED_LIST; else
-			    if (adjustedName.equals("li"))
-				type = Node.LIST_ITEM; else
-			    {
-				commitPara();
-				return;
-			    }
-	commitPara();
-	levels.add(new Level(type)); 
     }
 
-    @Override protected void onClosingTag(String name)
+    @Override public void onMlTagClose(String tagName)
     {
-	final String adjustedName = name.trim().toLowerCase();
-	//	System.out.println("reader:debug:closing:" + adjustedName);
-
-	if (adjustedName.equals("span") ||
-	    adjustedName.equals("a") ||
-	    adjustedName.equals("sup") ||
-	    adjustedName.equals("font") ||
-	    adjustedName.equals("b") ||
-	    adjustedName.equals("i"))
+	switch(tagName)
+	{
+	case "span":
+	case "a":
+	case "sup":
+	case "font":
+	case "b":
+	case "i":
 	    return;
-
-	int type;
-	if (adjustedName.equals("td") || adjustedName.equals("th"))
-	    type = Node.TABLE_CELL; else
-	    if (adjustedName.equals("tr"))
-		type = Node.TABLE_ROW; else
-		if (adjustedName.equals("table"))
-		    type = Node.TABLE; else
-		    if (adjustedName.equals("ol"))
-			type = Node.ORDERED_LIST; else
-			if (adjustedName.equals("ul"))
-			    type = Node.UNORDERED_LIST; else
-			    if (adjustedName.equals("li"))
-				type = Node.LIST_ITEM; else
-			    {
-				commitPara();
-				return;
-			    }
-	commitLevel(type);
+	case "th":
+	case 	    "tr":
+	case "table":
+	case "ol":
+	case "ul":
+	case "li":
+	    commitLevel();
+	return;
+	default:
+	    commitPara();
+	    return;
+	}
     }
 
-    @Override protected void onText(String str)
+    @Override public void onMlText(String text, LinkedList<String> tagsStack)
     {
-	if (str == null || str.isEmpty())
+	if (tagsStack.contains("script") ||
+	    tagsStack.contains("style"))
 	    return;
-
-	final String newText = str.replaceAll("\n", " ");
-	//	if (!newText.trim().isEmpty())
-	//	System.out.println("reader:text:" + str.trim());
-	if (isTagOpened("head"))
-	    return; 
-	String text = str;
+	if (!tagsStack.isEmpty() && tagsStack.getLast().equals("title"))
+	{
+	    title = text.trim();
+	    return;
+	}
+	if (text == null || text.isEmpty())
+	    return;
+	String prepared = text.replaceAll("\n", " ");
 	if (runs.isEmpty())
 	{
 	    int firstNonSpace = 0;
-	    while (firstNonSpace < text.length() && Character.isSpace(text.charAt(firstNonSpace)))
+	    while (firstNonSpace < prepared.length() && Character.isSpace(prepared.charAt(firstNonSpace)))
 		++firstNonSpace;
-	    if (firstNonSpace >= text.length())
+	    if (firstNonSpace >= prepared.length())
 		return;
-	    text = text.substring(firstNonSpace);
+	    prepared = prepared.substring(firstNonSpace);
 	}
-	    runs.add(new Run(text));
+	runs.add(new Run(text));
     }
 
-    /*
-    @Override protected void onCdata(String value)
+    @Override public boolean mlTagMustBeClosed(String tag)
     {
+	final String adjusted = tag.toLowerCase().trim();
+	for(String s: nonClosingTags)
+	    if (s.equals(adjusted))
+		return false;
+	return true;
     }
-    */
 
-    private void commitLevel(int type)
+    @Override public boolean mlAdmissibleTag(String tagName)
     {
-	//	if (levels.isEmpty())
-	    //	    System.out.println("reader:warning:trying to commit subnodes with an empty levels stack");
+	for(int i = 0;i < tagName.length();++i)
+	{
+	    final char c = tagName.charAt(i);
+	    if (!Character.isLetter(c) && !Character.isDigit(c))
+		return false;
+	}
+	return true;
+    }
+
+    public Node constructRoot()
+    {
+	final Level firstLevel = levels.getFirst();
+	firstLevel.node.subnodes = firstLevel.subnodes.toArray(new Node[firstLevel.subnodes.size()]);
+	return firstLevel.node;
+    }
+
+    public String getTitle()
+    {
+	return title != null?title:"";
+    }
+
+    private void startLevel(int type)
+    {
+	commitPara();
+	final Level lastLevel = levels.getLast();
+	final Node node = constructNode(type);
+	lastLevel.subnodes.add(node);
+	levels.add(new Level(node));
+    }
+
+    private void commitLevel()
+    {
 	commitPara();
 	final Level lastLevel = levels.pollLast();
-	//	if (type != lastLevel.type)
-	//	    System.out.println("reader:warning:expecting the last level on committing to be " + type + " but it is " + lastLevel.type + " (line " + currentLine() + ")");
-	final Node node = lastLevel.type == Node.TABLE?
-	new Table(lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()])):
-new Node(lastLevel.type, lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()]));
-	levels.getLast().subnodes.add(node);
+	lastLevel.node.subnodes = lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.size()]);
+    }
+
+    private Node constructNode(int type)
+    {
+	if (type == Node.TABLE)
+	    return new Table();
+	return new Node(type);
     }
 
     private void commitPara()
@@ -159,42 +189,15 @@ new Node(lastLevel.type, lastLevel.subnodes.toArray(new Node[lastLevel.subnodes.
 	final Paragraph para = new Paragraph();
 	para.runs = runs.toArray(new Run[runs.size()]);
 	runs.clear();
-	final int lastLevelType = levels.getLast().type;
+	final int lastLevelType = levels.getLast().node.type;
 	if (lastLevelType == Node.TABLE ||
-lastLevelType == Node.TABLE_ROW ||
-lastLevelType == Node.ORDERED_LIST ||
-lastLevelType == Node.UNORDERED_LIST)
+	    lastLevelType == Node.TABLE_ROW ||
+	    lastLevelType == Node.ORDERED_LIST ||
+	    lastLevelType == Node.UNORDERED_LIST)
 	{
 	    //	    System.out.println("reader:warning:ignoring to put a paragraph into a level with inappropriate type " + lastLevelType);
 	    return;
 	}
 	levels.getLast().subnodes.add(para);
-    }
-
-    public Node constructRoot()
-    {
-	//	if (levels.size() > 1)
-	//	    System.out.println("reader:warning:constructing a root node but there are " + levels.size() + " levels");
-	final Level firstLevel = levels.getFirst();
-	final Node[] subnodes = firstLevel.subnodes.toArray(new Node[firstLevel.subnodes.size()]);
-	return new Node(Node.ROOT, subnodes);
-    }
-
-    @Override protected boolean tagMustBeClosed(String tag)
-    {
-	final String adjusted = tag.toLowerCase().trim();
-	for(String s: nonClosingTags)
-	    if (s.equals(adjusted))
-		return false;
-	return true;
-    }
-
-    @Override protected boolean admissibleTag(String tag)
-    {
-	if (tag == null || tag.trim().isEmpty())
-	    return false;
-	if (getCurrentTag().toLowerCase().equals("script"))
-	    return false;
-	return true;
     }
 }

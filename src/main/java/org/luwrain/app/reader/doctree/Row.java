@@ -1,7 +1,7 @@
 
 package org.luwrain.app.reader.doctree;
 
-class Row
+public class Row
 {
     /** Absolute horizontal position in the area*/
     public int x = 0;

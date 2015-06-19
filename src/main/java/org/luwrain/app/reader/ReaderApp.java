@@ -96,7 +96,7 @@ public class ReaderApp implements Application, Actions
 
     @Override public String getAppName()
     {
-	return "Reader";//FIXME:
+	return area != null?area.getAreaName():strings.appName();
     }
 
     @Override public AreaLayout getAreasToShow()
