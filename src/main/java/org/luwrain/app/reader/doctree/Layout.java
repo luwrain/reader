@@ -36,7 +36,10 @@ class Layout
 	    lines[i] = new Line();
 	for(int k = 0;k < rows.length;++k)
 	{
+	    if (rows[k].partsFrom < 0 || rows[k].partsTo < 0)
+		continue;
 	    final Line line = lines[rows[k].y];
+	    //	    System.out.println("y=" + rows[k].y);
 	    final int[] oldRows = line.rows;
 	    line.rows = new int[oldRows.length + 1];
 	    for(int i = 0;i < oldRows.length;++i)
@@ -48,15 +51,23 @@ class Layout
     private int calcRowsPosition()
     {
 	int maxLineNum = 0;
+	int lastX = 0;
+	int lastY = 0;
 	for(Row r: rows)
 	{
 	    //Generally admissible situation as not all rows should have associated parts;
 	    if (r.partsFrom < 0 || r.partsTo < 0 || r.partsFrom >= r.partsTo)
+	    {
+		r.x = lastX;
+		r.y = lastY + 1;
 		continue;
+	    }
 	    final Run run = rowParts[r.partsFrom].run;
 	    final Paragraph paragraph = run.parentParagraph;
 	    r.x = paragraph.x;
 	    r.y = paragraph.y + rowParts[r.partsFrom].relRowNum;
+	    lastX = r.x;
+	    lastY = r.y;
 	    if (r.y > maxLineNum)
 		maxLineNum = r.y;
 	}

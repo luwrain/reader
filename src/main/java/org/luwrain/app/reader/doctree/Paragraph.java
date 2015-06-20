@@ -85,7 +85,7 @@ public class Paragraph extends Node
 
     @Override public void calcHeight()
     {
-	if (rowParts == null && rowParts.length < 1)
+	if (rowParts == null || rowParts.length < 1)
 	{
 	    height = 0;
 	    return;
@@ -97,7 +97,7 @@ public class Paragraph extends Node
 	height = maxRelRowNum + 1;
     }
 
-    public boolean shouldHaveExtraLine()
+    @Override public boolean shouldHaveExtraLine()
     {
 	if (getParentType() == ROOT)
 	    return true;

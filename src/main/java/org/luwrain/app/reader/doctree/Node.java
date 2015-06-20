@@ -172,7 +172,7 @@ public class Node
 	    {
 		n.x = x;
 		n.y = y + offset;
-		offset += n.height;
+		offset += (n.height + (n.shouldHaveExtraLine()?1:0));
 		n.calcPosition();
 	    }
 	    break;
@@ -274,19 +274,10 @@ public class Node
 	return -1;
     }
 
-    /*
-    public boolean isFirstSubnode()
+    public boolean shouldHaveExtraLine()
     {
-	final int count = getParentSubnodeCount();
-	final int index = getIndexInParentSubnodes();
-	return count >= 0 && index == 0;
+	//Meaningful only for paragraphs;
+	return false;
     }
 
-    public boolean isLastSubnode()
-    {
-	final int count = getParentSubnodeCount();
-	final int index = getIndexInParentSubnodes();
-	return count >= 0 && index + 1 == count;
-    }
-    */
 }
