@@ -9,6 +9,7 @@ public class Filters
     public static final int UNRECOGNIZED = 0;
     public static final int DOC = 1;
     public static final int HTML = 2;
+    public static final int DOCX = 3;
 
     public Document readFromFile(String fileName)
     {
@@ -25,6 +26,9 @@ public class Filters
 	{
 	case DOC:
 	    filter = new Doc(fileName);
+	    break;
+	case DOCX:
+	    filter = new Docx(fileName);
 	    break;
 	case HTML:
 	    filter = new Html(true, fileName);
