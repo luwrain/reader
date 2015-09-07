@@ -1,14 +1,14 @@
 /*
    Copyright 2012-2015 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the Luwrain.
+   This file is part of the LUWRAIN.
 
-   Luwrain is free software; you can redistribute it and/or
+   LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
    License as published by the Free Software Foundation; either
    version 3 of the License, or (at your option) any later version.
 
-   Luwrain is distributed in the hope that it will be useful,
+   LUWRAIN is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
@@ -24,18 +24,16 @@ import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.*;
 
-import org.luwrain.app.reader.filters.Filters;
-import org.luwrain.app.reader.doctree.*;
+import org.luwrain.doctree.*;
 
 public class ReaderArea implements Area
 {
     private Luwrain luwrain;
     private ControlEnvironment environment;
-    final Region region = new Region(new EmptyRegionProvider(), this);
+    final Region region = new Region(new LinesRegionProvider(this));
     private Strings strings;
     private Actions actions;
 
-    private Filters filters;
     private Introduction introduction;
 
     private Document document;
@@ -45,21 +43,14 @@ public class ReaderArea implements Area
     public ReaderArea(Luwrain luwrain,
 		      Strings strings,
 		      Actions actions,
-		      Filters filters,
 Document document)
     {
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.actions = actions;
-	this.filters = filters;
-	if (luwrain == null)
-	    throw new NullPointerException("luwrain may not be null");
-	if (strings == null)
-	    throw new NullPointerException("stringss may not be null");
-	if (actions == null)
-	    throw new NullPointerException("actions may not be null");
-	if (filters == null)
-	    throw new NullPointerException("filters may not be null");
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(actions, "actions");
 	environment = new DefaultControlEnvironment(luwrain);
 	introduction = new Introduction(environment, strings);
 	this.document = document;
@@ -72,7 +63,6 @@ Document document)
 	if (document == null)
 	    throw new NullPointerException("document may not be null");
 	this.document = document;
-	new DumpInFileSystem(document.getRoot()).dump("/tmp/doc");
 	iterator = document.getIterator();
 	hotPointX = 0;
 	luwrain.onAreaNewContent(this);
@@ -165,14 +155,14 @@ Document document)
     {
 	if (document == null || iterator == null)
 	    return 0;
-	return iterator.getCurrentRow().x + hotPointX;
+	return iterator.getCurrentRow().getRowX() + hotPointX;
     }
 
     @Override public int getHotPointY()
     {
 	if (document == null || iterator == null)
 	    return 0;
-	return iterator.getCurrentRow().y;
+	return iterator.getCurrentRow().getRowY();
     }
 
     @Override public String getAreaName()
@@ -197,11 +187,11 @@ Document document)
 		luwrain.message(strings.errorFetching(), Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
-	    final Document doc = filters.readText(Filters.HTML, fetchEvent.getText());
+	    final Document doc = Factory.loadFromText(Factory.HTML, fetchEvent.getText());
 	    if (doc != null)
 	    {
 		setDocument(doc);
-		luwrain.playSound(Sounds.GENERAL_OK);
+		luwrain.playSound(Sounds.MESSAGE_DONE);
 	    }  else
 		luwrain.message("problem parsing", Luwrain.MESSAGE_ERROR);//FIXME:
 	    return true;
@@ -216,10 +206,10 @@ Document document)
 
 	if (iterator.isCurrentParaContainerTableCell())
 	{
-	    final Node cell = iterator.getCurrentParaContainer();
-	    final Table table = iterator.getTableOfCurrentParaContainer();
-	    final int col = table.getColIndexOfCell(cell);
-	    final int row = table.getRowIndexOfCell(cell);
+	    final TableCell cell = iterator.getTableCell();
+	    final Table table = cell.getTable();
+	    final int col = cell.getColIndex();
+	    final int row = cell.getRowIndex();
 	    if (table.isSingleLineRow(row) && row + 1 < table.getRowCount())
 	    {
 		final Node nextRowCell = table.getCell(0, row + 1);

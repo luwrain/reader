@@ -1,14 +1,14 @@
 /*
    Copyright 2012-2015 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the Luwrain.
+   This file is part of the LUWRAIN.
 
-   Luwrain is free software; you can redistribute it and/or
+   LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
    License as published by the Free Software Foundation; either
    version 3 of the License, or (at your option) any later version.
 
-   Luwrain is distributed in the hope that it will be useful,
+   LUWRAIN is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
@@ -19,7 +19,7 @@ package org.luwrain.app.reader;
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 
-import org.luwrain.app.reader.doctree.*;
+import org.luwrain.doctree.*;
 
 class Introduction
 {
@@ -30,10 +30,8 @@ class Introduction
     {
 	this.environment = environment;
 	this.strings = strings;
-	if (environment == null)
-	    throw new NullPointerException("environment may not be null");
-	if (strings == null)
-	    throw new NullPointerException("strings may not be null");
+	NullCheck.notNull(environment, "environment");
+	NullCheck.notNull(strings, "strings");
     }
 
     public void introduce(Iterator iterator, boolean briefIntroduction)
@@ -41,7 +39,7 @@ class Introduction
 	if (briefIntroduction ||
 	    iterator.isCurrentRowEmpty() ||
 	    iterator.getCurrentRowRelIndex() != 0 &&
-	    iterator.getCurrentParagraphIndex() != 0)
+	    !iterator.isCurrentParaFirst())
 	    simple(iterator); else
 	    advanced(iterator);
     }
@@ -57,20 +55,25 @@ class Introduction
 
     private void inListItem(Iterator iterator)
     {
-	final int itemIndex = iterator.getListItemIndexOfCurrentParaContainer();
+	if (!iterator.isCurrentParaContainerListItem())
+	    throw new IllegalArgumentException("Iterator isn\'t in list item");
+	final ListItem item = iterator.getListItem();
+	final int itemIndex = item.getListItemIndex();
 	final String text = iterator.getCurrentText();
-	if (iterator.isListOfCurrentParaContainerOrdered())
+	if (item.isListOrdered())
 	    environment.say(strings.orderedListItemIntroduction(itemIndex, text)); else
 	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
     }
 
     private void inTableCell(Iterator iterator)
     {
-	final Table table = iterator.getTableOfCurrentParaContainer();
+	if (!iterator.isCurrentParaContainerTableCell())
+	    throw new IllegalArgumentException("Iterator isn\'t is table cell");
+	final TableCell cell = iterator.getTableCell();
+	final Table table = cell.getTable();
 	final int level = table.getTableLevel();
-	final Node cell = iterator.getCurrentParaContainer();
-	final int colIndex = table.getColIndexOfCell(cell);
-	final int rowIndex = table.getRowIndexOfCell(cell);
+	final int colIndex = cell.getColIndex();
+	final int rowIndex = cell.getRowIndex();
 	final int colCount = table.getColCount();
 	final int rowCount = table.getRowCount();
 	String text = "";
@@ -80,7 +83,7 @@ class Introduction
 	    StringBuilder s = new StringBuilder();
 	    for(int i = 0;i < colCount;++i)
 	    {
-		final Node n = table.getCell(i, rowIndex);
+		final TableCell n = table.getCell(i, rowIndex);
 		if (n != null)
 		    System.out.println("n=" + n.toString());
 	    if (n != null)

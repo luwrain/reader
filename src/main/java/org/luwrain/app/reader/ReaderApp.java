@@ -1,14 +1,14 @@
 /*
    Copyright 2012-2015 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the Luwrain.
+   This file is part of the LUWRAIN.
 
-   Luwrain is free software; you can redistribute it and/or
+   LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
    License as published by the Free Software Foundation; either
    version 3 of the License, or (at your option) any later version.
 
-   Luwrain is distributed in the hope that it will be useful,
+   LUWRAIN is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
@@ -19,8 +19,7 @@ package org.luwrain.app.reader;
 import java.net.*;
 
 import org.luwrain.core.*;
-import org.luwrain.app.reader.doctree.*;
-import org.luwrain.app.reader.filters.Filters;
+import org.luwrain.doctree.*;
 
 public class ReaderApp implements Application, Actions
 {
@@ -33,7 +32,6 @@ public class ReaderApp implements Application, Actions
     private Strings strings;
     private ReaderArea area;
     private Document doc;
-    private Filters filters = new Filters();
 
     private String arg;
     private int argType;
@@ -71,15 +69,20 @@ public class ReaderApp implements Application, Actions
 	if (arg != null && !arg.isEmpty() &&
 	    argType == LOCAL)
  	{
-	    doc = filters.readFromFile(arg);
+	    final int format = Factory.suggestFormat(arg);
+	    if (format == Factory.UNRECOGNIZED)
+	    {
+		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);//FIXME:More accurate message
+		return false;
+	    }
+	    doc = Factory.loadFromFile(format, arg);
 	    if (doc == null)
 	    {
 		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
 		return false;
 	    }
-	new DumpInFileSystem(doc.getRoot()).dump("/tmp/doc");
  	}
-	area = new ReaderArea(luwrain, strings, this, filters, doc);
+	area = new ReaderArea(luwrain, strings, this, doc);
 	if (arg != null && !arg.isEmpty() &&
 	    argType == URL)
 	    try {
