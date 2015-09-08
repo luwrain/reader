@@ -17,15 +17,18 @@
 package org.luwrain.app;
 
 import org.luwrain.core.*;
+import org.luwrain.popups.Popups;
 
 import org.luwrain.app.reader.ReaderApp;
 import org.luwrain.app.wiki.WikiApp;
 
-public class Extension extends org.luwrain.core.extensions.EmptyExtension
+public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
 {
     @Override public Command[] getCommands(Luwrain luwrain)
     {
-	Command reader = new Command(){
+	return new Command[]{
+
+	    new Command(){
 		@Override public String getName()
 		{
 		    return "reader";
@@ -34,8 +37,22 @@ public class Extension extends org.luwrain.core.extensions.EmptyExtension
 		{
 		    luwrain.launchApp("reader");
 		}
-	    };
-	Command wiki = new Command(){
+	    },
+
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "reader-open-url";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");
+		    if (url != null && !url.trim().isEmpty())
+			luwrain.launchApp("reader", new String[]{"--URL", url});
+		}
+	    },
+
+	    new Command(){
 		@Override public String getName()
 		{
 		    return "wiki";
@@ -44,8 +61,7 @@ public class Extension extends org.luwrain.core.extensions.EmptyExtension
 		{
 		    luwrain.launchApp("wiki");
 		}
-	    };
-	return new Command[]{reader, wiki};
+	    }};
     }
 
     @Override public Shortcut[] getShortcuts(Luwrain luwrain)

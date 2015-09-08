@@ -18,6 +18,7 @@ package org.luwrain.app.reader;
 
 import java.net.*;
 import java.io.*;
+import java.nio.file.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.MlReader;
@@ -25,66 +26,100 @@ import org.luwrain.doctree.filters.HtmlEncoding;
 
 class FetchThread implements Runnable
 {
+    static private final String DEFAULT_ENCODING = "UTF-8";
+
     private Luwrain luwrain;
     private Area area;
     private URL url;
+    private boolean done = false;
 
-    public FetchThread(Luwrain luwrain,
-		       Area area,
-		       URL url)
+    FetchThread(Luwrain luwrain,
+		Area area,
+		URL url)
     {
 	this.luwrain = luwrain;
 	this.area = area;
 	this.url = url;
-	if (luwrain == null)
-	    throw new NullPointerException("luwrain may not be null");
-	if (area == null)
-	    throw new NullPointerException("area may not be null");
-	if (url == null)
-	    throw new NullPointerException("url may not be null");
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(area, "area");
+	NullCheck.notNull(url, "url");
     }
 
     @Override public void run()
     {
+	done = false;
 	try {
-	    impl();
+	    luwrain.enqueueEvent(new FetchEvent(area, impl()));
 	}
 	catch (Exception e)
 	{
 	    e.printStackTrace();
 	    luwrain.enqueueEvent(new FetchEvent(area));
 	}
+	done = true;
     }
 
-    private void impl() throws Exception
+    private String impl() throws Exception
     {
-        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-	StringBuilder builder = new StringBuilder();
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-	    builder.append(inputLine);
-        in.close();
-
-	final String encoding = htmlEncoding(builder.toString());
-	//Not elegant, needs to be rewritten;
-	if (!encoding.trim().isEmpty())
+	URLConnection con;
+	InputStream inputStream = null;
+	String contentTypeCharset = null;
+	File tmpFile = null;
+	byte[] content = null;
+	try {
+	    con = url.openConnection();
+	    contentTypeCharset = getContentTypeCharset(con.getContentType());
+	    inputStream = con.getInputStream();
+	    tmpFile = File.createTempFile(this.getClass().getName(), null);
+	    final Path path = tmpFile.toPath();
+	    Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
+	    //FIXME:Check the size;
+	    content = Files.readAllBytes(path);
+	}
+	finally
 	{
-	    in = new BufferedReader(new InputStreamReader(url.openStream(), encoding));
-builder = new StringBuilder();
-        while ((inputLine = in.readLine()) != null)
-	    builder.append(inputLine);
-        in.close();
+	    if (inputStream != null)
+		inputStream.close();
+	    if (tmpFile != null)
+		tmpFile.delete();
+	}
+	if (contentTypeCharset != null)
+	{
+	    try {
+		return new String(content, contentTypeCharset);
+	    }
+	    catch (UnsupportedEncodingException e){}
+	}
+	final String encoding = htmlEncoding(new String(content, "US-ASCII"));
+	if (encoding == null || encoding.trim().isEmpty())
+	    return new String(content, DEFAULT_ENCODING);
+	try {
+	    return new String(content, encoding);
+	}
+	catch (UnsupportedEncodingException e)
+	{
+	    return new String(content, DEFAULT_ENCODING);
+	}
     }
 
-	luwrain.enqueueEvent(new FetchEvent(area, builder.toString()));
-
-	//	System.out.println("done");
-    }
-
-    private static String htmlEncoding(String text)
+    static private String htmlEncoding(String text)
     {
 	HtmlEncoding encoding = new HtmlEncoding();
 	new MlReader(encoding, encoding, text).read();
 	return encoding.getEncoding();
+    }
+
+    static private String getContentTypeCharset(String text)
+    {
+	if (text == null || text.trim().isEmpty())
+	    return null;
+	final String[] values = text.split(";");
+	for (String v: values)
+	{
+	    final String adjusted = v.toLowerCase().trim();
+	    if (adjusted.startsWith("charset="))
+		return adjusted.substring("charset=".length());
+	}
+	return null;
     }
 }

@@ -24,7 +24,9 @@ public interface Strings
     String tableCellIntroduction(int row, int col, String text);
     String orderedListItemIntroduction(int index, String text);
     String unorderedListItemIntroduction(int index, String text);
+    String paragraphIntroduction(String text);
     String errorOpeningFile();
     String errorFetching();
     String noContent();
+    String fetchingContent();
 }

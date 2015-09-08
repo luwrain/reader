@@ -18,15 +18,14 @@ package org.luwrain.app.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-
 import org.luwrain.doctree.*;
 
-class Introduction
+class Introduction implements RowIntroduction
 {
     private ControlEnvironment environment;
     private Strings strings;
 
-    public Introduction(ControlEnvironment environment, Strings strings)
+    Introduction(ControlEnvironment environment, Strings strings)
     {
 	this.environment = environment;
 	this.strings = strings;
@@ -34,12 +33,11 @@ class Introduction
 	NullCheck.notNull(strings, "strings");
     }
 
-    public void introduce(Iterator iterator, boolean briefIntroduction)
+    @Override public void introduce(Iterator iterator, boolean briefIntroduction)
     {
 	if (briefIntroduction ||
 	    iterator.isCurrentRowEmpty() ||
-	    iterator.getCurrentRowRelIndex() != 0 &&
-	    !iterator.isCurrentParaFirst())
+	    !iterator.isCurrentRowFirst())
 	    simple(iterator); else
 	    advanced(iterator);
     }
@@ -50,7 +48,12 @@ class Introduction
 	    inTableCell(iterator); else
 	    if (iterator.isCurrentParaContainerListItem())
 		inListItem(iterator); else
-		environment.say(iterator.getCurrentText());
+	    {
+		final ParagraphImpl para = iterator.getCurrentParagraph();
+		if (para.hasSingleLineOnly())
+		environment.say(iterator.getCurrentText()); else
+		    environment.say(strings.paragraphIntroduction(iterator.getCurrentText()));
+	    }
     }
 
     private void inListItem(Iterator iterator)

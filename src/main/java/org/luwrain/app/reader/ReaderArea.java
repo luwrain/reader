@@ -23,112 +23,31 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.*;
-
 import org.luwrain.doctree.*;
 
-public class ReaderArea implements Area
+class ReaderArea extends DocTreeArea
 {
     private Luwrain luwrain;
-    private ControlEnvironment environment;
-    final Region region = new Region(new LinesRegionProvider(this));
     private Strings strings;
     private Actions actions;
 
-    private Introduction introduction;
-
-    private Document document;
-    private Iterator iterator;
-    private int hotPointX = 0;
-
-    public ReaderArea(Luwrain luwrain,
+    ReaderArea(Luwrain luwrain,
 		      Strings strings,
 		      Actions actions,
-Document document)
+	       Document document)
     {
+	super(new DefaultControlEnvironment(luwrain), new Introduction(new DefaultControlEnvironment(luwrain), strings), document);
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.actions = actions;
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(actions, "actions");
-	environment = new DefaultControlEnvironment(luwrain);
-	introduction = new Introduction(environment, strings);
-	this.document = document;
-	if (document != null)
-	    iterator = document.getIterator();
-    }
-
-    public void setDocument(Document document)
-    {
-	if (document == null)
-	    throw new NullPointerException("document may not be null");
-	this.document = document;
-	iterator = document.getIterator();
-	hotPointX = 0;
-	luwrain.onAreaNewContent(this);
-    }
-
-    @Override public int getLineCount()
-    {
-	return document != null?document.getLineCount() + 1:1;
-    }
-
-    @Override public String getLine(int index)
-    {
-	if (document == null)
-	    return "";
-	return index < document.getLineCount()?document.getLine(index):"";
-    }
-
-    @Override public boolean onKeyboardEvent(KeyboardEvent event) 
-    {
-	if (event == null)
-	    throw new NullPointerException("event may not be null");
-	if (event.isCommand() && !event.isModified())
-	    switch(event.getCommand())
-	    {
-	    case KeyboardEvent.ARROW_DOWN:
-		return onArrowDown(event, false);
-	    case KeyboardEvent.ARROW_UP:
-		return onArrowUp(event, false);
-	    case KeyboardEvent.ALTERNATIVE_ARROW_DOWN:
-		return onArrowDown(event, true);
-	    case KeyboardEvent.ALTERNATIVE_ARROW_UP:
-		return onArrowUp(event, true);
-	    case KeyboardEvent.ARROW_LEFT:
-		return onArrowLeft(event);
-	    case KeyboardEvent.ARROW_RIGHT:
-		return onArrowRight(event);
-	    case KeyboardEvent.ALTERNATIVE_ARROW_LEFT:
-		return onAltLeft(event);
-	    case KeyboardEvent.ALTERNATIVE_ARROW_RIGHT:
-		return onAltRight(event);
-	    case KeyboardEvent.HOME:
-		return onHome(event);
-	    case KeyboardEvent .END:
-		return onEnd(event);
-	    case KeyboardEvent.ALTERNATIVE_HOME:
-		return onAltHome(event);
-	    case KeyboardEvent .ALTERNATIVE_END:
-		return onAltEnd(event);
-	    case KeyboardEvent.PAGE_UP:
-		return onPageUp(event, false);
-	    case KeyboardEvent.PAGE_DOWN:
-		return onPageDown(event, false);
-	    case KeyboardEvent.ALTERNATIVE_PAGE_UP:
-		return onPageUp(event, true);
-	    case KeyboardEvent.ALTERNATIVE_PAGE_DOWN:
-		return onPageDown(event, true);
-	    default:
-		return false;
-	    }
-	return false;
     }
 
     @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
     {
-	    if (event == null)
-	    throw new NullPointerException("event may not be null");
+	NullCheck.notNull(event, "event");
 	switch(event.getCode())
 	{
 	case EnvironmentEvent.THREAD_SYNC:
@@ -137,44 +56,14 @@ Document document)
 	    actions.closeApp();
 	    return true;
 	default:
-	    return region.onEnvironmentEvent(event, getHotPointX(), getHotPointY());
+	    return super.onEnvironmentEvent(event);
 	}
-    }
-
-    @Override public Action[] getAreaActions()
-    {
-	return null;
-    }
-
-    @Override public boolean onAreaQuery(AreaQuery query)
-    {
-	return region.onAreaQuery(query, getHotPointX(), getHotPointY());
-    }
-
-    @Override public int getHotPointX()
-    {
-	if (document == null || iterator == null)
-	    return 0;
-	return iterator.getCurrentRow().getRowX() + hotPointX;
-    }
-
-    @Override public int getHotPointY()
-    {
-	if (document == null || iterator == null)
-	    return 0;
-	return iterator.getCurrentRow().getRowY();
     }
 
     @Override public String getAreaName()
     {
-	if (document != null)
-	{
-	    final String title = document.getTitle();
-	    if (title == null || title.trim().isEmpty())
-		return strings.appName();
-	    return title.trim();
-	}
-	return strings.appName();
+	final Document doc = getDocument();
+	return doc != null?doc.getTitle():strings.appName();
     }
 
     private boolean onThreadSync(EnvironmentEvent event)
@@ -199,264 +88,9 @@ Document document)
 	return false;
     }
 
-    private boolean onArrowDown(KeyboardEvent event, boolean briefIntroduction)
+    @Override protected void noContentMessage()
     {
-	if (noContentCheck())
-	    return true;
-
-	if (iterator.isCurrentParaContainerTableCell())
-	{
-	    final TableCell cell = iterator.getTableCell();
-	    final Table table = cell.getTable();
-	    final int col = cell.getColIndex();
-	    final int row = cell.getRowIndex();
-	    if (table.isSingleLineRow(row) && row + 1 < table.getRowCount())
-	    {
-		final Node nextRowCell = table.getCell(0, row + 1);
-		if (iterator.moveNextUntilContainer(nextRowCell))
-		{
-	onNewHotPointY( briefIntroduction );
-	return true;
-		}
-	    }
-	}
-
-	if (!iterator.moveNext())
-	{
-	    environment.hint(Hints.NO_LINES_BELOW);
-	    return false;
-	}
-	onNewHotPointY( briefIntroduction );
-	return true;
+	luwrain.hint(strings.noContent(), Hints.NO_CONTENT);
     }
 
-    private boolean onArrowUp(KeyboardEvent event, boolean briefIntroduction)
-    {
-	if (noContentCheck())
-	    return true;
-	if (!iterator.movePrev())
-	{
-	    environment.hint(Hints.NO_LINES_ABOVE);
-	    return true;
-	}
-	onNewHotPointY( briefIntroduction);
-	return true;
-    }
-
-    private boolean onAltEnd(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	iterator.moveEnd();
-	hotPointX = 0;
-	onNewHotPointY( false);
-	return true;
-    }
-
-    private boolean onAltHome(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	iterator.moveHome();
-	hotPointX = 0;
-	onNewHotPointY( false);
-	return true;
-    }
-
-    //TODO:
-    private boolean onPageDown(KeyboardEvent event, boolean briefIntroduction)
-    {
-	/*
-	if (noContentCheck())
-	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY >= count)
-	{
-	    environment.hint(Hints.NO_LINES_BELOW);
-	    return false;
-	}
-	++hotPointY;
-	onNewHotPointY( briefIntroduction );
-	*/
-	return true;
-    }
-
-    //TODO:
-    private boolean onPageUp(KeyboardEvent event, boolean briefIntroduction)
-    {
-	/*
-	if (noContentCheck())
-	    return true;
-	final int count = document.getRowCount();
-	if (hotPointY <= 0)
-	{
-	    environment.hint(Hints.NO_LINES_ABOVE);
-	    return true;
-	}
-	--hotPointY;
-	onNewHotPointY( briefIntroduction);
-	*/
-	return true;
-    }
-
-    private boolean onArrowLeft(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (!iterator.isCurrentRowEmpty())
-	{
-	final String text = iterator.getCurrentText();
-	if (hotPointX > text.length())
-	    hotPointX = text.length();
-	if (hotPointX > 0)
-	{
-	    --hotPointX;
-	    environment.sayLetter(text.charAt(hotPointX));
-	    environment.onAreaNewHotPoint(this);
-	    return true;
-	}
-    }
-	if (!iterator.canMovePrev())
-	{
-	    environment.hint(Hints.BEGIN_OF_TEXT);
-	    return true;
-	}
-	iterator.movePrev();
-	final String prevRowText = iterator.getCurrentText();
-	hotPointX = prevRowText.length();
-	environment.hint(Hints.END_OF_LINE);
-	return true;
-    }
-
-    private boolean onArrowRight(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (!iterator.isCurrentRowEmpty())
-	{
-	final String text = iterator.getCurrentText();
-	if (hotPointX < text.length())
-	{
-	    ++hotPointX;
-	    if (hotPointX < text.length())
-		environment.sayLetter(text.charAt(hotPointX)); else
-		environment.hint(Hints.END_OF_LINE);
-	    environment.onAreaNewContent(this);
-	    return true;
-	}
-}
-	if (!iterator.canMoveNext())
-	{
-	    environment.hint(Hints.END_OF_TEXT);
-	    return true;
-	}
-	iterator.moveNext();
-	final String nextRowText = iterator.getCurrentText();
-	hotPointX = 0;
-	if (nextRowText.isEmpty())
-	    environment.hint(Hints.END_OF_LINE); else
-	    environment.sayLetter(nextRowText.charAt(0));
-	environment.onAreaNewHotPoint(this);
-	return true;
-    }
-
-    private boolean onAltLeft(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (iterator.isCurrentRowEmpty())
-	{
-	    environment.hint(Hints.EMPTY_LINE);
-	    return true;
-	}
-	final String text = iterator.getCurrentText();
-	final WordIterator it = new WordIterator(text, hotPointX);
-	if (!it.stepBackward())
-	{
-	    environment.hint(Hints.BEGIN_OF_LINE);
-	    return true;
-	}
-	hotPointX = it.pos();
-	environment.say(it.announce());
-	environment.onAreaNewHotPoint(this);
-	return true;
-    }
-
-    private boolean onAltRight(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (iterator.isCurrentRowEmpty())
-	{
-	    environment.hint(Hints.EMPTY_LINE);
-	    return true;
-	}
-	final String text = iterator.getCurrentText();
-	final WordIterator it = new WordIterator(text, hotPointX);
-	if (!it.stepForward())
-	{
-	    environment.hint(Hints.END_OF_LINE);
-	    return true;
-	}
-	hotPointX = it.pos();
-	if (it.announce().length() > 0)
-	    environment.say(it.announce()); else
-	    environment.hint(Hints.END_OF_LINE);
-	environment.onAreaNewHotPoint(this);
-	return true;
-    }
-
-    private boolean onHome(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (iterator.isCurrentRowEmpty())
-	{
-	    environment.hint(Hints.EMPTY_LINE);
-	    return true;
-	}
-	final String text = iterator.getCurrentText();
-	hotPointX = 0;
-	if (!text.isEmpty())
-	    environment.sayLetter(text.charAt(0)); else
-	    environment.hint(Hints.EMPTY_LINE);
-	environment.onAreaNewHotPoint(this);
-	return true;
-    }
-
-    private boolean onEnd(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (iterator.isCurrentRowEmpty())
-	{
-	    environment.hint(Hints.EMPTY_LINE);
-	    return true;
-	}
-
-	final String text = iterator.getCurrentText();
-	hotPointX = text.length();
-	environment.hint(Hints.END_OF_LINE);
-	environment.onAreaNewHotPoint(this);
-	return true;
-    }
-
-    private void onNewHotPointY(boolean briefIntroduction)
-    {
-	hotPointX = 0;
-	if (iterator.isCurrentRowEmpty())
-	    environment.hint(Hints.EMPTY_LINE); else
-	    introduction.introduce(iterator, briefIntroduction);
-	environment.onAreaNewHotPoint(this);
-    }
-
-    private boolean noContentCheck()
-    {
-	if (document == null)
-	{
-	    environment.hint(strings.noContent());
-	    return true;
-	}
-	return false;
-    }
 }
