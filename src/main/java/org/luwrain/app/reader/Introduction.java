@@ -46,6 +46,8 @@ class Introduction implements RowIntroduction
     {
 	if (iterator.isCurrentParaContainerTableCell())
 	    inTableCell(iterator); else
+	    if (iterator.isCurrentParaContainerSection())
+		inSection(iterator); else
 	    if (iterator.isCurrentParaContainerListItem())
 		inListItem(iterator); else
 	    {
@@ -67,6 +69,14 @@ class Introduction implements RowIntroduction
 	    environment.say(strings.orderedListItemIntroduction(itemIndex, text)); else
 	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
     }
+
+    private void inSection(Iterator iterator)
+    {
+	final Section sect = iterator.getSection();
+	final String text = iterator.getCurrentText();
+	environment.say("Заголовок уровня " + sect.getSectionLevel() + " " + text);
+    }
+
 
     private void inTableCell(Iterator iterator)
     {

@@ -4,9 +4,6 @@
      <fileset dir="lib">
       <include name="**/*.jar"/>
     </fileset>
-     <fileset dir="../poi-3.12">
-      <include name="**/*.jar"/>
-    </fileset>
   </path>
   <path id="mainjar">
     <pathelement location="."/>
