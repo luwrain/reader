@@ -72,7 +72,6 @@ class FetchThread implements Runnable
     private void impl() throws Exception
     {
 	final URL url = new URL("https://" + lang + ".wikipedia.org/w/api.php?action=query&list=search&srsearch=" + URLEncoder.encode(query, "UTF-8") + "&format=xml");
-	System.out.println("url=" + url.toString());
 	final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	final Document document = builder.parse(new InputSource(url.openStream()));
 	final NodeList nodes = document.getElementsByTagName("p");

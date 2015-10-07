@@ -16,6 +16,7 @@
 
 package org.luwrain.app;
 
+import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 
@@ -46,11 +47,28 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");
+		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");//FIXME:
 		    if (url != null && !url.trim().isEmpty())
 			luwrain.launchApp("reader", new String[]{"--URL", url});
 		}
 	    },
+
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "reader-search-google";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    final String query = Popups.simple(luwrain, "Поиск в Google", "Введите поисковый запрос:", "");//FIXME:
+		    if (query != null && !query.trim().isEmpty())
+		    {
+			final String url = "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=ru&ie=koi8-r";
+			luwrain.launchApp("reader", new String[]{"--URL", url});
+		    }
+		}
+	    },
+
 
 	    new Command(){
 		@Override public String getName()

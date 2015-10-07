@@ -68,6 +68,7 @@ class FetchThread implements Runnable
 	byte[] content = null;
 	try {
 	    con = url.openConnection();
+con.setRequestProperty("User-Agent", "Mozilla/4.0");
 	    contentTypeCharset = getContentTypeCharset(con.getContentType());
 	    inputStream = con.getInputStream();
 	    tmpFile = File.createTempFile(this.getClass().getName(), null);
