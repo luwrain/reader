@@ -44,19 +44,30 @@ class Introduction implements RowIntroduction
 
     private void advanced(Iterator iterator)
     {
+	if (iterator.getCurrentParaIndex() > 0)
+    {
+	inParagraph(iterator);
+	return;
+    }
 	if (iterator.isCurrentParaContainerTableCell())
 	    inTableCell(iterator); else
 	    if (iterator.isCurrentParaContainerSection())
 		inSection(iterator); else
-	    if (iterator.isCurrentParaContainerListItem())
-		inListItem(iterator); else
-	    {
+		if (iterator.isCurrentParaContainerListItem())
+		    inListItem(iterator); else
+		    inParagraph(iterator);
+}
+
+private void inParagraph(Iterator iterator)
+{
+    {
 		final ParagraphImpl para = iterator.getCurrentParagraph();
 		if (para.hasSingleLineOnly())
 		environment.say(iterator.getCurrentText()); else
 		    environment.say(strings.paragraphIntroduction(iterator.getCurrentText()));
 	    }
-    }
+
+}
 
     private void inListItem(Iterator iterator)
     {
@@ -77,11 +88,8 @@ class Introduction implements RowIntroduction
 	environment.say("Заголовок уровня " + sect.getSectionLevel() + " " + text);
     }
 
-
     private void inTableCell(Iterator iterator)
     {
-	if (!iterator.isCurrentParaContainerTableCell())
-	    throw new IllegalArgumentException("Iterator isn\'t is table cell");
 	final TableCell cell = iterator.getTableCell();
 	final Table table = cell.getTable();
 	final int level = table.getTableLevel();
@@ -89,6 +97,21 @@ class Introduction implements RowIntroduction
 	final int rowIndex = cell.getRowIndex();
 	final int colCount = table.getColCount();
 	final int rowCount = table.getRowCount();
+
+	/*
+	if (colIndex == 1)
+	{
+	    System.out.println(iterator.getCurrentText());
+	    System.out.println(iterator.getCurrentRowRelIndex());
+	}
+	*/
+
+
+	if (rowCount < 2)
+	{
+	    simple(iterator);
+	    return;
+	}
 	String text = "";
 	//If the row has only one line in height we speak all cells of this line;
 	if (colIndex == 0 && table.isSingleLineRow(rowIndex))
@@ -97,10 +120,8 @@ class Introduction implements RowIntroduction
 	    for(int i = 0;i < colCount;++i)
 	    {
 		final TableCell n = table.getCell(i, rowIndex);
-		if (n != null)
-		    System.out.println("n=" + n.toString());
 	    if (n != null)
-		s.append(n.toString());
+		s.append(n.toString() + " ");
 	    }
 	    text = s.toString();
 	} else

@@ -23,70 +23,72 @@ import org.luwrain.doctree.*;
 
 public class ReaderApp implements Application, Actions
 {
-    public static final String STRINGS_NAME = "luwrain.reader";
+    static private final String STRINGS_NAME = "luwrain.reader";
 
-    public static final int LOCAL = 1;;
-    public static final int URL = 2;
 
     private Luwrain luwrain;
     private Strings strings;
     private ReaderArea area;
-    private Document doc;
-
-    private String arg;
-    private int argType;
+    private Document doc = null;
+    private final DocInfo docInfo = new DocInfo();
 
     public ReaderApp()
     {
-	arg = null;
-	argType = LOCAL;
     }
 
-    public ReaderApp(int type, String arg)
+    public ReaderApp(int type, String file)
     {
-	this.argType = type;
-	this.arg = arg;
-	if (arg == null)
-	    throw new NullPointerException("arg may not be null");
-	if (type != LOCAL && type != URL)
-	    throw new IllegalArgumentException("type must be either ReaderApp.LOCAL or ReaderApp.URL");
+	NullCheck.notNull(file, "file");
+	docInfo.type = type;
+docInfo.fileName = file;
+    }
+
+    public ReaderApp(int type, String file, String format)
+    {
+	NullCheck.notNull(file, "file");
+	NullCheck.notNull(format, "format");
+	docInfo.type = type;
+	docInfo.fileName = file;
+	docInfo.format = DocInfo.formatByStr(format);
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
-	Object o = luwrain.i18n().getStrings("luwrain.reader");
+	final Object o = luwrain.i18n().getStrings(STRINGS_NAME);
 	if (o == null || !(o instanceof Strings))
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	if (!handleArg())
-	    return false;
-	    return true;
+	return processArgs();
     }
 
-    private boolean handleArg()
+    private boolean processArgs()
     {
-	if (arg != null && !arg.isEmpty() &&
-	    argType == LOCAL)
- 	{
-	    final int format = Factory.suggestFormat(arg);
-	    if (format == Factory.UNRECOGNIZED)
-	    {
-		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);//FIXME:More accurate message
-		return false;
-	    }
-	    doc = Factory.loadFromFile(format, arg);
+	if (docInfo.fileName == null || docInfo.fileName.isEmpty())
+	{
+	    area = new ReaderArea(luwrain, strings, this, null, docInfo);
+	    return true;
+	}
+	if (docInfo.type == DocInfo.LOCAL)
+	{
+	    if (docInfo.format == Factory.UNRECOGNIZED)
+		docInfo.format = Factory.suggestFormat(docInfo.fileName);
+	    if (docInfo.format == Factory.UNRECOGNIZED)
+		docInfo.format = DocInfo.DEFAULT_FORMAT;
+	    doc = Factory.loadFromFile(docInfo.format, docInfo.fileName, luwrain.getScreenWidth() - 2, docInfo.charset);
 	    if (doc == null)
 	    {
 		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
 		return false;
 	    }
- 	}
-	area = new ReaderArea(luwrain, strings, this, doc);
-	if (arg != null && !arg.isEmpty() &&
-	    argType == URL)
+	    area = new ReaderArea(luwrain, strings, this, doc, docInfo);
+	    return true;
+	}
+	if (docInfo.type == DocInfo.URL)
+	{
 	    try {
-		new Thread(new FetchThread(luwrain, area, new URL(arg))).start();
+		area = new ReaderArea(luwrain, strings, this, null, docInfo);
+		new Thread(new FetchThread(luwrain, area, new URL(docInfo.fileName))).start();
 	    }
 	    catch (MalformedURLException e)
 	    {
@@ -94,7 +96,9 @@ public class ReaderApp implements Application, Actions
 		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
 		return false;
 	    }
-	return true;
+	    return true;
+	}
+	return false;
     }
 
     @Override public String getAppName()

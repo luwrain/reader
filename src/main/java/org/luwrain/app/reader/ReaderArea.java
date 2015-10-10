@@ -24,32 +24,56 @@ import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.*;
 import org.luwrain.doctree.*;
+import org.luwrain.popups.Popups;
 
 class ReaderArea extends DocTreeArea
 {
+    static public final int MIN_VISIBLE_WIDTH = 10;
+
     private Luwrain luwrain;
     private Strings strings;
     private Actions actions;
+    private DocInfo docInfo;
 
-    ReaderArea(Luwrain luwrain,
-		      Strings strings,
-		      Actions actions,
-	       Document document)
+    ReaderArea(Luwrain luwrain, Strings strings,
+	       Actions actions, Document document,
+	       DocInfo docInfo)
     {
 	super(new DefaultControlEnvironment(luwrain), new Introduction(new DefaultControlEnvironment(luwrain), strings), document);
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.actions = actions;
+	this.docInfo = docInfo;
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(actions, "actions");
+	NullCheck.notNull(docInfo, "docInfo");
     }
+
+
 
     @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
     {
 	NullCheck.notNull(event, "event");
 	switch(event.getCode())
 	{
+	case EnvironmentEvent.ACTION:
+	    if (ActionEvent.isAction(event, "open"))
+	    {
+		onOpenDoc();
+		return true;
+	    }
+	    if (ActionEvent.isAction(event, "new-format"))
+	    {
+		onNewFormat();
+		return true;
+	    }
+	    if (ActionEvent.isAction(event, "new-charset"))
+	    {
+		onNewCharset();
+		return true;
+	    }
+	    return false;
 	case EnvironmentEvent.THREAD_SYNC:
 	    return onThreadSync(event);
 	case EnvironmentEvent.CLOSE:
@@ -60,10 +84,95 @@ class ReaderArea extends DocTreeArea
 	}
     }
 
+    @Override public Action[] getAreaActions()
+    {
+	return new Action[]{
+	    new Action("open", "Открыть документ"),//FIXME:
+	    new Action("new-format", "Сменить формат"),//FIXME:
+	    new Action("new-charset", "Сменить кодировку"),//FIXME:
+	};
+    }
+
     @Override public String getAreaName()
     {
 	final Document doc = getDocument();
 	return doc != null?doc.getTitle():strings.appName();
+    }
+
+    private void onOpenDoc()
+    {
+	final File f = Popups.file(luwrain, "Просмотр файла", "Выберите файл для просмотра", 
+				   luwrain.launchContext().userHomeDirAsFile(), 0, 0);
+	if (f == null)
+	    return;
+	if (f.isDirectory())
+	{
+	    luwrain.message("Просмотр невозможен для каталогов", Luwrain.MESSAGE_ERROR);
+	    return;
+	}
+	int format = Factory.suggestFormat(f.getAbsolutePath());
+	if (format == Factory.UNRECOGNIZED)
+	    format = DocInfo.DEFAULT_FORMAT;
+	final Document doc = Factory.loadFromFile(format, f.getAbsolutePath(), getSuitableWidth(), DocInfo.DEFAULT_CHARSET);
+	if (doc == null)
+	{
+	    luwrain.message("Во время открытия файла произошла непредвиденная ошибка", Luwrain.MESSAGE_ERROR);
+	    return;
+	}
+setDocument(doc);
+	docInfo.charset = DocInfo.DEFAULT_CHARSET;
+	docInfo.format = format;
+	docInfo.fileName = f.getAbsolutePath();
+
+    }
+
+    void onNewFormat()
+    {
+
+
+	if (getDocument() == null)
+	{
+	    luwrain.message("Нет открытого документа", Luwrain.MESSAGE_ERROR);//FIXME:
+	    return;
+	}
+final int res = chooseFormat();
+if (res == Factory.UNRECOGNIZED)
+    return;
+	final Document doc = Factory.loadFromFile(res, docInfo.fileName, getSuitableWidth(), docInfo.charset);
+	if (doc == null)
+	{
+	    luwrain.message("Не удалось перечитать документ с новыми параметрами", Luwrain.MESSAGE_ERROR);
+	    return;
+	}
+	setDocument(doc);
+	docInfo.format = res;
+    }
+
+    private void onNewCharset()
+    {
+	if (getDocument() == null)
+	{
+	    luwrain.message("Нет открытого документа", Luwrain.MESSAGE_ERROR);//FIXME:
+	    return;
+	}
+	final String[] charsets = new String[]{//FIXME:
+		"UTF-8",
+		    "KOI8-R",
+		    "windows-1251",
+		//FIXME:		    "IBMM866",
+		    "x-MacCyrillic",
+		    };
+	final String res = (String)Popups.fixedList(luwrain, "Выберите новую кодировку:", charsets, 0); 
+	if (res == null)
+	    return;
+	final Document doc = Factory.loadFromFile(docInfo.format, docInfo.fileName, getSuitableWidth(), res);
+	if (doc == null)
+	{
+	    luwrain.message("Не удалось перечитать документ с новыми параметрами", Luwrain.MESSAGE_ERROR);
+	    return;
+	}
+	setDocument(doc);
+	docInfo.charset = res;
     }
 
     private boolean onThreadSync(EnvironmentEvent event)
@@ -76,7 +185,7 @@ class ReaderArea extends DocTreeArea
 		luwrain.message(strings.errorFetching(), Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
-	    final Document doc = Factory.loadFromText(Factory.HTML, fetchEvent.getText());
+	    final Document doc = Factory.loadFromText(Factory.HTML, fetchEvent.getText(), getSuitableWidth());
 	    if (doc != null)
 	    {
 		setDocument(doc);
@@ -93,4 +202,45 @@ class ReaderArea extends DocTreeArea
 	luwrain.hint(strings.noContent(), Hints.NO_CONTENT);
     }
 
+    private int getSuitableWidth()
+    {
+	final int areaWidth = luwrain.getAreaVisibleWidth(this);
+	final int screenWidth = luwrain.getScreenWidth();
+	int width = areaWidth;
+	if (width < MIN_VISIBLE_WIDTH)
+	    width = screenWidth;
+	if (width < MIN_VISIBLE_WIDTH)
+	    width = MIN_VISIBLE_WIDTH;
+	return width;
+    }
+
+    private int chooseFormat()
+    {
+	final String[] formats = FormatsList.getSupportedFormatsList();
+	final String[] formatsStr = new String[formats.length];
+	for(int i = 0;i < formats.length;++i)
+	{
+	    final int pos = formats[i].indexOf(":");
+	    if (pos < 0 || pos + 1 >= formats[i].length())
+	    {
+		formatsStr[i] = formats[i];
+		continue;
+	    }
+	    formatsStr[i] = formats[i].substring(pos + 1);
+	}
+	final Object selected = Popups.fixedList(luwrain, "Выберите формат для просмотра:", formatsStr, 0);//FIXME:
+	if (selected == null)
+	    return Factory.UNRECOGNIZED;
+	String format = null;
+	for(int i = 0;i < formatsStr.length;++i)
+	    if (selected == formatsStr[i])
+		format = formats[i];
+	if (format == null)
+	    return Factory.UNRECOGNIZED;
+	final int pos = format.indexOf(":");
+	if (pos < 0 || pos + 1>= format.length())
+	    return Factory.UNRECOGNIZED;
+	luwrain.message(format.substring(0, pos));
+	return DocInfo.formatByStr(format.substring(0, pos));
+    }
 }

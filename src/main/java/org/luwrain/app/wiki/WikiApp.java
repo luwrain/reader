@@ -154,10 +154,10 @@ public class WikiApp implements Application, Actions
     {
 	if (pages == null || pages.length < 1)
 	{
-	    luwrain.message(strings.nothingFound(), Luwrain.MESSAGE_OK);
+	    luwrain.message(strings.nothingFound(), Luwrain.MESSAGE_DONE);
 	    return;
 	}
-	LinkedList res = new LinkedList();
+	final LinkedList res = new LinkedList();
 	res.add(strings.queryResults());
 	for(Page p: pages)
 	    res.add(p);
@@ -166,8 +166,8 @@ public class WikiApp implements Application, Actions
 	res.add(searchEn);
 	model.setObjects(res.toArray(new Object[res.size()]));
 	area.refresh();
-	//FIXME:Bring hot point to the beginning of the list;
-	luwrain.message(strings.querySuccess(pages.length), Luwrain.MESSAGE_OK);
+	area.resetState(false);
+	luwrain.message(strings.querySuccess(pages.length), Luwrain.MESSAGE_DONE);
     }
 
     @Override public String getAppName()
