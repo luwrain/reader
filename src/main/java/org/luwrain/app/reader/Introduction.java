@@ -22,6 +22,8 @@ import org.luwrain.doctree.*;
 
 class Introduction implements RowIntroduction
 {
+    static private final String LINK_PREFIX = " ссылка ";//FIXME:
+
     private ControlEnvironment environment;
     private Strings strings;
 
@@ -35,8 +37,12 @@ class Introduction implements RowIntroduction
 
     @Override public void introduce(Iterator iterator, boolean briefIntroduction)
     {
-	if (briefIntroduction ||
-	    iterator.isCurrentRowEmpty() ||
+	if (briefIntroduction)
+	{
+	    brief(iterator);
+	    return;
+	}
+	if (iterator.isCurrentRowEmpty() ||
 	    !iterator.isCurrentRowFirst())
 	    simple(iterator); else
 	    advanced(iterator);
@@ -138,7 +144,15 @@ private void inParagraph(Iterator iterator)
     private void simple(Iterator iterator)
     {
 	if (!iterator.isCurrentRowEmpty())
+	    environment.say(iterator.getCurrentTextWithHref(LINK_PREFIX)); else
+	    environment.hint(Hints.EMPTY_LINE);
+    }
+
+    private void brief(Iterator iterator)
+    {
+	if (!iterator.isCurrentRowEmpty())
 	    environment.say(iterator.getCurrentText()); else
 	    environment.hint(Hints.EMPTY_LINE);
     }
+
 }

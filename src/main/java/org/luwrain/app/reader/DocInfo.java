@@ -16,6 +16,8 @@
 
 package org.luwrain.app.reader;
 
+import java.util.*;
+import java.net.*;
 import org.luwrain.doctree.Factory;
 
 public class DocInfo
@@ -28,8 +30,9 @@ static public final int LOCAL = 1;;
 
     int type = LOCAL;
     String fileName = null;
-    int format = DEFAULT_FORMAT;
+    int format = Factory.UNRECOGNIZED;;
     String charset = DEFAULT_CHARSET;
+    final LinkedList<URL> history = new LinkedList<URL>();
 
     static int formatByStr(String str)
     {

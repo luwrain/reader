@@ -26,7 +26,7 @@ public interface Strings
     String unorderedListItemIntroduction(int index, String text);
     String paragraphIntroduction(String text);
     String errorOpeningFile();
-    String errorFetching();
+    String errorFetching(String comment);
     String noContent();
     String fetchingContent();
 }

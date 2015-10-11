@@ -31,6 +31,7 @@ class FetchThread implements Runnable
     private Luwrain luwrain;
     private Area area;
     private URL url;
+	private URL resultUrl = null;
     private boolean done = false;
 
     FetchThread(Luwrain luwrain,
@@ -49,12 +50,13 @@ class FetchThread implements Runnable
     {
 	done = false;
 	try {
-	    luwrain.enqueueEvent(new FetchEvent(area, impl()));
+	    final String text = impl();
+	    luwrain.enqueueEvent(new FetchEvent(area, text, resultUrl));
 	}
 	catch (Exception e)
 	{
 	    e.printStackTrace();
-	    luwrain.enqueueEvent(new FetchEvent(area));
+	    luwrain.enqueueEvent(new FetchEvent(area, e.getMessage()));
 	}
 	done = true;
     }
@@ -76,6 +78,7 @@ con.setRequestProperty("User-Agent", "Mozilla/4.0");
 	    Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
 	    //FIXME:Check the size;
 	    content = Files.readAllBytes(path);
+resultUrl = con.getURL();
 	}
 	finally
 	{

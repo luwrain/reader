@@ -17,6 +17,7 @@
 package org.luwrain.app.reader;
 
 import java.io.File;
+import java.net.*;
 import java.util.LinkedList;
 
 import org.luwrain.core.*;
@@ -50,7 +51,20 @@ class ReaderArea extends DocTreeArea
 	NullCheck.notNull(docInfo, "docInfo");
     }
 
+    @Override public boolean onKeyboardEvent(KeyboardEvent event)
+    {
+	NullCheck.notNull(event, "event");
 
+	if (event.isCommand() && !event.isModified())
+	    switch(event.getCommand())
+	    {
+	    case KeyboardEvent.ENTER:
+		return onEnter(event);
+	    case KeyboardEvent.BACKSPACE:
+		return onBackspace(event);
+	    }
+	return super.onKeyboardEvent(event);
+    }
 
     @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
     {
@@ -97,6 +111,42 @@ class ReaderArea extends DocTreeArea
     {
 	final Document doc = getDocument();
 	return doc != null?doc.getTitle():strings.appName();
+    }
+
+    private boolean onEnter(KeyboardEvent event)
+    {
+	final String href = getHref();
+	if (href == null)
+	    return false;
+	if (docInfo.history.isEmpty())
+	    return false;
+	final URL current = docInfo.history.getLast();
+	try {
+	    final URL newUrl = new URL(current, href);
+	    startFetching(newUrl);
+	    luwrain.message("Загрузка " + href);
+	}
+	catch (MalformedURLException e)
+	{
+	    e.printStackTrace();
+	    luwrain.message("Неверно оформленная ссылка:" + href, Luwrain.MESSAGE_ERROR);
+	    return true;
+	}
+	return true;
+    }
+
+    private boolean onBackspace(KeyboardEvent event)
+    {
+	if (docInfo.history.size() < 2)
+	    return false;
+	docInfo.history.pollLast();
+	startFetching(docInfo.history.pollLast());
+	return true;
+    }
+
+    private void startFetching(URL url)
+    {
+		new Thread(new FetchThread(luwrain, this, url)).start();
     }
 
     private void onOpenDoc()
@@ -182,13 +232,14 @@ if (res == Factory.UNRECOGNIZED)
 	    final FetchEvent fetchEvent = (FetchEvent)event;
 	    if (fetchEvent.getFetchCode() == FetchEvent.FAILED)
 	    {
-		luwrain.message(strings.errorFetching(), Luwrain.MESSAGE_ERROR);
+		luwrain.message(strings.errorFetching(fetchEvent.getText()), Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
 	    final Document doc = Factory.loadFromText(Factory.HTML, fetchEvent.getText(), getSuitableWidth());
 	    if (doc != null)
 	    {
 		setDocument(doc);
+		docInfo.history.add(fetchEvent.getUrl());
 		luwrain.playSound(Sounds.MESSAGE_DONE);
 	    }  else
 		luwrain.message("problem parsing", Luwrain.MESSAGE_ERROR);//FIXME:

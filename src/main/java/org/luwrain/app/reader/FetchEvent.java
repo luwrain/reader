@@ -16,33 +16,39 @@
 
 package org.luwrain.app.reader;
 
+import java.net.*;
+
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 
 class FetchEvent extends ThreadSyncEvent
 {
-    public static final int SUCCESS = 0;
-    public static final int FAILED = 1;
+static final int SUCCESS = 0;
+    static final int FAILED = 1;
 
     private int code;
-    private String text = "";
+    private String text;
+    private URL url;
 
-    public FetchEvent(Area area)
+    FetchEvent(Area area, String text)
     {
 	super(area);
 	this.code = FAILED;
+	this.text = text;
+	NullCheck.notNull(text, "text");
     }
 
-    public FetchEvent(Area area, String text)
+    FetchEvent(Area area, String text, URL url)
     {
 	super(area);
 	this.code = SUCCESS;
 	this.text = text;
-	if (text == null)
-	    throw new NullPointerException("text may not be null");
+	this.url = url;
+	NullCheck.notNull(text, "text");
+	NullCheck.notNull(url, "url");
     }
 
-    public int getFetchCode()
+    int getFetchCode()
     {
 	return code;
     }
@@ -50,5 +56,10 @@ class FetchEvent extends ThreadSyncEvent
     public String getText()
     {
 	return text;
+    }
+
+    URL getUrl()
+    {
+	return url;
     }
 }

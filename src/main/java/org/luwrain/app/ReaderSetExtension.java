@@ -71,6 +71,18 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    },
 
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "reader-luwrain-homepage";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+			luwrain.launchApp("reader", new String[]{"--URL", "http://luwrain.org/?mode=adapted&lang=ru"});
+		}
+	    },
+
+
 
 	    new Command(){
 		@Override public String getName()
