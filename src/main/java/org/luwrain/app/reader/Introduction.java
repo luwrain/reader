@@ -104,15 +104,6 @@ private void inParagraph(Iterator iterator)
 	final int colCount = table.getColCount();
 	final int rowCount = table.getRowCount();
 
-	/*
-	if (colIndex == 1)
-	{
-	    System.out.println(iterator.getCurrentText());
-	    System.out.println(iterator.getCurrentRowRelIndex());
-	}
-	*/
-
-
 	if (rowCount < 2)
 	{
 	    simple(iterator);
@@ -120,6 +111,7 @@ private void inParagraph(Iterator iterator)
 	}
 	String text = "";
 	//If the row has only one line in height we speak all cells of this line;
+	/*
 	if (colIndex == 0 && table.isSingleLineRow(rowIndex))
 	{
 	    StringBuilder s = new StringBuilder();
@@ -131,6 +123,7 @@ private void inParagraph(Iterator iterator)
 	    }
 	    text = s.toString();
 	} else
+	*/
 	    text = iterator.getCurrentText();
 	if (colIndex == 0 && rowIndex == 0)
 	{
@@ -143,7 +136,7 @@ private void inParagraph(Iterator iterator)
 
     private void simple(Iterator iterator)
     {
-	if (!iterator.isCurrentRowEmpty())
+	if (!iterator.isCurrentRowEmpty() || iterator.getCurrentText().trim().isEmpty())
 	    environment.say(iterator.getCurrentTextWithHref(LINK_PREFIX)); else
 	    environment.hint(Hints.EMPTY_LINE);
     }
