@@ -14,37 +14,11 @@
    General Public License for more details.
 */
 
-package org.luwrain.app.wiki;
+package org.luwrain.app.opds;
 
-import org.luwrain.controls.*;
-
-class Model implements ListModel
+interface Actions
 {
-    private Object[] objs = new Object[0];
-
-    public void setObjects(Object[] objs)
-    {
-	if (objs == null)
-	    throw new NullPointerException("objs may not be null");
-	this.objs = objs;
-    }
-
-    @Override public int getItemCount()
-    {
-	return objs != null?objs.length:0;
-    }
-
-    @Override public Object getItem(int index)
-    {
-	return objs != null?objs[index]:null;
-    }
-
-    @Override public void refresh()
-    {
-    }
-
-    @Override public boolean toggleMark(int index)
-    {
-	return false;
-    }
+    boolean closeApp();
+    void onReady();
+    boolean onClick(Object obj);
 }

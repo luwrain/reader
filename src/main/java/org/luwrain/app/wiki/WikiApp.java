@@ -33,7 +33,7 @@ public class WikiApp implements Application, Actions
     private Strings strings;
     private FetchThread thread;
     private ListArea area;
-    private Model model;
+    private FixedListModel model;
     private Appearance appearance;
 
     private String searchEn;
@@ -50,7 +50,7 @@ public class WikiApp implements Application, Actions
 	searchEn = strings.searchEn();
 	searchRu = strings.searchRu();
 	createArea();
-	model.setObjects(new String[]{searchRu, searchEn});
+	model.setItems(new String[]{searchRu, searchEn});
 	return true;
     }
 
@@ -61,7 +61,7 @@ public class WikiApp implements Application, Actions
 	final String sEn = searchEn;
 	final String sRu = searchRu;
 
-	model = new Model();
+	model = new FixedListModel();
 	appearance = new Appearance(luwrain, strings);
 
 	final ListClickHandler handler = new ListClickHandler(){
@@ -164,7 +164,7 @@ public class WikiApp implements Application, Actions
 	res.add("");
 	res.add(searchRu);
 	res.add(searchEn);
-	model.setObjects(res.toArray(new Object[res.size()]));
+	model.setItems(res.toArray(new Object[res.size()]));
 	area.refresh();
 	area.resetState(false);
 	luwrain.message(strings.querySuccess(pages.length), Luwrain.MESSAGE_DONE);
