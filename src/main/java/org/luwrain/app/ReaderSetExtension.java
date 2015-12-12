@@ -24,6 +24,7 @@ import org.luwrain.app.reader.ReaderApp;
 import org.luwrain.app.reader.DocInfo;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
+import org.luwrain.app.narrator.NarratorApp;
 import org.luwrain.app.reader.FormatsList;
 
 public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
@@ -105,6 +106,17 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    },
 
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "narrator";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    luwrain.launchApp("narrator");
+		}
+	    },
+
 };
     }
 
@@ -161,7 +173,18 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    };
 
-	return new Shortcut[]{reader, wiki, opds};
+	final Shortcut narrator = new Shortcut() {
+		@Override public String getName()
+		{
+		    return "narrator";
+		}
+		@Override public Application[] prepareApp(String[] args)
+		{
+		    return new Application[]{new NarratorApp()};
+		}
+	    };
+
+	return new Shortcut[]{reader, wiki, opds, narrator};
     }
 
     @Override public SharedObject[] getSharedObjects(Luwrain luwrain)
