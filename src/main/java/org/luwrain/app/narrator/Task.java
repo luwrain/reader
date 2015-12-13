@@ -40,7 +40,7 @@ abstract class Task implements Runnable
 	this.channel = channel;
 	NullCheck.notNull(text, "text");
 	NullCheck.notNull(path, "path");
-	//	NullCheck.notNull(channel, "channel");
+	NullCheck.notNull(channel, "channel");
     }
 
     abstract protected void progressLine(String text);
@@ -48,9 +48,9 @@ abstract class Task implements Runnable
     @Override public void run()
     {
 	try {
-	    //	    openStream();
+	    openStream();
 	    splitText();
-	    //	    closeStream();
+	    closeStream();
 	}
 	catch(Exception e)
 	{
@@ -87,7 +87,7 @@ abstract class Task implements Runnable
 
     private void onNewPortion(String s) throws IOException
     {
-	//	channel.synth(s, 0, 0, null, stream);
+	channel.synth(s, 0, 0, null, stream);
 	progressLine(s);
 	//	checkSize();
     }
@@ -117,6 +117,5 @@ abstract class Task implements Runnable
 	    closeStream();
 	    openStream();
 	}
-
     }
 }

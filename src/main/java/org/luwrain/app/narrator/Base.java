@@ -22,7 +22,7 @@ import java.util.concurrent.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
-//import org.luwrain.controls.*;
+import org.luwrain.speech.*;
 
 class Base
 {
@@ -41,7 +41,14 @@ class Base
     {
 	if (futureTask != null && !futureTask.isDone())
 	    return false;
-	task = new Task(text, Paths.get("/tmp"), null){
+	final Channel channel = luwrain.getDefaultStreamingChannel();
+	if (channel == null)
+	{
+	    luwrain.enqueueEvent(new ProgressLineEvent(destArea, "Отсутствует синтезатор по умолчанию"));
+	    return true;
+	}
+	luwrain.enqueueEvent(new ProgressLineEvent(destArea, "Используется синтезатор \"" + channel.getChannelName() + "\""));
+	task = new Task(text, Paths.get("/tmp"), channel){
 		@Override protected void progressLine(String text)
 		{
 		    luwrain.enqueueEvent(new ProgressLineEvent(destArea, text));
