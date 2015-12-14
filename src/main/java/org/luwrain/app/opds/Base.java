@@ -16,6 +16,7 @@
 
 package org.luwrain.app.opds;
 
+import java.util.*;
 import java.net.*;
 import java.util.concurrent.*;
 
@@ -23,17 +24,21 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.ThreadSyncEvent;
 import org.luwrain.controls.*;
 import org.luwrain.util.Opds;
+import org.luwrain.util.RegistryPath;
 
 class Base
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
     private FutureTask task;
+    private RemoteLibrary[] libraries;
     private final FixedListModel model = new FixedListModel();
 
     boolean init(Luwrain luwrain)
     {
 	this.luwrain = luwrain;
+	loadLibraries();
+	model.setItems(libraries);
 	return true;
     }
 
@@ -42,7 +47,7 @@ class Base
 	return model;
     }
 
-    boolean fetch(Area area, URL url)
+    boolean start(Area area, URL url)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNull(url, "url");
@@ -53,32 +58,68 @@ class Base
 	return true;
     }
 
-    void onReady()
+    boolean onReady()
     {
+	Opds.Result res = null;
 	try {
-	    final Opds.Directory res = (Opds.Directory)task.get();
-	    model.setItems(res.entries);
+	    res = (Opds.Result)task.get();
 	}
 	catch(InterruptedException e)
 	{
-	    //There should be something like currentThread().interrupt() but it's unclear is it applicable here
+	    Thread.currentThread().interrupt();
 	    e.printStackTrace(); 
 	}
 	catch(ExecutionException e)
 	{
 	    e.printStackTrace();
 	}
+
+	if (res == null)
+	    return false;
+	switch(res.error())
+	{
+	case FETCH:
+	    luwrain.message("Каталог не может быть доставлен с сервера по причине ошибки соединения", Luwrain.MESSAGE_ERROR);
+	    return false;
+
+	case PARSE:
+	    luwrain.message("Доставленные с сервера данные не являются корректным каталогом OPDS", Luwrain.MESSAGE_ERROR);
+	    return false;
+case NOERROR:
+	    model.setItems(res.directory().entries());
+luwrain.playSound(Sounds.MESSAGE_DONE);
+return true;
+default:
+return false;
+}
     }
 
-    private FutureTask constructTask(final Area area, final URL url)
+    private FutureTask constructTask(Area destArea, URL url)
     {
-	final Luwrain l = luwrain;
-	return new FutureTask<Opds.Directory>(new Callable<Opds.Directory>(){
-		@Override public Opds.Directory call()
-		{
-		    l.enqueueEvent(new ThreadSyncEvent(area));
-		    return null;
-		}
-	    });
+	//	final Luwrain l = luwrain;
+	return new FutureTask(()->{
+		final Opds.Result res = Opds.fetch(url);
+		luwrain.enqueueEvent(new ThreadSyncEvent(destArea));
+		return res;
+	});
+    }
+
+    private void loadLibraries()
+    {
+	libraries = new RemoteLibrary[0];
+	final Registry registry = luwrain.getRegistry();
+	final String dir = "/org/luwrain/app/opds/libraries";
+	final String[] dirs = registry.getDirectories(dir);
+	if (dirs == null || dirs.length <= 0)
+	    return;
+	final LinkedList<RemoteLibrary> res = new LinkedList<RemoteLibrary>();
+	for(String s: dirs)
+	{
+	    final RemoteLibrary l = new RemoteLibrary();
+	    if (l.init(registry, RegistryPath.join(dir, s)))
+		res.add(l);
+	}
+	libraries = res.toArray(new RemoteLibrary[res.size()]);
+	Arrays.sort(libraries);
     }
 }

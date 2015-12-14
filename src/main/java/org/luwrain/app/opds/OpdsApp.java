@@ -23,7 +23,8 @@ import java.io.*;
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
-import org.luwrain.popups.Popups;
+import org.luwrain.util.Opds;
+//import org.luwrain.popups.Popups;
 
 public class OpdsApp implements Application, Actions
 {
@@ -49,27 +50,42 @@ public class OpdsApp implements Application, Actions
 
     @Override public void onReady()
     {
-	base.onReady();
+	if (!base.onReady())
+	    return;
 	area.refresh();
 	area.resetHotPoint(false);
     }
 
     @Override public boolean onClick(Object obj)
     {
-	//FIXME:
-	return false;
+	if (obj == null)
+	    return false;
+	try {
+	    if (obj instanceof Opds.Entry)
+		base.start(area, new java.net.URL(((Opds.Entry)obj).link())); else
+	    if (obj instanceof RemoteLibrary)
+		base.start(area, new java.net.URL(((RemoteLibrary)obj).url)); else
+	    return false;
+	    return true;
+	}
+	catch (java.net.MalformedURLException e)
+	{
+	    e.printStackTrace();
+	    //FIXME:message;
+	    return false;
+	}
     }
 
     private void createArea()
     {
-	final Actions a = this;
-	final Strings s = strings;
+	final Actions actions = this;
+	//	final Strings s = strings;
 
 	final ListParams params = new ListParams();
 	params.environment = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = new DefaultListItemAppearance(params.environment);
-	params.clickHandler = (area, index, obj)->a.onClick(obj);
+	params.clickHandler = (area, index, obj)->actions.onClick(obj);
 	params.name = "FIXME";
 
 	area = new ListArea(params){
@@ -79,10 +95,10 @@ public class OpdsApp implements Application, Actions
 		    switch(event.getCode())
 		    {
 		    case EnvironmentEvent.CLOSE:
-			a.closeApp();
+			actions.closeApp();
 			return true;
 		    case EnvironmentEvent.THREAD_SYNC:
-			a.onReady();
+			actions.onReady();
 			return true;
 		    default:
 			return super.onEnvironmentEvent(event);

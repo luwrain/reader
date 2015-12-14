@@ -19,6 +19,7 @@ package org.luwrain.app;
 import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
+import org.luwrain.cpanel.Section;
 
 import org.luwrain.app.reader.ReaderApp;
 import org.luwrain.app.reader.DocInfo;
@@ -29,6 +30,8 @@ import org.luwrain.app.reader.FormatsList;
 
 public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
 {
+    private org.luwrain.app.narrator.ControlPanelSection narratorSection = null;
+
     @Override public Command[] getCommands(Luwrain luwrain)
     {
 	return new Command[]{
@@ -185,6 +188,13 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	    };
 
 	return new Shortcut[]{reader, wiki, opds, narrator};
+    }
+
+    @Override public Section[] getControlPanelSections(Luwrain luwrain)
+    {
+	if (narratorSection == null)
+	    narratorSection = new org.luwrain.app.narrator.ControlPanelSection(luwrain.getRegistry());
+	return new Section[]{narratorSection};
     }
 
     @Override public SharedObject[] getSharedObjects(Luwrain luwrain)
