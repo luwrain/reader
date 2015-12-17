@@ -62,10 +62,11 @@ public class OpdsApp implements Application, Actions
 	    return false;
 	try {
 	    if (obj instanceof Opds.Entry)
-		base.start(area, new java.net.URL(((Opds.Entry)obj).link())); else
+		base.start(area, new java.net.URL(base.currentUrl(), ((Opds.Entry)obj).link())); else
 	    if (obj instanceof RemoteLibrary)
 		base.start(area, new java.net.URL(((RemoteLibrary)obj).url)); else
 	    return false;
+	    area.refresh();
 	    return true;
 	}
 	catch (java.net.MalformedURLException e)
@@ -75,6 +76,15 @@ public class OpdsApp implements Application, Actions
 	    return false;
 	}
     }
+
+    @Override public boolean onReturnBack()
+    {
+	if (!base.returnBack(area))
+	    return false;
+	area.refresh();
+	    return true;
+    }
+
 
     private void createArea()
     {
@@ -89,6 +99,17 @@ public class OpdsApp implements Application, Actions
 	params.name = "FIXME";
 
 	area = new ListArea(params){
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isCommand() && !event.isModified())
+			switch(event.getCommand())
+		    {
+		    case KeyboardEvent.BACKSPACE:
+			return actions.onReturnBack();
+		    }
+		    return super.onKeyboardEvent(event);
+		}
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -103,6 +124,12 @@ public class OpdsApp implements Application, Actions
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
+		}
+		@Override protected String noContentStr()
+		{
+		    if (base.isFetchingInProgress())
+			return "Идёт загрузка. Пожалуйста, подождите.";
+		    return super.noContentStr();
 		}
 	    };
 

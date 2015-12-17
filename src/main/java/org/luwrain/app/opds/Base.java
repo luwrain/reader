@@ -33,6 +33,7 @@ class Base
     private FutureTask task;
     private RemoteLibrary[] libraries;
     private final FixedListModel model = new FixedListModel();
+    private final LinkedList<URL> history = new LinkedList<URL>();
 
     boolean init(Luwrain luwrain)
     {
@@ -55,8 +56,30 @@ class Base
 	    return false;
 	task = constructTask(area, url);
 	executor.execute(task);
+	history.add(url);
+	model.clear();
 	return true;
     }
+
+    boolean returnBack(Area area)
+    {
+	NullCheck.notNull(area, "area");
+	if (history.isEmpty() ||
+	    (task != null && !task.isDone()))
+	    return false;
+	if (history.size() == 1)
+	{
+	    history.clear();
+	    model.setItems(libraries);
+	    return true ;
+	}
+	history.pollLast();
+	task = constructTask(area, history.getLast());
+	executor.execute(task);
+	model.clear();
+	return true;
+    }
+
 
     boolean onReady()
     {
@@ -121,5 +144,15 @@ return false;
 	}
 	libraries = res.toArray(new RemoteLibrary[res.size()]);
 	Arrays.sort(libraries);
+    }
+
+    boolean isFetchingInProgress()
+    {
+	return task != null && !task.isDone();
+    }
+
+    URL currentUrl()
+    {
+	return !history.isEmpty()?history.getLast():null;
     }
 }

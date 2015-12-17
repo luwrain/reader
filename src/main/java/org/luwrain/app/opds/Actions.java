@@ -21,4 +21,5 @@ interface Actions
     boolean closeApp();
     void onReady();
     boolean onClick(Object obj);
+    boolean onReturnBack();
 }
