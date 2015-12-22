@@ -151,6 +151,7 @@ class ReaderArea extends DocTreeArea
 
     private void onOpenDoc()
     {
+	/*
 	final File f = Popups.file(luwrain, "Просмотр файла", "Выберите файл для просмотра", 
 				   luwrain.launchContext().userHomeDirAsFile(), 0, 0);
 	if (f == null)
@@ -173,7 +174,7 @@ setDocument(doc);
 	docInfo.charset = DocInfo.DEFAULT_CHARSET;
 	docInfo.format = format;
 	docInfo.fileName = f.getAbsolutePath();
-
+	*/
     }
 
     void onNewFormat()
