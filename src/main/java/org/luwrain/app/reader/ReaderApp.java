@@ -40,7 +40,8 @@ public class ReaderApp implements Application, Actions
     {
 	NullCheck.notNull(file, "file");
 	docInfo.type = type;
-docInfo.fileName = file;
+	docInfo.fileName = file;
+	docInfo.format=Factory.suggestFormat(file);
     }
 
     public ReaderApp(int type, String file, String format)

@@ -24,6 +24,7 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.ThreadSyncEvent;
 import org.luwrain.controls.*;
 import org.luwrain.util.Opds;
+import org.luwrain.util.Opds.Entry;
 import org.luwrain.util.RegistryPath;
 
 class Base
@@ -104,23 +105,39 @@ class Base
 	case FETCH:
 	    luwrain.message("Каталог не может быть доставлен с сервера по причине ошибки соединения", Luwrain.MESSAGE_ERROR);
 	    return false;
-
 	case PARSE:
 	    luwrain.message("Доставленные с сервера данные не являются корректным каталогом OPDS", Luwrain.MESSAGE_ERROR);
 	    return false;
-case NOERROR:
-	    model.setItems(res.directory().entries());
-luwrain.playSound(Sounds.MESSAGE_DONE);
-return true;
-default:
-return false;
-}
+	case NEEDPAY:
+	    luwrain.message("Сервер требует оплату  или особые условия за указанную книгу", Luwrain.MESSAGE_ERROR);
+	    return false;
+	case NOERROR:
+		if(res.isDirectory())
+		{
+			System.out.println("Directory listing:");
+			for(Entry e:res.directory().entries())
+				System.out.println(" "+e.link()+" "+e.title()+e.id());
+			model.setItems(res.directory().entries());
+			luwrain.playSound(Sounds.MESSAGE_DONE);
+	    	return true;
+		}
+		if(res.isBook())
+		{
+			System.out.println("Download and open: "+res.getMimeType()+" "+res.getFileName());
+			luwrain.launchApp("reader",new String[]{res.getFileName()});
+			luwrain.playSound(Sounds.MESSAGE_OK);
+	    	return true;
+		}
+    	return false;
+	default:
+		return false;
+	}
     }
 
-    private FutureTask constructTask(Area destArea, URL url)
+    private FutureTask<Opds.Result> constructTask(Area destArea, URL url)
     {
 	//	final Luwrain l = luwrain;
-	return new FutureTask(()->{
+	return new FutureTask<Opds.Result>(()->{
 		final Opds.Result res = Opds.fetch(url);
 		luwrain.enqueueEvent(new ThreadSyncEvent(destArea));
 		return res;

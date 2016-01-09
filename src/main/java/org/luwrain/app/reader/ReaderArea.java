@@ -186,8 +186,8 @@ setDocument(doc);
 	    luwrain.message("Нет открытого документа", Luwrain.MESSAGE_ERROR);//FIXME:
 	    return;
 	}
-final int res = chooseFormat();
-if (res == Factory.UNRECOGNIZED)
+	final int res = chooseFormat();
+	if (res == Factory.UNRECOGNIZED)
     return;
 	final Document doc = Factory.loadFromFile(res, docInfo.fileName, getSuitableWidth(), docInfo.charset);
 	if (doc == null)
@@ -233,17 +233,17 @@ if (res == Factory.UNRECOGNIZED)
 	    final FetchEvent fetchEvent = (FetchEvent)event;
 	    if (fetchEvent.getFetchCode() == FetchEvent.FAILED)
 	    {
-		luwrain.message(strings.errorFetching(fetchEvent.getText()), Luwrain.MESSAGE_ERROR);
-		return true;
+	    	luwrain.message(strings.errorFetching(fetchEvent.getText()), Luwrain.MESSAGE_ERROR);
+	    	return true;
 	    }
 	    final Document doc = Factory.loadFromText(Factory.HTML, fetchEvent.getText(), getSuitableWidth());
 	    if (doc != null)
 	    {
-		setDocument(doc);
-		docInfo.history.add(fetchEvent.getUrl());
-		luwrain.playSound(Sounds.MESSAGE_DONE);
+	    	setDocument(doc);
+	    	docInfo.history.add(fetchEvent.getUrl());
+	    	luwrain.playSound(Sounds.MESSAGE_DONE);
 	    }  else
-		luwrain.message("problem parsing", Luwrain.MESSAGE_ERROR);//FIXME:
+	    	luwrain.message("problem parsing", Luwrain.MESSAGE_ERROR);//FIXME:
 	    return true;
 	}
 	return false;

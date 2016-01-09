@@ -63,6 +63,7 @@ class FetchThread implements Runnable
 
     private String impl() throws Exception
     {
+    	System.out.println("progress");
 	URLConnection con;
 	InputStream inputStream = null;
 	String contentTypeCharset = null;
@@ -70,7 +71,7 @@ class FetchThread implements Runnable
 	byte[] content = null;
 	try {
 	    con = url.openConnection();
-con.setRequestProperty("User-Agent", "Mozilla/4.0");
+	    con.setRequestProperty("User-Agent", "Mozilla/4.0");
 	    contentTypeCharset = getContentTypeCharset(con.getContentType());
 	    inputStream = con.getInputStream();
 	    tmpFile = File.createTempFile(this.getClass().getName(), null);
@@ -78,7 +79,7 @@ con.setRequestProperty("User-Agent", "Mozilla/4.0");
 	    Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
 	    //FIXME:Check the size;
 	    content = Files.readAllBytes(path);
-resultUrl = con.getURL();
+	    resultUrl = con.getURL();
 	}
 	finally
 	{
