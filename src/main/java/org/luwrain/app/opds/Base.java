@@ -116,15 +116,15 @@ class Base
 		{
 			System.out.println("Directory listing:");
 			for(Entry e:res.directory().entries())
-				System.out.println(" "+e.link()+" "+e.title()+e.id());
+			    //				System.out.println(" "+e.link()+" "+e.title()+e.id());
 			model.setItems(res.directory().entries());
 			luwrain.playSound(Sounds.MESSAGE_DONE);
 	    	return true;
 		}
 		if(res.isBook())
 		{
-			System.out.println("Download and open: "+res.getMimeType()+" "+res.getFileName());
-			luwrain.launchApp("reader",new String[]{res.getFileName()});
+		    //			System.out.println("Download and open: "+res.getMimeType()+" "+res.getFileName());
+		    //			luwrain.launchApp("reader",new String[]{res.getFileName()});
 			luwrain.playSound(Sounds.MESSAGE_OK);
 	    	return true;
 		}
@@ -171,5 +171,60 @@ class Base
     URL currentUrl()
     {
 	return !history.isEmpty()?history.getLast():null;
+    }
+
+    void onEntry(Area area, Opds.Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	final Opds.Link catalogLink = entry.getCatalogLink();
+	if (catalogLink != null)
+	    try {
+	    start(area, new URL(currentUrl(), catalogLink.url()));
+	    return;
+	    }
+	    catch (MalformedURLException e)
+	    {
+		e.printStackTrace();
+		luwrain.message("Каталог содержит неверно оформленную ссылку:" + catalogLink.url()); 
+		return;
+	    }
+    }
+
+    void fillEntryInfo(Opds.Entry entry, MutableLines lines)
+    {
+	NullCheck.notNull(entry, "entry");
+	NullCheck.notNull(lines, "lines");
+	lines.addLine("Текстовые ресурсы:");
+	for(Opds.Link link: entry.links())
+	{
+	    if (link.isCatalog() || 
+		!link.getPrimaryType().toLowerCase().equals("application"))
+		continue;
+	    try {
+		lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
+	    }
+	    catch (Exception e)
+	    {
+		e.printStackTrace();
+	    }
+	}
+	lines.addLine("");
+
+	lines.addLine("Изображения:");
+	for(Opds.Link link: entry.links())
+	{
+	    if (link.isCatalog() || 
+		!link.getPrimaryType().toLowerCase().equals("image"))
+		continue;
+	    try {
+		lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
+	    }
+	    catch (Exception e)
+	    {
+		e.printStackTrace();
+	    }
+	}
+	lines.addLine("")
+;
     }
 }

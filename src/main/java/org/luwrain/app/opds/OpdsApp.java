@@ -33,7 +33,9 @@ public class OpdsApp implements Application, Actions
     private final Base base = new Base();
     private Luwrain luwrain;
     private Strings strings;
-    private ListArea area;
+    private ListArea listArea;
+    private SimpleArea infoArea;
+    private AreaLayoutSwitch layouts;
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
@@ -44,7 +46,10 @@ public class OpdsApp implements Application, Actions
 	this.luwrain = luwrain;
 	if (!base.init(luwrain))
 	    return false;
-	createArea();
+	createAreas();
+	layouts = new AreaLayoutSwitch(luwrain);
+	layouts.add(new AreaLayout(listArea));
+	layouts.add(new AreaLayout(infoArea));
 	return true;
     }
 
@@ -52,8 +57,8 @@ public class OpdsApp implements Application, Actions
     {
 	if (!base.onReady())
 	    return;
-	area.refresh();
-	area.resetHotPoint(false);
+	listArea.refresh();
+	listArea.resetHotPoint(false);
     }
 
     @Override public boolean onClick(Object obj)
@@ -62,11 +67,11 @@ public class OpdsApp implements Application, Actions
 	    return false;
 	try {
 	    if (obj instanceof Opds.Entry)
-		base.start(area, new java.net.URL(base.currentUrl(), ((Opds.Entry)obj).link())); else
-	    if (obj instanceof RemoteLibrary)
-		base.start(area, new java.net.URL(((RemoteLibrary)obj).url)); else
+		base.onEntry(listArea, (Opds.Entry)obj); else
+		if (obj instanceof RemoteLibrary)
+		    base.start(listArea, new java.net.URL(((RemoteLibrary)obj).url)); else
 	    return false;
-	    area.refresh();
+	    listArea.refresh();
 	    return true;
 	}
 	catch (java.net.MalformedURLException e)
@@ -77,16 +82,32 @@ public class OpdsApp implements Application, Actions
 	}
     }
 
+    @Override public boolean showEntryInfo(Object obj)
+    {
+	if (obj == null && !(obj instanceof Opds.Entry))
+	    return false;
+	final Opds.Entry entry = (Opds.Entry)obj;
+	infoArea.clear();
+	base.fillEntryInfo(entry, infoArea);
+	layouts.show(1);
+	return true;
+    }
+
+    @Override public void showMainList()
+    {
+	layouts.show(0);
+    }
+
     @Override public boolean onReturnBack()
     {
-	if (!base.returnBack(area))
+	if (!base.returnBack(listArea))
 	    return false;
-	area.refresh();
+	listArea.refresh();
 	    return true;
     }
 
 
-    private void createArea()
+    private void createAreas()
     {
 	final Actions actions = this;
 	//	final Strings s = strings;
@@ -94,14 +115,21 @@ public class OpdsApp implements Application, Actions
 	final ListParams params = new ListParams();
 	params.environment = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
-	params.appearance = new DefaultListItemAppearance(params.environment);
+	params.appearance = new Appearance(luwrain, strings);
 	params.clickHandler = (area, index, obj)->actions.onClick(obj);
 	params.name = "FIXME";
 
-	area = new ListArea(params){
+	listArea = new ListArea(params){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    //		    System.out.println(event);
+			if (event.isCommand() && event.withShiftOnly())
+			    switch(event.getCommand())
+			{
+		    case KeyboardEvent.ENTER:
+			return actions.showEntryInfo(selected());
+			}
 		    if (event.isCommand() && !event.isModified())
 			switch(event.getCommand())
 		    {
@@ -133,6 +161,37 @@ public class OpdsApp implements Application, Actions
 		}
 	    };
 
+	infoArea = new SimpleArea(new DefaultControlEnvironment(luwrain), "Просмотр информации"){
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isCommand() && !event.isModified())
+			    switch(event.getCommand())
+			{
+		    case KeyboardEvent.ESCAPE:
+			actions.showMainList();
+			return true;
+			}
+		    return super.onKeyboardEvent(event);
+		}
+		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    switch(event.getCode())
+		    {
+		    case EnvironmentEvent.CANCEL:
+			actions.showMainList();
+			return true;
+		    case EnvironmentEvent.CLOSE:
+			actions.closeApp();
+			return true;
+		    default:
+			return super.onEnvironmentEvent(event);
+		    }
+		}
+	    };
+
+
 
     }
 
@@ -143,7 +202,7 @@ public class OpdsApp implements Application, Actions
 
     @Override public AreaLayout getAreasToShow()
     {
-	return new AreaLayout(area);
+	return layouts.getCurrentLayout();
     }
 
     @Override public boolean closeApp()
