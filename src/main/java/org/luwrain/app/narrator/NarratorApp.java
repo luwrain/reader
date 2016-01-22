@@ -36,6 +36,18 @@ public class NarratorApp implements Application, Actions
     private SimpleArea progressArea;
     private AreaLayoutSwitch areaLayoutSwitch;
 
+    private String initialText = null;
+
+    public NarratorApp()
+    {
+    }
+
+    public NarratorApp(String text)
+    {
+	NullCheck.notNull(text, "text");
+	this.initialText = text;
+    }
+
     @Override public boolean onLaunch(Luwrain luwrain)
     {
 	Object o = luwrain.i18n().getStrings(STRINGS_NAME);
@@ -62,7 +74,8 @@ public class NarratorApp implements Application, Actions
 	final Actions a = this;
 	final Strings s = strings;
 
-	editArea = new EditArea(new DefaultControlEnvironment(luwrain), strings.appName()){
+	editArea = new EditArea(new DefaultControlEnvironment(luwrain), strings.appName(), 
+				initialText != null?initialText.split("\n", -1):new String[0]){
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");

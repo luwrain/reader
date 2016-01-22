@@ -114,16 +114,13 @@ class Base
 	case NOERROR:
 		if(res.isDirectory())
 		{
-			System.out.println("Directory listing:");
 			for(Entry e:res.directory().entries())
-			    //				System.out.println(" "+e.link()+" "+e.title()+e.id());
 			model.setItems(res.directory().entries());
-			luwrain.playSound(Sounds.MESSAGE_DONE);
+			luwrain.playSound(Sounds.INTRO_REGULAR);
 	    	return true;
 		}
 		if(res.isBook())
 		{
-		    //			System.out.println("Download and open: "+res.getMimeType()+" "+res.getFileName());
 		    //			luwrain.launchApp("reader",new String[]{res.getFileName()});
 			luwrain.playSound(Sounds.MESSAGE_OK);
 	    	return true;
@@ -176,11 +173,13 @@ class Base
     void onEntry(Area area, Opds.Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
+	if (entry.isCatalogOnly())
+	{
 	final Opds.Link catalogLink = entry.getCatalogLink();
-	if (catalogLink != null)
+	if (catalogLink == null)
+	    return;
 	    try {
 	    start(area, new URL(currentUrl(), catalogLink.url()));
-	    return;
 	    }
 	    catch (MalformedURLException e)
 	    {
@@ -188,6 +187,19 @@ class Base
 		luwrain.message("Каталог содержит неверно оформленную ссылку:" + catalogLink.url()); 
 		return;
 	    }
+	}
+	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
+	for(Opds.Link link: entry.links())
+	{
+	    if (link.isCatalog() || link.isImage())
+		continue;
+	    s.add(link);
+	}
+	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
+	if (suitable.length == 1)
+	{
+	    luwrain.launchApp("reader", new String[]{"--URL", suitable[0].url().toString(), "--TYPE", suitable[0].type()});
+	}
     }
 
     void fillEntryInfo(Opds.Entry entry, MutableLines lines)
@@ -209,7 +221,6 @@ class Base
 	    }
 	}
 	lines.addLine("");
-
 	lines.addLine("Изображения:");
 	for(Opds.Link link: entry.links())
 	{
@@ -224,7 +235,6 @@ class Base
 		e.printStackTrace();
 	    }
 	}
-	lines.addLine("")
-;
+	lines.addLine("");
     }
 }

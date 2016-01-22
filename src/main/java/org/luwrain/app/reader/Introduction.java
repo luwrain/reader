@@ -22,7 +22,7 @@ import org.luwrain.doctree.*;
 
 class Introduction implements RowIntroduction
 {
-    static private final String LINK_PREFIX = " ссылка ";//FIXME:
+    //    static private final String LINK_PREFIX = " ссылка ";//FIXME:
 
     private ControlEnvironment environment;
     private Strings strings;
@@ -35,96 +35,84 @@ class Introduction implements RowIntroduction
 	NullCheck.notNull(strings, "strings");
     }
 
-    @Override public void introduce(Iterator iterator, boolean briefIntroduction)
+    @Override public void introduce(Iterator it, boolean briefIntroduction)
     {
 	if (briefIntroduction)
 	{
-	    brief(iterator);
+	    brief(it);
 	    return;
 	}
-	if (iterator.isCurrentRowEmpty() ||
-	    !iterator.isCurrentRowFirst())
-	    simple(iterator); else
-	    advanced(iterator);
+	if (it.isCurrentRowEmpty() ||
+	    !it.isCurrentRowFirst())
+	    simple(it); else
+	    advanced(it);
     }
 
-    private void advanced(Iterator iterator)
+    private void advanced(Iterator it)
     {
-	if (iterator.getCurrentParaIndex() > 0)
+	if (it.getParaIndex() > 0)
     {
-	inParagraph(iterator);
+	inParagraph(it);
 	return;
     }
-	if (iterator.isCurrentParaContainerTableCell())
-	    inTableCell(iterator); else
-	    if (iterator.isCurrentParaContainerSection())
-		inSection(iterator); else
-		if (iterator.isCurrentParaContainerListItem())
-		    inListItem(iterator); else
-		    inParagraph(iterator);
+	if (it.isContainerTableCell())
+	    inTableCell(it); else
+	    if (it.isContainerSection())
+		inSection(it); else
+		if (it.isContainerListItem())
+		{
+		    final ListItem listItem = it.getListItem();
+		    if (listItem .getParentListItemCount() > 1)
+			inListItem(it); else
+			inParagraph(it);
+		} else
+		    inParagraph(it);
 }
 
-private void inParagraph(Iterator iterator)
+private void inParagraph(Iterator it)
 {
     {
-		final ParagraphImpl para = iterator.getCurrentParagraph();
+		final ParagraphImpl para = it.getCurrentParagraph();
 		if (para.hasSingleLineOnly())
-		environment.say(iterator.getCurrentText()); else
-		    environment.say(strings.paragraphIntroduction(iterator.getCurrentText()));
+		environment.say(it.getCurrentText()); else
+		    environment.say(strings.paragraphIntroduction(it.getCurrentText()));
 	    }
-
 }
 
-    private void inListItem(Iterator iterator)
+    private void inListItem(Iterator it)
     {
-	if (!iterator.isCurrentParaContainerListItem())
-	    throw new IllegalArgumentException("Iterator isn\'t in list item");
-	final ListItem item = iterator.getListItem();
+	final ListItem item = it.getListItem();
 	final int itemIndex = item.getListItemIndex();
-	final String text = iterator.getCurrentText();
+	final String text = it.getCurrentText();
+	environment.playSound(Sounds.NEW_LIST_ITEM);
 	if (item.isListOrdered())
 	    environment.say(strings.orderedListItemIntroduction(itemIndex, text)); else
 	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
     }
 
-    private void inSection(Iterator iterator)
+    private void inSection(Iterator it)
     {
-	final Section sect = iterator.getSection();
-	final String text = iterator.getCurrentText();
-	environment.say("Заголовок уровня " + sect.getSectionLevel() + " " + text);
+	final Section sect = it.getSection();
+	final String text = it.getCurrentText();
+	environment.say(strings.sectionIntroduction(sect.getSectionLevel(), text));
     }
 
-    private void inTableCell(Iterator iterator)
+    private void inTableCell(Iterator it)
     {
-	final TableCell cell = iterator.getTableCell();
+	final TableCell cell = it.getTableCell();
 	final Table table = cell.getTable();
 	final int level = table.getTableLevel();
 	final int colIndex = cell.getColIndex();
 	final int rowIndex = cell.getRowIndex();
 	final int colCount = table.getColCount();
 	final int rowCount = table.getRowCount();
-
 	if (rowCount < 2)
 	{
-	    simple(iterator);
+	    simple(it);
 	    return;
 	}
 	String text = "";
-	//If the row has only one line in height we speak all cells of this line;
-	/*
-	if (colIndex == 0 && table.isSingleLineRow(rowIndex))
-	{
-	    StringBuilder s = new StringBuilder();
-	    for(int i = 0;i < colCount;++i)
-	    {
-		final TableCell n = table.getCell(i, rowIndex);
-	    if (n != null)
-		s.append(n.toString() + " ");
-	    }
-	    text = s.toString();
-	} else
-	*/
-	    text = iterator.getCurrentText();
+	    text = it.getCurrentText();
 	if (colIndex == 0 && rowIndex == 0)
 	{
 	    if (level > 1)
@@ -134,18 +122,21 @@ private void inParagraph(Iterator iterator)
 	    environment.say(strings.tableCellIntroduction(rowIndex + 1, colIndex + 1, text));
     }
 
-    private void simple(Iterator iterator)
+    private void simple(Iterator it)
     {
-	if (!iterator.isCurrentRowEmpty() || iterator.getCurrentText().trim().isEmpty())
-	    environment.say(iterator.getCurrentTextWithHref(LINK_PREFIX)); else
+	if (!it.isCurrentRowEmpty() || it.getCurrentText().trim().isEmpty())
+	    environment.say(it.getCurrentTextWithHref(strings.linkPrefix() + " ")); else
 	    environment.hint(Hints.EMPTY_LINE);
     }
 
-    private void brief(Iterator iterator)
+    private void brief(Iterator it)
     {
-	if (!iterator.isCurrentRowEmpty())
-	    environment.say(iterator.getCurrentText()); else
+	if (!it.isCurrentRowEmpty())
+	{
+	    if (it.isContainerListItem() && it.isCurrentRowFirst())
+		environment.playSound(Sounds.NEW_LIST_ITEM);
+	    environment.say(it.getCurrentText());
+	} else
 	    environment.hint(Hints.EMPTY_LINE);
     }
-
 }

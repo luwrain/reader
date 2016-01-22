@@ -17,43 +17,128 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.nio.file.*;
 import java.net.*;
-import org.luwrain.doctree.Factory;
+
+import org.luwrain.core.NullCheck;
 
 public class DocInfo
 {
-static public final int LOCAL = 1;;
-    static public final int URL = 2;
+    enum Type {PATH, URL};
 
-    static final String DEFAULT_CHARSET = "UTF-8";
-    static final int DEFAULT_FORMAT = Factory.TEXT_PARA_INDENT;
-
-    int type = LOCAL;
-    String fileName = null;
-    int format = Factory.UNRECOGNIZED;;
-    String charset = DEFAULT_CHARSET;
+    Type type = Type.PATH;
+    Path path = null;
+    URL url = null;
+    String contentType = "";
+    String charset = "";
     final LinkedList<URL> history = new LinkedList<URL>();
 
-    static int formatByStr(String str)
+    public DocInfo()
     {
-	if (str == null || str.trim().isEmpty())
-	    return Factory.UNRECOGNIZED;
-	switch(str.trim())
+    }
+
+    DocInfo(URL url)
+    {
+	NullCheck.notNull(url, "url");
+	type = Type.URL;
+	this.url = url;
+    }
+
+    DocInfo(Path path)
+    {
+	NullCheck.notNull(path, "path");
+	type = Type.PATH;
+	this.path = path;
+    }
+
+    public boolean load(String[] args)
+    {
+	//	System.out.println("here");
+	NullCheck.notNullItems(args, "args");
+	if (args.length < 1)
+	    return false;
+	if (args.length == 1)
 	{
-	case "text-para-indent":
-	    return Factory.TEXT_PARA_INDENT;
-	case "text-para-empty-line":
-	    return Factory.TEXT_PARA_EMPTY_LINE;
-	case "text-para-each-line":
-	    return Factory.TEXT_PARA_EACH_LINE;
-	case "html":
-	    return Factory.HTML;
-	case "doc":
-	    return Factory.DOC;
-	case "docx":
-	    return Factory.DOCX;
-	default:
-	    return Factory.UNRECOGNIZED;
+	    final String value = args[0];
+	    if (!value.toLowerCase().startsWith("http://") && !value.toLowerCase().startsWith("https://"))
+	    {
+		type = Type.PATH;
+		path = Paths.get(value);
+		return true;
 	    }
+	    type = Type.URL;
+	    try {
+		url = new URL(value);
+		return true;
+	    }
+	    catch(MalformedURLException e)
+	    {
+		e.printStackTrace();
+		return false;
+	    }
+	}
+	String value = null;
+	//	System.out.println("here");
+	for(int i = 0;i < args.length;++i)
+	    switch(args[i])
+	    {
+	    case "--URL":
+		type = Type.URL;
+		value = takeNext(args, i);
+		if (value == null)
+		    return false;
+		++i;
+		//		System.out.println("yurl");
+		break;
+	    case "--PATH":
+		type = Type.PATH;
+		value = takeNext(args, i);
+		if (value == null)
+		    return false;
+		++i;
+		break;
+	    case "--TYPE":
+		contentType = takeNext(args, i);
+		if (contentType == null)
+		    return false;
+		++i;
+		break;
+	    case "--CHARSET":
+		charset = takeNext(args, i);
+		if (charset == null)
+		    return false;
+		++i;
+		break;
+	    default:
+		return false;
+	    }
+	if (value == null)
+	    return false;
+	//	System.out.println("value=" + value);
+	switch(type)
+	{
+	case PATH:
+	    path = Paths.get(value);
+	    return true;
+	case URL:
+	    try {
+		url = new URL(value);
+		return true;
+	    }
+	    catch(MalformedURLException e)
+	    {
+		e.printStackTrace();
+		return false;
+	    }
+	default:
+	    return false;
+	}
+    }
+
+    static private String takeNext(String[] args, int index)
+    {
+	if (index < 0 || index + 1>= args.length)
+	    return null;
+	return args[index + 1];
     }
 }

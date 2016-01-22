@@ -25,8 +25,10 @@ public interface Strings
     String orderedListItemIntroduction(int index, String text);
     String unorderedListItemIntroduction(int index, String text);
     String paragraphIntroduction(String text);
-    String errorOpeningFile();
-    String errorFetching(String comment);
-    String noContent();
-    String fetchingContent();
+    String sectionIntroduction(int level, String text);
+    String linkPrefix();
+    String noContent(boolean fetching);
+    String fetching(String url);
+    String badUrl(String url);
+    String contextMenuOpenInNarrator();
 }

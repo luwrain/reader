@@ -26,7 +26,6 @@ import org.luwrain.app.reader.DocInfo;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
 import org.luwrain.app.narrator.NarratorApp;
-import org.luwrain.app.reader.FormatsList;
 
 public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
 {
@@ -132,25 +131,14 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
-		    if (args == null || args.length < 1 || args.length > 2)
+		    if (args == null || args.length < 1)
 			return new Application[]{new ReaderApp()};
-		    if (args.length > 2)
-			return null;
-		    if (args.length == 1)
-		    {
-			if (args[0] == null)
-			    return null;
-			return new Application[]{new ReaderApp(DocInfo.LOCAL, args[0])};
-		    }
-		    if (args.length == 2)
-		    {
-			if (args[0] == null || args[1] == null)
-			    return null;
-			if (args[0].equals("--URL"))
-			    return new ReaderApp[]{new ReaderApp(DocInfo.URL, args[1])};
-			return new Application[]{new ReaderApp(DocInfo.LOCAL, args[0], args[1])};
-		    }
-		    return null;
+		    final DocInfo docInfo = new DocInfo();
+		    if (docInfo.load(args))
+			return new Application[]{new ReaderApp(docInfo)};
+		    Log.warning("reader", "unable to parse command line argument for ReaderApp, starting in initial state");
+			return new Application[]{new ReaderApp()};
+
 		}
 	    };
 
@@ -183,6 +171,10 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
+		    if (args == null || args.length != 2)
+		    return new Application[]{new NarratorApp()};
+		    if (args[0].equals("--TEXT"))
+			return new Application[]{new NarratorApp(args[1] != null?args[1]:"")};
 		    return new Application[]{new NarratorApp()};
 		}
 	    };
@@ -196,22 +188,4 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	    narratorSection = new org.luwrain.app.narrator.ControlPanelSection(luwrain.getRegistry());
 	return new Section[]{narratorSection};
     }
-
-    @Override public SharedObject[] getSharedObjects(Luwrain luwrain)
-    {
-	return new SharedObject[]{
-
-	    new SharedObject(){
-		@Override public String getName()
-		{
-		    return "luwrain.reader.formats";
-		}
-		@Override public Object getSharedObject()
-		{
-		    return FormatsList.getSupportedFormatsList();
-		    }
-		},
-
-		    };
-	}
 }

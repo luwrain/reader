@@ -16,7 +16,13 @@
 
 package org.luwrain.app.reader;
 
+import org.luwrain.doctree.*;
+
 public interface Actions
 {
     void closeApp();
+    boolean fetchingInProgress();
+    boolean jumpByHref(String href);
+    void onNewDocument(Document doc);
+    void openInNarrator();
 }

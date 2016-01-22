@@ -25,32 +25,22 @@ public class ReaderApp implements Application, Actions
 {
     static private final String STRINGS_NAME = "luwrain.reader";
 
-
     private Luwrain luwrain;
+    private final Base base = new Base();
     private Strings strings;
     private ReaderArea area;
     private Document doc = null;
-    private final DocInfo docInfo = new DocInfo();
+    private DocInfo docInfo = null;
 
     public ReaderApp()
     {
+	docInfo = null;
     }
 
-    public ReaderApp(int type, String file)
+    public ReaderApp(DocInfo docInfo)
     {
-	NullCheck.notNull(file, "file");
-	docInfo.type = type;
-	docInfo.fileName = file;
-	docInfo.format=Factory.suggestFormat(file);
-    }
-
-    public ReaderApp(int type, String file, String format)
-    {
-	NullCheck.notNull(file, "file");
-	NullCheck.notNull(format, "format");
-	docInfo.type = type;
-	docInfo.fileName = file;
-	docInfo.format = DocInfo.formatByStr(format);
+	this.docInfo = docInfo;
+	NullCheck.notNull(docInfo, "docInfo");
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
@@ -60,46 +50,33 @@ public class ReaderApp implements Application, Actions
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	return processArgs();
+	if (!base.init(luwrain, strings))
+	    return false;
+	    area = new ReaderArea(luwrain, strings, this);
+	    if (docInfo != null)
+		base.fetch(area, docInfo);
+	    docInfo = new DocInfo();
+	return true;
     }
 
-    private boolean processArgs()
+    @Override public boolean jumpByHref(String href)
     {
-	if (docInfo.fileName == null || docInfo.fileName.isEmpty())
-	{
-	    area = new ReaderArea(luwrain, strings, this, null, docInfo);
-	    return true;
-	}
-	if (docInfo.type == DocInfo.LOCAL)
-	{
-	    if (docInfo.format == Factory.UNRECOGNIZED)
-		docInfo.format = Factory.suggestFormat(docInfo.fileName);
-	    if (docInfo.format == Factory.UNRECOGNIZED)
-		docInfo.format = DocInfo.DEFAULT_FORMAT;
-	    doc = Factory.loadFromFile(docInfo.format, docInfo.fileName, luwrain.getScreenWidth() - 2, docInfo.charset);
-	    if (doc == null)
-	    {
-		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
-		return false;
-	    }
-	    area = new ReaderArea(luwrain, strings, this, doc, docInfo);
-	    return true;
-	}
-	if (docInfo.type == DocInfo.URL)
-	{
-	    try {
-		area = new ReaderArea(luwrain, strings, this, null, docInfo);
-		new Thread(new FetchThread(luwrain, area, new URL(docInfo.fileName))).start();
-	    }
-	    catch (MalformedURLException e)
-	    {
-		e.printStackTrace();
-		luwrain.message(strings.errorOpeningFile(), Luwrain.MESSAGE_ERROR);
-		return false;
-	    }
-	    return true;
-	}
-	return false;
+	return base.jumpByHref(area, href);
+    }
+
+    @Override public void onNewDocument(Document doc)
+    {
+	base.acceptNewCurrentDoc(doc);
+    }
+
+    @Override public void openInNarrator()
+    {
+	base.openInNarrator();
+    }
+
+    @Override public boolean fetchingInProgress()
+    {
+	return base.fetchingInProgress();
     }
 
     @Override public String getAppName()
