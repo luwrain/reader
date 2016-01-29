@@ -10,7 +10,7 @@ FB2,
 EPUB,
 DAISY,
 etc).
-Navigation features implemented in a way, which makes work comfortable for blind and visually impaired people.
+The navigation features are implemented in a way, which makes work comfortable for blind and visually impaired people.
 This set includes applications for:
 
 * General navigation over structured documents

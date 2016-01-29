@@ -55,9 +55,23 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		{
 		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");//FIXME:
 		    if (url != null && !url.trim().isEmpty())
-			luwrain.launchApp("reader", new String[]{"--URL", url});
+			luwrain.launchApp("reader", new String[]{"--URL", url.indexOf("://") >= 0?url:("http://" + url)});
 		}
 	    },
+
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "open-url";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");//FIXME:
+		    if (url != null && !url.trim().isEmpty())
+			luwrain.launchApp("reader", new String[]{"--URL", url.indexOf("://") >= 0?url:("http://" + url)});
+		}
+	    },
+
 
 	    new Command(){
 		@Override public String getName()

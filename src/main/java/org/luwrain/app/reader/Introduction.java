@@ -94,6 +94,7 @@ private void inParagraph(Iterator it)
     {
 	final Section sect = it.getSection();
 	final String text = it.getCurrentText();
+	environment.playSound(Sounds.DOC_SECTION);
 	environment.say(strings.sectionIntroduction(sect.getSectionLevel(), text));
     }
 
