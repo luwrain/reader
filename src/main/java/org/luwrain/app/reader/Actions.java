@@ -23,6 +23,9 @@ public interface Actions
     void closeApp();
     boolean fetchingInProgress();
     boolean jumpByHref(String href);
-    void onNewDocument(Document doc);
+    void onNewDocument(Result res);
     void openInNarrator();
+    void showErrorPage(Result res);
+    boolean showDocInfo();
+    boolean returnFromInfoArea();
 }

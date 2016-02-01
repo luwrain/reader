@@ -33,7 +33,7 @@ class Base
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
     private Strings strings;
-    private Document currentDoc = null;
+    private Result currentDoc = null;
     private FutureTask task;
 
     boolean init(Luwrain luwrain, Strings strings)
@@ -59,7 +59,7 @@ class Base
     void openInNarrator()
     {
 	final NarratorTextVisitor visitor = new NarratorTextVisitor();
-	Visitor.walk(currentDoc.getRoot(), visitor);
+	Visitor.walk(currentDoc.doc().getRoot(), visitor);
 	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
     }
 
@@ -93,28 +93,41 @@ class Base
 	NullCheck.notNull(area, "area");
 	NullCheck.notNull(docInfo, "docInfo");
 	return new FutureTask(()->{
-		Document doc = null;
+		Result res = null;
 		switch(docInfo.type)
 		{
 		case URL:
-		    //		    System.out.println("url");
-doc = Factory.fromUrl(docInfo.url, docInfo.contentType, docInfo.charset);
+		    res = Factory.fromUrl(docInfo.url, docInfo.contentType, docInfo.charset);
 break;
 		case PATH:
 		    //		    System.out.println("path");
-		    doc = Factory.fromPath(docInfo.path, docInfo.contentType, docInfo.charset);
+		    //		    doc = Factory.fromPath(docInfo.path, docInfo.contentType, docInfo.charset);
 break;
 		}
-		final Document finalDoc = doc;
-		if (finalDoc != null)
-		    luwrain.runInMainThread(()->area.onFetchedDoc(finalDoc)); else									 
-		    luwrain.runInMainThread(()->luwrain.message("Не удалось доставить документ"));
+		final Result finalRes = res;
+		    luwrain.runInMainThread(()->area.onFetchedDoc(finalRes));
 	}, null);
     }
 
-    void acceptNewCurrentDoc(Document doc)
+    void acceptNewCurrentDoc(Result res)
     {
-	NullCheck.notNull(doc, "doc");
-	currentDoc = doc;
+	NullCheck.notNull(res, "res");
+	currentDoc = res;
+    }
+
+    Result currentDoc()
+    {
+	return currentDoc;
+    }
+
+    void prepareInfoText(Result res, MutableLines lines)
+    {
+	lines.addLine("Code: " + res.type().toString());
+	if (res.type() == Result.Type.HTTP_ERROR)
+	    lines.addLine("HTTP code: " + res.code());
+	lines.addLine("Address: " + res.resultAddr());
+	lines.addLine("Format: " + res.format());
+	lines.addLine("Charset: " + res.charset());
+	lines.addLine("");
     }
 }

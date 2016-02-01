@@ -31,4 +31,5 @@ public interface Strings
     String fetching(String url);
     String badUrl(String url);
     String contextMenuOpenInNarrator();
+    String infoAreaName();
 }

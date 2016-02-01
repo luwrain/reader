@@ -51,6 +51,12 @@ class ReaderArea extends DocTreeArea
     @Override public boolean onKeyboardEvent(KeyboardEvent event)
     {
 	NullCheck.notNull(event, "event");
+	if (event.isCommand() && event.withShiftOnly())
+	    switch(event.getCommand())
+	{
+	case KeyboardEvent.ENTER:
+	    return actions.showDocInfo();
+	}
 	if (event.isCommand() && !event.isModified())
 	    switch(event.getCommand())
 	    {
@@ -132,12 +138,18 @@ class ReaderArea extends DocTreeArea
 	return false;
     }
 
-    void onFetchedDoc(Document newDoc)
+    void onFetchedDoc(Result res)
     {
-	NullCheck.notNull(newDoc, "newDoc");
+	NullCheck.notNull(res, "res");
+	if (res.type() != Result.Type.OK)
+	{
+	    actions.showErrorPage(res);
+	    return;
+	}
+	Document newDoc = res.doc();
 	newDoc.buildView(luwrain.getAreaVisibleWidth(this));
 	setDocument(newDoc);
-	actions.onNewDocument(newDoc);
+	actions.onNewDocument(res);
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
 	luwrain.say(newDoc.getTitle());

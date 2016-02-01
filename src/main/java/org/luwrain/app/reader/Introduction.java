@@ -42,8 +42,8 @@ class Introduction implements RowIntroduction
 	    brief(it);
 	    return;
 	}
-	if (it.isCurrentRowEmpty() ||
-	    !it.isCurrentRowFirst())
+	if (it.isEmptyRow() ||
+	    !it.isFirstRow())
 	    simple(it); else
 	    advanced(it);
     }
@@ -72,10 +72,10 @@ class Introduction implements RowIntroduction
 private void inParagraph(Iterator it)
 {
     {
-		final ParagraphImpl para = it.getCurrentParagraph();
+		final ParagraphImpl para = it.getParagraph();
 		if (para.hasSingleLineOnly())
-		environment.say(it.getCurrentText()); else
-		    environment.say(strings.paragraphIntroduction(it.getCurrentText()));
+		environment.say(it.getText()); else
+		    environment.say(strings.paragraphIntroduction(it.getText()));
 	    }
 }
 
@@ -83,7 +83,7 @@ private void inParagraph(Iterator it)
     {
 	final ListItem item = it.getListItem();
 	final int itemIndex = item.getListItemIndex();
-	final String text = it.getCurrentText();
+	final String text = it.getText();
 	environment.playSound(Sounds.NEW_LIST_ITEM);
 	if (item.isListOrdered())
 	    environment.say(strings.orderedListItemIntroduction(itemIndex, text)); else
@@ -93,7 +93,7 @@ private void inParagraph(Iterator it)
     private void inSection(Iterator it)
     {
 	final Section sect = it.getSection();
-	final String text = it.getCurrentText();
+	final String text = it.getText();
 	environment.playSound(Sounds.DOC_SECTION);
 	environment.say(strings.sectionIntroduction(sect.getSectionLevel(), text));
     }
@@ -113,7 +113,7 @@ private void inParagraph(Iterator it)
 	    return;
 	}
 	String text = "";
-	    text = it.getCurrentText();
+	    text = it.getText();
 	if (colIndex == 0 && rowIndex == 0)
 	{
 	    if (level > 1)
@@ -125,18 +125,18 @@ private void inParagraph(Iterator it)
 
     private void simple(Iterator it)
     {
-	if (!it.isCurrentRowEmpty() || it.getCurrentText().trim().isEmpty())
-	    environment.say(it.getCurrentTextWithHref(strings.linkPrefix() + " ")); else
+	if (!it.isEmptyRow() || it.getText().trim().isEmpty())
+	    environment.say(it.getTextWithHref(strings.linkPrefix() + " ")); else
 	    environment.hint(Hints.EMPTY_LINE);
     }
 
     private void brief(Iterator it)
     {
-	if (!it.isCurrentRowEmpty())
+	if (!it.isEmptyRow())
 	{
-	    if (it.isContainerListItem() && it.isCurrentRowFirst())
+	    if (it.isContainerListItem() && it.isFirstRow())
 		environment.playSound(Sounds.NEW_LIST_ITEM);
-	    environment.say(it.getCurrentText());
+	    environment.say(it.getText());
 	} else
 	    environment.hint(Hints.EMPTY_LINE);
     }

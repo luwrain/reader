@@ -19,16 +19,23 @@ package org.luwrain.app.reader;
 import java.net.*;
 
 import org.luwrain.core.*;
+import org.luwrain.core.events.*;
+import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
 
 public class ReaderApp implements Application, Actions
 {
     static private final String STRINGS_NAME = "luwrain.reader";
 
+    static private final int DOC_ONLY_LAYOUT_INDEX = 0;
+    static private final int INFO_LAYOUT_INDEX = 1;
+
     private Luwrain luwrain;
     private final Base base = new Base();
     private Strings strings;
-    private ReaderArea area;
+    private ReaderArea readerArea;
+    private SimpleArea infoArea;
+    private AreaLayoutSwitch layouts;
     private Document doc = null;
     private DocInfo docInfo = null;
 
@@ -52,21 +59,57 @@ public class ReaderApp implements Application, Actions
 	this.luwrain = luwrain;
 	if (!base.init(luwrain, strings))
 	    return false;
-	    area = new ReaderArea(luwrain, strings, this);
+	createAreas();
+	    layouts = new AreaLayoutSwitch(luwrain);
+	layouts.add(new AreaLayout(readerArea));
+	layouts.add(new AreaLayout(infoArea));
 	    if (docInfo != null)
-		base.fetch(area, docInfo);
+		base.fetch(readerArea, docInfo); else
 	    docInfo = new DocInfo();
 	return true;
     }
 
-    @Override public boolean jumpByHref(String href)
+    private void createAreas()
     {
-	return base.jumpByHref(area, href);
+	final Actions actions = this;
+
+	    readerArea = new ReaderArea(luwrain, strings, this);
+
+	    infoArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.infoAreaName()){
+		    @Override public boolean onKeyboardEvent(KeyboardEvent event)
+		    {
+			NullCheck.notNull(event, "event");
+			if (event.isCommand() && !event.isModified())
+			    switch(event.getCommand())
+			    {
+			    case KeyboardEvent.ESCAPE:
+				return actions.returnFromInfoArea();
+			    }
+				return super.onKeyboardEvent(event);
+		    }
+		    @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		    {
+			NullCheck.notNull(event, "evet");
+			switch(event.getCode())
+			{
+			case EnvironmentEvent.CLOSE:
+			    actions.closeApp();
+			    return true;
+			default:
+			    return super.onEnvironmentEvent(event);
+			}
+		    }
+		};
     }
 
-    @Override public void onNewDocument(Document doc)
+    @Override public boolean jumpByHref(String href)
     {
-	base.acceptNewCurrentDoc(doc);
+	return base.jumpByHref(readerArea, href);
+    }
+
+    @Override public void onNewDocument(Result res)
+    {
+	base.acceptNewCurrentDoc(res);
     }
 
     @Override public void openInNarrator()
@@ -79,14 +122,44 @@ public class ReaderApp implements Application, Actions
 	return base.fetchingInProgress();
     }
 
+    @Override public boolean showDocInfo()
+    {
+	final Result currentDoc = base.currentDoc();
+	if (currentDoc == null)
+	    return false;
+	infoArea.clear();
+	base.prepareInfoText(currentDoc, infoArea);
+	layouts.show(INFO_LAYOUT_INDEX);
+	return true;
+    }
+
+    @Override public void showErrorPage(Result res)
+    {
+	NullCheck.notNull(res, "res");
+	infoArea.clear();
+	base.prepareInfoText(res, infoArea);
+	luwrain.silence();
+	luwrain.playSound(Sounds.INTRO_REGULAR);
+	layouts.show(INFO_LAYOUT_INDEX);
+    }
+
+    @Override public boolean returnFromInfoArea()
+    {
+	final Result currentDoc = base.currentDoc();
+	if (currentDoc == null)
+	    return false;
+	layouts.show(DOC_ONLY_LAYOUT_INDEX);
+	return true;
+    }
+
     @Override public String getAppName()
     {
-	return area != null?area.getAreaName():strings.appName();
+	return readerArea != null?readerArea.getAreaName():strings.appName();
     }
 
     @Override public AreaLayout getAreasToShow()
     {
-	return new AreaLayout(area);
+	return layouts.getCurrentLayout();
     }
 
     @Override public void closeApp()
