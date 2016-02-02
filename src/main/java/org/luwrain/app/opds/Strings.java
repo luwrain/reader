@@ -19,4 +19,7 @@ package org.luwrain.app.opds;
 public interface Strings
 {
     String appName();
+    String catalog();
+    String invalidLinkInSelectedEntry(String link);
+    String noSuitableLinksInEntry();
 }

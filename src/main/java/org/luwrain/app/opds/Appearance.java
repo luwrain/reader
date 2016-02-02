@@ -42,7 +42,7 @@ class Appearance implements ListItemAppearance
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
 	    if (entry.isCatalogOnly() && (flags & ListItemAppearance.BRIEF) == 0)
-		luwrain.say("Подкаталог " + entry.toString()); else
+		luwrain.say(entry.toString() + " " + strings.catalog()); else
 		luwrain.say(entry.toString());
 	    return;
 	}

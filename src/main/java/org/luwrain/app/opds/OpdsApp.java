@@ -44,7 +44,7 @@ public class OpdsApp implements Application, Actions
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	if (!base.init(luwrain))
+	if (!base.init(luwrain, strings))
 	    return false;
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);

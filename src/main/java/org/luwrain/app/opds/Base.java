@@ -31,14 +31,16 @@ class Base
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
+    private Strings strings;
     private FutureTask task;
     private RemoteLibrary[] libraries;
     private final FixedListModel model = new FixedListModel();
     private final LinkedList<URL> history = new LinkedList<URL>();
 
-    boolean init(Luwrain luwrain)
+    boolean init(Luwrain luwrain, Strings strings)
     {
 	this.luwrain = luwrain;
+	this.strings = strings;
 	loadLibraries();
 	model.setItems(libraries);
 	return true;
@@ -173,21 +175,23 @@ class Base
     void onEntry(Area area, Opds.Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
-	if (entry.isCatalogOnly())
+	if (!entry.hasBooks())
 	{
-	final Opds.Link catalogLink = entry.getCatalogLink();
-	if (catalogLink == null)
-	    return;
+	    final Opds.Link catalogLink = entry.getCatalogLink();
+	    if (catalogLink == null)
+		return;
 	    try {
-	    start(area, new URL(currentUrl(), catalogLink.url()));
+		start(area, new URL(currentUrl(), catalogLink.url()));
+		return;
 	    }
 	    catch (MalformedURLException e)
 	    {
 		e.printStackTrace();
-		luwrain.message("Каталог содержит неверно оформленную ссылку:" + catalogLink.url()); 
+		luwrain.message(strings.invalidLinkInSelectedEntry(catalogLink.url()), Luwrain.MESSAGE_ERROR);
 		return;
 	    }
 	}
+	//Opening a document
 	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
 	for(Opds.Link link: entry.links())
 	{
@@ -197,20 +201,54 @@ class Base
 	}
 	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
 	if (suitable.length == 1)
+	    try 
+	    {
+		luwrain.launchApp("reader", new String[]{
+			"--URL", 
+			new URL(currentUrl(), suitable[0].url().toString()).toString(), 
+			"--TYPE", 
+			suitable[0].type()});
+		return;
+	    }
+	    catch (MalformedURLException e)
+	    {
+		e.printStackTrace();
+		luwrain.message(strings.invalidLinkInSelectedEntry(suitable[0].url()), Luwrain.MESSAGE_ERROR);
+		return;
+	    }
+	for(Opds.Link link: suitable)
 	{
-	    luwrain.launchApp("reader", new String[]{"--URL", suitable[0].url().toString(), "--TYPE", suitable[0].type()});
+	    if (link.type().equals("application/fb2+zip") ||
+		link.type().equals("application/fb2"))
+		try {
+		    Log.debug("reader", link.url().toString());
+		    Log.debug("reader", link.type());
+		    luwrain.launchApp("reader", new String[]{
+			    "--URL", 
+			    new URL(currentUrl(), link.url().toString()).toString(),
+			    "--TYPE",
+			    link.type()});
+		    return;
+		}
+		catch (MalformedURLException e)
+		{
+		    e.printStackTrace();
+		    luwrain.message(strings.invalidLinkInSelectedEntry(suitable[0].url()), Luwrain.MESSAGE_ERROR);
+		    return;
+		}
 	}
+	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
     }
 
     void fillEntryInfo(Opds.Entry entry, MutableLines lines)
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(lines, "lines");
-	lines.addLine("Текстовые ресурсы:");
+
+	lines.addLine("Подкаталоги :");
 	for(Opds.Link link: entry.links())
 	{
-	    if (link.isCatalog() || 
-		!link.getPrimaryType().toLowerCase().equals("application"))
+	    if (!link.isCatalog())
 		continue;
 	    try {
 		lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
@@ -221,6 +259,26 @@ class Base
 	    }
 	}
 	lines.addLine("");
+
+	if (entry.hasBooks())
+	{
+	    lines.addLine("Текстовые ресурсы:");
+	    for(Opds.Link link: entry.links())
+	    {
+		if (link.isCatalog() || 
+		    !link.getPrimaryType().toLowerCase().equals("application"))
+		    continue;
+		try {
+		    lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
+		}
+		catch (Exception e)
+		{
+		    e.printStackTrace();
+		}
+	    }
+	    lines.addLine("");
+	}
+
 	lines.addLine("Изображения:");
 	for(Opds.Link link: entry.links())
 	{
