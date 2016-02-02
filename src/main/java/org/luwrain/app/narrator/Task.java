@@ -18,6 +18,7 @@ package org.luwrain.app.narrator;
 
 import java.io.*;
 import java.nio.file.*;
+import javax.sound.sampled.AudioFormat;
 
 import org.luwrain.core.*;
 import org.luwrain.speech.*;
@@ -31,15 +32,19 @@ abstract class Task implements Runnable
     private Path currentFile;
     private OutputStream stream;
     private int fragmentNum = 1;
+    private AudioFormat chosenFormat = null;
+    private String compressorCmd = "";
 
     Task(String text, Path path,
-	 Channel channel)
+	 String compressorCmd, Channel channel)
     {
 	this.text = text;
 	this.path = path;
+	this.compressorCmd = compressorCmd;
 	this.channel = channel;
 	NullCheck.notNull(text, "text");
 	NullCheck.notNull(path, "path");
+	NullCheck.notNull(compressorCmd, "compressorCmd");
 	NullCheck.notNull(channel, "channel");
     }
 
@@ -48,6 +53,13 @@ abstract class Task implements Runnable
     @Override public void run()
     {
 	try {
+	    AudioFormat[] formats = channel.getSynthSupportedFormats();
+	    if (formats == null || formats.length < 0)
+	    {
+		progressLine("Отсутствуют поддерживаемые форматы");//FIXME:
+		return;
+	    }
+	    chosenFormat = formats[0];
 	    openStream();
 	    splitText();
 	    closeStream();
@@ -87,19 +99,14 @@ abstract class Task implements Runnable
 
     private void onNewPortion(String s) throws IOException
     {
-	channel.synth(s, 0, 0, null, stream);
-	progressLine(s);
-	//	checkSize();
+	channel.synth(s, 0, 0, chosenFormat, stream);
+checkSize();
     }
 
     private void openStream() throws IOException
     {
-    String fileName = "" + fragmentNum;
-    ++fragmentNum;
-    while(fileName.length() < 3)
-	fileName = "0" + fileName;
-    fileName = "book" + fileName;
-    currentFile = path.resolve(fileName);
+	currentFile = Files.createTempFile("lwrnarrator", "");
+	Log.debug("narrator", "opening a temporary stream on " + currentFile.toString());
     stream = Files.newOutputStream(currentFile);
     }
 
@@ -107,6 +114,20 @@ abstract class Task implements Runnable
     {
 	stream.flush();
 	stream.close();
+	stream = null;
+	String fileName = "" + fragmentNum;
+	++fragmentNum;
+	while(fileName.length() < 3)
+	    fileName = "0" + fileName;
+	fileName += ".mp3";
+	Path compressedFile = path.resolve(fileName);
+	progressLine("Compressing " + compressedFile.toString());
+	callCompressor(currentFile, compressedFile);
+	Log.debug("narrator", "deleting temporary file " + currentFile.toString());
+	Files.delete(currentFile);
+	currentFile = null;
+
+
     }
 
     private void checkSize() throws IOException
@@ -116,6 +137,24 @@ abstract class Task implements Runnable
 	{
 	    closeStream();
 	    openStream();
+	}
+    }
+
+    private void callCompressor(Path inputFile, Path outputFile)
+    {
+	Log.debug("narrator", "calling a compressor (" + compressorCmd + ") " + inputFile.toString() + "->" + outputFile.toString());
+	try {
+	    final Process p = new ProcessBuilder(compressorCmd, inputFile.toString(), outputFile.toString()).start();
+	    p.waitFor();
+	}
+	catch(IOException e)
+	{
+	    e.printStackTrace();
+	    progressLine(e.getMessage());
+	}
+	catch(InterruptedException e)
+	{
+	    Thread.currentThread().interrupt();
 	}
     }
 }

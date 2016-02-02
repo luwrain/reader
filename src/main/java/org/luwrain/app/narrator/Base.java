@@ -18,6 +18,7 @@ package org.luwrain.app.narrator;
 
 import java.net.*;
 import java.nio.file.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import org.luwrain.core.*;
@@ -41,14 +42,15 @@ class Base
     {
 	if (futureTask != null && !futureTask.isDone())
 	    return false;
-	final Channel channel = luwrain.getDefaultStreamingChannel();
+	final Channel channel = luwrain.getAnySpeechChannelByCond(EnumSet.of(Channel.Features.CAN_SYNTH_TO_STREAM));
 	if (channel == null)
 	{
 	    luwrain.enqueueEvent(new ProgressLineEvent(destArea, "Отсутствует синтезатор по умолчанию"));
 	    return true;
 	}
 	luwrain.enqueueEvent(new ProgressLineEvent(destArea, "Используется синтезатор \"" + channel.getChannelName() + "\""));
-	task = new Task(text, Paths.get("/tmp"), channel){
+	task = new Task(text, Paths.get("/tmp"), 
+			luwrain.launchContext().scriptPath("lwr-audio-compress").toString(), channel){
 		@Override protected void progressLine(String text)
 		{
 		    luwrain.enqueueEvent(new ProgressLineEvent(destArea, text));
@@ -58,19 +60,4 @@ class Base
 	executor.execute(futureTask);
 	return true;
     }
-
-
-    /*
-    private FutureTask constructTask(final Area area, final URL url)
-    {
-	final Luwrain l = luwrain;
-	return new FutureTask<Opds.Directory>(new Callable<Opds.Directory>(){
-		@Override public Opds.Directory call()
-		{
-		    l.enqueueEvent(new ThreadSyncEvent(area));
-		    return null;
-		}
-	    });
-    }
-    */
 }

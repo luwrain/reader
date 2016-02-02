@@ -122,6 +122,8 @@ class ReaderArea extends DocTreeArea
 
     private boolean onEnter(KeyboardEvent event)
     {
+	if (!hasHref())
+	    return false;
 	final String href = getHref();
 	return actions.jumpByHref(href);
     }

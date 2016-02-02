@@ -1,0 +1,32 @@
+#!/bin/bash -evx
+
+THIS="${0##*/}"
+
+INPUTFILE="$1"
+OUTPUTFILE="$2"
+
+RATE=16000
+BITS=16
+CHANNELS=1
+BITRATE=64
+FORMAT=signed-integer
+
+[ -z "$INPUTFILE" ] && echo "$THIS:input file not given" >&2 && exit 1
+[ -z "$OUTPUTFILE" ] && echo "$THIS:output file not given" >&2 && exit 1
+
+#exec &> /dev/null
+
+TMPFILE=$(mktemp)
+
+exit_handler()
+{
+    local rc=$?
+    trap - EXIT
+    rm -f -- "$TMPFILE"
+    exit $rc
+}
+
+trap exit_handler EXIT HUP INT QUIT PIPE TERM
+
+sox -t raw -r $RATE -b $BITS -c $CHANNELS -e $FORMAT "$INPUTFILE" -t wav -c 2 "$TMPFILE"
+lame -b $BITRATE "$TMPFILE" "$OUTPUTFILE" &> /dev/null
