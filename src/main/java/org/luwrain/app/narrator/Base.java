@@ -23,18 +23,21 @@ import java.util.concurrent.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.popups.*;
 import org.luwrain.speech.*;
 
 class Base
 {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
+    private Strings strings;
     private Task task;
     private FutureTask futureTask;
 
-    boolean init(Luwrain luwrain)
+    boolean init(Luwrain luwrain, Strings strings)
     {
 	this.luwrain = luwrain;
+	this.strings = strings;
 	return true;
     }
 
@@ -42,18 +45,32 @@ class Base
     {
 	if (futureTask != null && !futureTask.isDone())
 	    return false;
+
+	if (text.trim().isEmpty())
+	{
+	    luwrain.message(strings.noTextToSynth(), Luwrain.MESSAGE_ERROR);
+	    return true;
+	}
+
 	final Channel channel = luwrain.getAnySpeechChannelByCond(EnumSet.of(Channel.Features.CAN_SYNTH_TO_STREAM));
 	if (channel == null)
 	{
-	    luwrain.enqueueEvent(new ProgressLineEvent(destArea, "Отсутствует синтезатор по умолчанию"));
+	    luwrain.message(strings.noChannelToSynth(), Luwrain.MESSAGE_ERROR);
 	    return true;
 	}
-	luwrain.enqueueEvent(new ProgressLineEvent(destArea, "Используется синтезатор \"" + channel.getChannelName() + "\""));
-	task = new Task(text, Paths.get("/tmp"), 
+	final Path path = Popups.chooseFile(luwrain, 
+					    strings.targetDirPopupName(), strings.targetDirPopupPrefix(),
+					    luwrain.launchContext().userHomeDirAsPath(), luwrain.launchContext().userHomeDirAsPath(),
+					    DefaultFileAcceptance.Type.ANY);
+	if (path == null)
+	    return true;
+	task = new Task(strings, text, path, 
 			luwrain.launchContext().scriptPath("lwr-audio-compress").toString(), channel){
-		@Override protected void progressLine(String text)
+		@Override protected void progressLine(String text, boolean doneMessage)
 		{
 		    luwrain.enqueueEvent(new ProgressLineEvent(destArea, text));
+		    if (doneMessage)
+			luwrain.runInMainThread(()->luwrain.message(text, Luwrain.MESSAGE_DONE));
 		}
 	    };
 	futureTask = new FutureTask(task, null);

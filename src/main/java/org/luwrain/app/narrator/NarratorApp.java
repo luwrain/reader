@@ -56,7 +56,7 @@ public class NarratorApp implements Application, Actions
 	strings = (Strings)o;
 	this.luwrain = luwrain;
 	areaLayoutSwitch = new AreaLayoutSwitch(luwrain);
-	if (!base.init(luwrain))
+	if (!base.init(luwrain, strings))
 	    return false;
 	createAreas();
 	return true;

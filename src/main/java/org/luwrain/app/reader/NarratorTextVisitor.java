@@ -45,22 +45,19 @@ class NarratorTextVisitor implements Visitor
 
     @Override public void visit(Section node)
     {
-	builder.append("Заголовок");
+	builder.append("Заголовок ");
     }
 
     @Override public void visit(TableCell node)
     {
-	builder.append("Ячейка таблицы");
     }
 
     @Override public void visit(Table node)
     {
-	builder.append("Таблица\n");
     }
 
     @Override public void visit(TableRow node)
     {
-	builder.append("Строка таблицы\n");
     }
 
     @Override public String toString()

@@ -19,4 +19,11 @@ package org.luwrain.app.narrator;
 public interface Strings
 {
     String appName();
+    String targetDirPopupName();
+    String targetDirPopupPrefix();
+    String noTextToSynth();
+    String noChannelToSynth();
+    String noSupportedAudioFormats();
+    String done();
+    String compressing(String fileName);
 }

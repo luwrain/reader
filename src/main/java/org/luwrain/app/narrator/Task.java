@@ -25,30 +25,34 @@ import org.luwrain.speech.*;
 
 abstract class Task implements Runnable
 {
+    private Strings strings;
     private Path path;
     private String text;
     private Channel channel;
+    private String compressorCmd = "";
 
     private Path currentFile;
     private OutputStream stream;
     private int fragmentNum = 1;
     private AudioFormat chosenFormat = null;
-    private String compressorCmd = "";
+    private int lastPercents = 0;
 
-    Task(String text, Path path,
+    Task(Strings strings, String text, Path path,
 	 String compressorCmd, Channel channel)
     {
+	this.strings = strings;
 	this.text = text;
 	this.path = path;
 	this.compressorCmd = compressorCmd;
 	this.channel = channel;
+	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(text, "text");
 	NullCheck.notNull(path, "path");
 	NullCheck.notNull(compressorCmd, "compressorCmd");
 	NullCheck.notNull(channel, "channel");
     }
 
-    abstract protected void progressLine(String text);
+    abstract protected void progressLine(String text, boolean doneMessage);
 
     @Override public void run()
     {
@@ -56,13 +60,14 @@ abstract class Task implements Runnable
 	    AudioFormat[] formats = channel.getSynthSupportedFormats();
 	    if (formats == null || formats.length < 0)
 	    {
-		progressLine("Отсутствуют поддерживаемые форматы");//FIXME:
+		progressLine(strings.noSupportedAudioFormats(), false);
 		return;
 	    }
 	    chosenFormat = formats[0];
 	    openStream();
 	    splitText();
 	    closeStream();
+	    progressLine(strings.done(), true);
 	}
 	catch(Exception e)
 	{
@@ -75,7 +80,29 @@ abstract class Task implements Runnable
 	StringBuilder b = new StringBuilder();
 	for(int i = 0;i < text.length();++i)
 	{
+	    final int percents = (i * 100) / text.length();
+	    if (percents > lastPercents)
+	    {
+		progressLine("" + percents + "%", false);
+		lastPercents = percents;
+	    }
 	    final char c = text.charAt(i);
+	    final char cc = (i + 1 < text.length())?text.charAt(i + 1):'\0';
+	    if (c == '\n' && cc == '#')
+	    {
+		int k = i + 1;
+		while(k < text.length() && text.charAt(k) != '\n')
+		    ++k;
+		final String s = new String(b);
+		if (k >= text.length())//If the line with hash command is the last one, skipping it
+		    break;
+		if (k > i + 1 && onHashCmd(s, text.substring(i + 1, k)))
+		{
+		    b = new StringBuilder();
+		    i = k;
+		    continue;
+		}
+	    }
 	    if (Character.isISOControl(c))
 	    {
 		b.append(" ");
@@ -87,20 +114,21 @@ abstract class Task implements Runnable
 		final String s = new String(b);
 		b = new StringBuilder();
 		if (s.length() > 1)
-		    onNewPortion(s); 
+		    onNewPortion(s, true);
 		continue;
 	    }
 	    b.append(c);
 	}
 	final String s = new String(b);
 	if (!s.isEmpty())
-	    onNewPortion(s);
+	    onNewPortion(s, true);
     }
 
-    private void onNewPortion(String s) throws IOException
+    private void onNewPortion(String s, boolean commit) throws IOException
     {
 	channel.synth(s, 0, 0, chosenFormat, stream);
-checkSize();
+	if (commit)
+	    checkSize();
     }
 
     private void openStream() throws IOException
@@ -121,19 +149,17 @@ checkSize();
 	    fileName = "0" + fileName;
 	fileName += ".mp3";
 	Path compressedFile = path.resolve(fileName);
-	progressLine("Compressing " + compressedFile.toString());
+	progressLine(strings.compressing(compressedFile.toString()), false);
 	callCompressor(currentFile, compressedFile);
 	Log.debug("narrator", "deleting temporary file " + currentFile.toString());
 	Files.delete(currentFile);
 	currentFile = null;
-
-
     }
 
     private void checkSize() throws IOException
     {
 	stream.flush();
-	if (Files.size(currentFile) > 1048576 * 10)
+	if (Files.size(currentFile) > timeToBytes(300000))//5 min
 	{
 	    closeStream();
 	    openStream();
@@ -150,11 +176,48 @@ checkSize();
 	catch(IOException e)
 	{
 	    e.printStackTrace();
-	    progressLine(e.getMessage());
+	    progressLine(e.getMessage(), false);
 	}
 	catch(InterruptedException e)
 	{
 	    Thread.currentThread().interrupt();
 	}
+    }
+
+    private void silence(int delay) throws IOException
+    {
+	final int numBytes = timeToBytes(delay);
+	Log.debug("narrator", "writing a silence of " + numBytes + " bytes");
+	final byte[] buf = new byte[numBytes];
+	for(int i = 0;i < buf.length;++i)
+	    buf[i] = 0;
+	stream.write(buf);
+    }
+
+    private boolean onHashCmd(String uncommittedText, String cmd) throws IOException
+    {
+	if (cmd.length() < 2)
+	    return false;
+	final String body = cmd.substring(1);
+try {
+	    final int delay = Integer.parseInt(body);
+	    if (delay > 100 && delay < 100000)
+	    {
+		onNewPortion(uncommittedText, false);
+		silence(delay);
+	    return true;
+	    } else
+		return false;
+}
+	    catch (NumberFormatException e)
+	    { return false; }
+    }
+
+    private int timeToBytes(int msec)
+    {
+	float value = chosenFormat.getSampleRate() * chosenFormat.getSampleSizeInBits() * chosenFormat.getChannels();//bits in a second
+	value /= 8;//bytes in a second
+	value /= 1000;//bytes in millisecond
+	return (int)(value * msec);
     }
 }
