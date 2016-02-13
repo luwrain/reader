@@ -73,7 +73,7 @@ class ReaderArea extends DocTreeArea
 	NullCheck.notNull(event, "event");
 	switch(event.getCode())
 	{
-	case EnvironmentEvent.ACTION:
+	case ACTION:
 	    if (ActionEvent.isAction(event, "open-in-narrator"))
 	    {
 		actions.openInNarrator();
@@ -96,7 +96,7 @@ class ReaderArea extends DocTreeArea
 	    }
 		*/
 	    return false;
-	case EnvironmentEvent.CLOSE:
+	case CLOSE:
 	    actions.closeApp();
 	    return true;
 	default:

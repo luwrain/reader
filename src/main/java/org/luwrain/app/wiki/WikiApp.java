@@ -102,9 +102,9 @@ public class WikiApp implements Application, Actions
 			throw new NullPointerException("event may not be null");
 		    switch(event.getCode())
 		    {
-		    case EnvironmentEvent.CLOSE:
+		    case CLOSE:
 			return actions.closeApp();
-		    case EnvironmentEvent.THREAD_SYNC:
+		    case THREAD_SYNC:
 			if (event instanceof FetchEvent)
 			{
 			    final FetchEvent fetchEvent = (FetchEvent)event;

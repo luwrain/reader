@@ -143,10 +143,10 @@ public class OpdsApp implements Application, Actions
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
-		    case EnvironmentEvent.CLOSE:
+		    case CLOSE:
 			actions.closeApp();
 			return true;
-		    case EnvironmentEvent.THREAD_SYNC:
+		    case THREAD_SYNC:
 			actions.onReady();
 			return true;
 		    default:
@@ -179,10 +179,10 @@ public class OpdsApp implements Application, Actions
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
-		    case EnvironmentEvent.CANCEL:
+		    case CANCEL:
 			actions.showMainList();
 			return true;
-		    case EnvironmentEvent.CLOSE:
+		    case CLOSE:
 			actions.closeApp();
 			return true;
 		    default:

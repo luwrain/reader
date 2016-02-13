@@ -81,10 +81,10 @@ public class NarratorApp implements Application, Actions
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
-		    case EnvironmentEvent.CLOSE:
+		    case CLOSE:
 			a.closeApp();
 			return true;
-		    case EnvironmentEvent.OK:
+		    case OK:
 			a.start();
 			return true;
 		    default:
@@ -104,7 +104,7 @@ public class NarratorApp implements Application, Actions
 		    }
 		    switch(event.getCode())
 		    {
-		    case EnvironmentEvent.CLOSE:
+		    case CLOSE:
 			a.closeApp();
 			return true;
 		    default:

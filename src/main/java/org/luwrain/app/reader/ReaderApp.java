@@ -92,7 +92,7 @@ public class ReaderApp implements Application, Actions
 			NullCheck.notNull(event, "evet");
 			switch(event.getCode())
 			{
-			case EnvironmentEvent.CLOSE:
+			case CLOSE:
 			    actions.closeApp();
 			    return true;
 			default:
