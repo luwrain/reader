@@ -51,18 +51,18 @@ class ReaderArea extends DocTreeArea
     @Override public boolean onKeyboardEvent(KeyboardEvent event)
     {
 	NullCheck.notNull(event, "event");
-	if (event.isCommand() && event.withShiftOnly())
-	    switch(event.getCommand())
+	if (event.isSpecial() && event.withShiftOnly())
+	    switch(event.getSpecial())
 	{
-	case KeyboardEvent.ENTER:
+	case ENTER:
 	    return actions.showDocInfo();
 	}
-	if (event.isCommand() && !event.isModified())
-	    switch(event.getCommand())
+	if (event.isSpecial() && !event.isModified())
+	    switch(event.getSpecial())
 	    {
-	    case KeyboardEvent.ENTER:
+	    case ENTER:
 		return onEnter(event);
-	    case KeyboardEvent.BACKSPACE:
+	    case BACKSPACE:
 		return onBackspace(event);
 	    }
 	return super.onKeyboardEvent(event);

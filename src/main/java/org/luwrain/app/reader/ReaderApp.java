@@ -79,10 +79,10 @@ public class ReaderApp implements Application, Actions
 		    @Override public boolean onKeyboardEvent(KeyboardEvent event)
 		    {
 			NullCheck.notNull(event, "event");
-			if (event.isCommand() && !event.isModified())
-			    switch(event.getCommand())
+			if (event.isSpecial() && !event.isModified())
+			    switch(event.getSpecial())
 			    {
-			    case KeyboardEvent.ESCAPE:
+			    case ESCAPE:
 				return actions.returnFromInfoArea();
 			    }
 				return super.onKeyboardEvent(event);

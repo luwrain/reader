@@ -124,16 +124,16 @@ public class OpdsApp implements Application, Actions
 		{
 		    NullCheck.notNull(event, "event");
 		    //		    System.out.println(event);
-			if (event.isCommand() && event.withShiftOnly())
-			    switch(event.getCommand())
+			if (event.isSpecial() && event.withShiftOnly())
+			    switch(event.getSpecial())
 			{
-		    case KeyboardEvent.ENTER:
+		    case ENTER:
 			return actions.showEntryInfo(selected());
 			}
-		    if (event.isCommand() && !event.isModified())
-			switch(event.getCommand())
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
 		    {
-		    case KeyboardEvent.BACKSPACE:
+		    case BACKSPACE:
 			return actions.onReturnBack();
 		    }
 		    return super.onKeyboardEvent(event);
@@ -165,10 +165,10 @@ public class OpdsApp implements Application, Actions
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (event.isCommand() && !event.isModified())
-			    switch(event.getCommand())
+		    if (event.isSpecial() && !event.isModified())
+			    switch(event.getSpecial())
 			{
-		    case KeyboardEvent.ESCAPE:
+		    case ESCAPE:
 			actions.showMainList();
 			return true;
 			}
