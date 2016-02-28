@@ -25,7 +25,13 @@ public interface Actions
     boolean jumpByHref(String href);
     void onNewDocument(Result res);
     void openInNarrator();
+    boolean onNotesClick(Object item);
     void showErrorPage(Result res);
     boolean showDocInfo();
     boolean returnFromInfoArea();
+    void goToTreeArea();
+    void goToReaderArea();
+    void goToNotesArea();
+    void docMode();
+    void bookMode();
 }

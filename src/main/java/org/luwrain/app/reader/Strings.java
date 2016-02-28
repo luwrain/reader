@@ -30,6 +30,9 @@ public interface Strings
     String noContent(boolean fetching);
     String fetching(String url);
     String badUrl(String url);
-    String contextMenuOpenInNarrator();
+    String actionTitle(String actionName);
     String infoAreaName();
+    String treeAreaName();
+    String notesAreaName();
+    String bookTreeRoot();
 }

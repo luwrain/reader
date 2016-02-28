@@ -23,7 +23,7 @@ import java.net.*;
 //import java.nio.file.*;
 
 import org.luwrain.core.*;
-//import org.luwrain.util.MlReader;
+import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
 
 class Base
@@ -33,16 +33,31 @@ class Base
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
     private Strings strings;
+    private BookTreeModelSource bookTreeModelSource;
+    private CachedTreeModel bookTreeModel;
+    private final FixedListModel notesModel = new FixedListModel();
     private Result currentDoc = null;
     private FutureTask task;
 
     boolean init(Luwrain luwrain, Strings strings)
     {
-	this.luwrain = luwrain;
-	this.strings = strings;
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
+	this.luwrain = luwrain;
+	this.strings = strings;
+	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Document[0]);
+	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
 	return true;
+    }
+
+    TreeArea.Model getTreeModel()
+    {
+	return bookTreeModel;
+    }
+
+    public ListArea.Model getNotesModel()
+    {
+	return notesModel;
     }
 
     boolean fetch(ReaderArea area, DocInfo docInfo)
@@ -94,17 +109,24 @@ class Base
 	NullCheck.notNull(docInfo, "docInfo");
 	return new FutureTask(()->{
 		Result res = null;
-		switch(docInfo.type)
+		try {
+		    switch(docInfo.type)
+		    {
+		    case URL:
+			res = Factory.fromUrl(docInfo.url, docInfo.contentType, docInfo.charset);
+			break;
+		    case PATH:
+			res = Factory.fromPath(docInfo.path, docInfo.contentType, docInfo.charset);
+			break;
+		    }
+		}
+		catch(Exception e)
 		{
-		case URL:
-		    res = Factory.fromUrl(docInfo.url, docInfo.contentType, docInfo.charset);
-break;
-		case PATH:
-		    //		    System.out.println("path");
-		    //		    doc = Factory.fromPath(docInfo.path, docInfo.contentType, docInfo.charset);
-break;
+		    e.printStackTrace();
+		    luwrain.runInMainThread(()->luwrain.message(e.getMessage(), Luwrain.MESSAGE_ERROR));
 		}
 		final Result finalRes = res;
+		if (finalRes != null)
 		    luwrain.runInMainThread(()->area.onFetchedDoc(finalRes));
 	}, null);
     }
@@ -113,6 +135,7 @@ break;
     {
 	NullCheck.notNull(res, "res");
 	currentDoc = res;
+	bookTreeModelSource.setDocuments(new Document[]{res.doc()});
     }
 
     Result currentDoc()

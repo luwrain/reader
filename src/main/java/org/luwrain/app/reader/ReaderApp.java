@@ -25,15 +25,18 @@ import org.luwrain.doctree.*;
 
 public class ReaderApp implements Application, Actions
 {
-    static private final String STRINGS_NAME = "luwrain.reader";
+    static private final int DOC_MODE_LAYOUT_INDEX = 0;
+    static private final int BOOK_MODE_LAYOUT_INDEX = 1;
+    static private final int INFO_MODE_LAYOUT_INDEX = 2;
 
-    static private final int DOC_ONLY_LAYOUT_INDEX = 0;
-    static private final int INFO_LAYOUT_INDEX = 1;
+    static private final String STRINGS_NAME = "luwrain.reader";
 
     private Luwrain luwrain;
     private final Base base = new Base();
     private Strings strings;
     private ReaderArea readerArea;
+    private TreeArea treeArea;
+    private ListArea notesArea;
     private SimpleArea infoArea;
     private AreaLayoutSwitch layouts;
     private Document doc = null;
@@ -62,6 +65,7 @@ public class ReaderApp implements Application, Actions
 	createAreas();
 	    layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(readerArea));
+	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
 	layouts.add(new AreaLayout(infoArea));
 	    if (docInfo != null)
 		base.fetch(readerArea, docInfo); else
@@ -73,7 +77,73 @@ public class ReaderApp implements Application, Actions
     {
 	final Actions actions = this;
 
+	final TreeArea.Params treeParams = new TreeArea.Params();
+	treeParams.environment = new DefaultControlEnvironment(luwrain);
+	treeParams.model = base.getTreeModel();
+	treeParams.name = strings.treeAreaName();
+
+	treeArea = new TreeArea(treeParams){
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if(event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+			{
+			case TAB:
+			    actions.goToReaderArea();
+			    return true;
+			}
+		    return super.onKeyboardEvent(event);
+		}
+		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    switch(event.getCode())
+		    {
+		    case CLOSE:
+			actions.closeApp();
+			return true;
+		    default:
+			return super.onEnvironmentEvent(event);
+		    }
+		}
+	    };
+
 	    readerArea = new ReaderArea(luwrain, strings, this);
+
+	    final ListParams listParams = new ListParams();
+	    listParams.environment = treeParams.environment;
+	    listParams.model = base.getNotesModel();
+	    listParams.appearance = new DefaultListItemAppearance(listParams.environment);
+	    listParams.clickHandler = (area, index, obj)->{return actions.onNotesClick(obj);};
+	    listParams.name = strings.notesAreaName();
+
+	    notesArea = new ListArea(listParams){
+		    @Override public boolean onKeyboardEvent(KeyboardEvent event)
+		    {
+			NullCheck.notNull(event, "event");
+			if (event.isSpecial() && !event.isModified())
+			    switch(event.getSpecial())
+			    {
+			    case TAB:
+				actions.goToTreeArea();
+				return true;
+			    }
+			return super.onKeyboardEvent(event);
+		    }
+		    @Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		    {
+			NullCheck.notNull(event, "event");
+			switch(event.getCode())
+			{
+			case CLOSE:
+			    actions.closeApp();
+			    return true;
+			default:
+			    return super.onEnvironmentEvent(event);
+			}
+		    }
+		};
 
 	    infoArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.infoAreaName()){
 		    @Override public boolean onKeyboardEvent(KeyboardEvent event)
@@ -100,6 +170,11 @@ public class ReaderApp implements Application, Actions
 			}
 		    }
 		};
+    }
+
+@Override public boolean onNotesClick(Object item)
+    {
+	return false;
     }
 
     @Override public boolean jumpByHref(String href)
@@ -129,7 +204,7 @@ public class ReaderApp implements Application, Actions
 	    return false;
 	infoArea.clear();
 	base.prepareInfoText(currentDoc, infoArea);
-	layouts.show(INFO_LAYOUT_INDEX);
+	layouts.show(INFO_MODE_LAYOUT_INDEX);
 	return true;
     }
 
@@ -140,15 +215,26 @@ public class ReaderApp implements Application, Actions
 	base.prepareInfoText(res, infoArea);
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
-	layouts.show(INFO_LAYOUT_INDEX);
+	layouts.show(INFO_MODE_LAYOUT_INDEX);
     }
+
+    @Override public void docMode()
+    {
+	layouts.show(DOC_MODE_LAYOUT_INDEX);
+    }
+
+    @Override public void bookMode()
+    {
+	layouts.show(BOOK_MODE_LAYOUT_INDEX);
+    }
+
 
     @Override public boolean returnFromInfoArea()
     {
 	final Result currentDoc = base.currentDoc();
 	if (currentDoc == null)
 	    return false;
-	layouts.show(DOC_ONLY_LAYOUT_INDEX);
+	layouts.show(DOC_MODE_LAYOUT_INDEX);
 	return true;
     }
 
@@ -165,5 +251,24 @@ public class ReaderApp implements Application, Actions
     @Override public void closeApp()
     {
 	luwrain.closeApp();
+    }
+
+    @Override public void goToTreeArea()
+    {
+	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
+	    return;
+	luwrain.setActiveArea(treeArea);
+    }
+
+    @Override public void goToReaderArea()
+    {
+	luwrain.setActiveArea(readerArea);
+    }
+
+    @Override public void goToNotesArea()
+    {
+	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
+	    return;
+	luwrain.setActiveArea(notesArea);
     }
 }

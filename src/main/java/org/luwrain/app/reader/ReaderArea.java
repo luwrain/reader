@@ -57,11 +57,15 @@ class ReaderArea extends DocTreeArea
 	case ENTER:
 	    return actions.showDocInfo();
 	}
+
 	if (event.isSpecial() && !event.isModified())
 	    switch(event.getSpecial())
 	    {
+	case TAB:
+	    actions.goToNotesArea();
+	    return true;
 	    case ENTER:
-		return onEnter(event);
+		return openUrl(false);
 	    case BACKSPACE:
 		return onBackspace(event);
 	    }
@@ -77,7 +81,26 @@ class ReaderArea extends DocTreeArea
 	    if (ActionEvent.isAction(event, "open-in-narrator"))
 	    {
 		actions.openInNarrator();
+		return true;
 	    }
+
+	    if (ActionEvent.isAction(event, "doc-mode"))
+	    {
+		actions.docMode();
+		return true;
+	    }
+
+	    if (ActionEvent.isAction(event, "book-mode"))
+	    {
+		actions.bookMode();
+		return true;
+	    }
+
+	    if (ActionEvent.isAction(event, "open-url"))
+		return openUrl(true);
+
+
+
 		/*
 	    if (ActionEvent.isAction(event, "open"))
 	    {
@@ -107,10 +130,14 @@ class ReaderArea extends DocTreeArea
     @Override public Action[] getAreaActions()
     {
 	return new Action[]{
-	    new Action("open-in-narrator", strings.contextMenuOpenInNarrator())
-	    //	    new Action("open", "Открыть документ"),//FIXME:
-	    //	    new Action("new-format", "Сменить формат"),//FIXME:
-	    //	    new Action("new-charset", "Сменить кодировку"),//FIXME:
+	    new Action("open-file", strings.actionTitle("open-file"), new KeyboardEvent(KeyboardEvent.Special.F5)),
+	    new Action("open-url", strings.actionTitle("open-url"), new KeyboardEvent(KeyboardEvent.Special.F6)),
+	    new Action("open-in-narrator", strings.actionTitle("open-in-narrator"), new KeyboardEvent(KeyboardEvent.Special.F8)),
+	    new Action("change-format", strings.actionTitle("change-format"), new KeyboardEvent(KeyboardEvent.Special.F9)),
+	    new Action("change-charset", strings.actionTitle("change-charset"), new KeyboardEvent(KeyboardEvent.Special.F10)),
+	    new Action("book-mode", strings.actionTitle("book-mode")),
+	    new Action("bdoc-mode", strings.actionTitle("doc-mode")),
+	    new Action("info", strings.actionTitle("info"), new KeyboardEvent(KeyboardEvent.Special.F8)),
 	};
     }
 
@@ -120,11 +147,18 @@ class ReaderArea extends DocTreeArea
 	return doc != null?doc.getTitle():strings.appName();
     }
 
-    private boolean onEnter(KeyboardEvent event)
+    private boolean openUrl(boolean openPopup)
     {
-	if (!hasHref())
+	if (!openPopup && !hasHref())
 	    return false;
-	final String href = getHref();
+	String href = hasHref()?getHref():"";
+	if (openPopup)
+	{
+	    final String res = Popups.simple(luwrain, "Открыть URL", "Введите адрес ссылки:", href);
+	    if (res == null)
+		return true;
+	    href = res;
+	}
 	return actions.jumpByHref(href);
     }
 
