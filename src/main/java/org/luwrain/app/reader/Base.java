@@ -36,7 +36,8 @@ class Base
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final FixedListModel notesModel = new FixedListModel();
-    private Result currentDoc = null;
+    private Book book;
+    private Document currentDoc = null;
     private FutureTask task;
 
     boolean init(Luwrain luwrain, Strings strings)
@@ -74,7 +75,7 @@ class Base
     void openInNarrator()
     {
 	final NarratorTextVisitor visitor = new NarratorTextVisitor();
-	Visitor.walk(currentDoc.doc().getRoot(), visitor);
+	Visitor.walk(currentDoc.getRoot(), visitor);
 	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
     }
 
@@ -131,14 +132,22 @@ class Base
 	}, null);
     }
 
-    void acceptNewCurrentDoc(Result res)
+    Document acceptNewSuccessfulResult(Result res)
     {
 	NullCheck.notNull(res, "res");
-	currentDoc = res;
-	bookTreeModelSource.setDocuments(new Document[]{res.doc()});
+	if (res.book() != null)
+	{
+	    book = res.book();
+	    bookTreeModelSource.setDocuments(book.getDocuments());
+	    currentDoc = book.getFirstDocument();
+	    return currentDoc;
+	}
+	currentDoc = res.doc();
+	bookTreeModelSource.setDocuments(new Document[]{currentDoc});
+	return currentDoc;
     }
 
-    Result currentDoc()
+    Document currentDoc()
     {
 	return currentDoc;
     }
@@ -153,4 +162,67 @@ class Base
 	lines.addLine("Charset: " + res.charset());
 	lines.addLine("");
     }
+
+    boolean openNew(boolean url)
+    {
+	/*
+	if (!openPopup && !hasHref())
+	    return false;
+	String href = hasHref()?getHref():"";
+	if (openPopup)
+	{
+	    final String res = Popups.simple(luwrain, "Открыть URL", "Введите адрес ссылки:", href);
+	    if (res == null)
+		return true;
+	    href = res;
+	}
+	return actions.jumpByHref(href);
+	*/
+	return false;
+    }
+
+
+    private int chooseFormat()
+    {
+	/*
+	final String[] formats = FormatsList.getSupportedFormatsList();
+	final String[] formatsStr = new String[formats.length];
+	for(int i = 0;i < formats.length;++i)
+	{
+	    final int pos = formats[i].indexOf(":");
+	    if (pos < 0 || pos + 1 >= formats[i].length())
+	    {
+		formatsStr[i] = formats[i];
+		continue;
+	    }
+	    formatsStr[i] = formats[i].substring(pos + 1);
+	}
+	final Object selected = Popups.fixedList(luwrain, "Выберите формат для просмотра:", formatsStr, 0);//FIXME:
+	if (selected == null)
+	    return Factory.UNRECOGNIZED;
+	String format = null;
+	for(int i = 0;i < formatsStr.length;++i)
+	    if (selected == formatsStr[i])
+		format = formats[i];
+	if (format == null)
+	    return Factory.UNRECOGNIZED;
+	final int pos = format.indexOf(":");
+	if (pos < 0 || pos + 1>= format.length())
+	    return Factory.UNRECOGNIZED;
+	luwrain.message(format.substring(0, pos));
+	return DocInfo.formatByStr(format.substring(0, pos));
+	*/
+	return 0;
+    }
+
+    boolean anotherFormat()
+    {
+	return true;
+    }
+
+    boolean anotherCharset()
+    {
+	return true;
+    }
+
 }

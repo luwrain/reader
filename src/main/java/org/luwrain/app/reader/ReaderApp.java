@@ -182,15 +182,47 @@ public class ReaderApp implements Application, Actions
 	return base.jumpByHref(readerArea, href);
     }
 
-    @Override public void onNewDocument(Result res)
+    @Override public void onNewResult(Result res)
     {
-	base.acceptNewCurrentDoc(res);
+	NullCheck.notNull(res, "res");
+	if (res.type() != Result.Type.OK)
+	{
+	    showErrorPage(res);
+	    return;
+	}
+	final Document doc = base.acceptNewSuccessfulResult(res);
+	if (doc == null)
+	    return;
+	readerArea.setDocument(doc);
+	luwrain.silence();
+	luwrain.playSound(Sounds.INTRO_REGULAR);
+	luwrain.say(doc.getTitle());
     }
 
-    @Override public void openInNarrator()
+    @Override public boolean openInNarrator()
     {
 	base.openInNarrator();
+	return true;
     }
+
+    @Override public boolean openNew(boolean url)
+    {
+	base.openNew(url);
+	return true;
+    }
+
+    @Override public boolean anotherFormat()
+    {
+	base.anotherFormat();
+	return true;
+    }
+
+    @Override public boolean anotherCharset()
+    {
+	base.anotherCharset();
+	return true;
+    }
+
 
     @Override public boolean fetchingInProgress()
     {
@@ -199,6 +231,7 @@ public class ReaderApp implements Application, Actions
 
     @Override public boolean showDocInfo()
     {
+	/*
 	final Result currentDoc = base.currentDoc();
 	if (currentDoc == null)
 	    return false;
@@ -206,6 +239,8 @@ public class ReaderApp implements Application, Actions
 	base.prepareInfoText(currentDoc, infoArea);
 	layouts.show(INFO_MODE_LAYOUT_INDEX);
 	return true;
+	*/
+	return false;
     }
 
     @Override public void showErrorPage(Result res)
@@ -218,24 +253,29 @@ public class ReaderApp implements Application, Actions
 	layouts.show(INFO_MODE_LAYOUT_INDEX);
     }
 
-    @Override public void docMode()
+    @Override public boolean docMode()
     {
 	layouts.show(DOC_MODE_LAYOUT_INDEX);
+	return true;
     }
 
-    @Override public void bookMode()
+    @Override public boolean bookMode()
     {
 	layouts.show(BOOK_MODE_LAYOUT_INDEX);
+	return true;
     }
 
 
     @Override public boolean returnFromInfoArea()
     {
+	/*
 	final Result currentDoc = base.currentDoc();
 	if (currentDoc == null)
 	    return false;
 	layouts.show(DOC_MODE_LAYOUT_INDEX);
 	return true;
+	*/
+	return false;
     }
 
     @Override public String getAppName()

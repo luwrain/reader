@@ -22,9 +22,12 @@ public interface Actions
 {
     void closeApp();
     boolean fetchingInProgress();
+    boolean anotherCharset();
+    boolean anotherFormat();
+    boolean openNew(boolean url);
     boolean jumpByHref(String href);
-    void onNewDocument(Result res);
-    void openInNarrator();
+    void onNewResult(Result res);
+    boolean openInNarrator();
     boolean onNotesClick(Object item);
     void showErrorPage(Result res);
     boolean showDocInfo();
@@ -32,6 +35,6 @@ public interface Actions
     void goToTreeArea();
     void goToReaderArea();
     void goToNotesArea();
-    void docMode();
-    void bookMode();
+    boolean docMode();
+    boolean bookMode();
 }

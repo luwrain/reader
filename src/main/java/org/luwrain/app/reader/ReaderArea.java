@@ -40,12 +40,12 @@ class ReaderArea extends DocTreeArea
 	       Actions actions)
     {
 	super(new DefaultControlEnvironment(luwrain), new Introduction(new DefaultControlEnvironment(luwrain), strings), null);
-	this.luwrain = luwrain;
-	this.strings = strings;
-	this.actions = actions;
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(actions, "actions");
+	this.luwrain = luwrain;
+	this.strings = strings;
+	this.actions = actions;
     }
 
     @Override public boolean onKeyboardEvent(KeyboardEvent event)
@@ -57,7 +57,6 @@ class ReaderArea extends DocTreeArea
 	case ENTER:
 	    return actions.showDocInfo();
 	}
-
 	if (event.isSpecial() && !event.isModified())
 	    switch(event.getSpecial())
 	    {
@@ -65,7 +64,9 @@ class ReaderArea extends DocTreeArea
 	    actions.goToNotesArea();
 	    return true;
 	    case ENTER:
-		return openUrl(false);
+		if (hasHref())
+		    return actions.jumpByHref(getHref());
+		return false;
 	    case BACKSPACE:
 		return onBackspace(event);
 	    }
@@ -79,45 +80,19 @@ class ReaderArea extends DocTreeArea
 	{
 	case ACTION:
 	    if (ActionEvent.isAction(event, "open-in-narrator"))
-	    {
-		actions.openInNarrator();
-		return true;
-	    }
-
+		return actions.openInNarrator();
 	    if (ActionEvent.isAction(event, "doc-mode"))
-	    {
-		actions.docMode();
-		return true;
-	    }
-
+		return actions.docMode();
 	    if (ActionEvent.isAction(event, "book-mode"))
-	    {
-		actions.bookMode();
-		return true;
-	    }
-
+		return actions.bookMode();
 	    if (ActionEvent.isAction(event, "open-url"))
-		return openUrl(true);
-
-
-
-		/*
-	    if (ActionEvent.isAction(event, "open"))
-	    {
-		onOpenDoc();
-		return true;
-	    }
-	    if (ActionEvent.isAction(event, "new-format"))
-	    {
-		onNewFormat();
-		return true;
-	    }
-	    if (ActionEvent.isAction(event, "new-charset"))
-	    {
-		onNewCharset();
-		return true;
-	    }
-		*/
+		return actions.openNew(true);
+	    if (ActionEvent.isAction(event, "open-file"))
+		return actions.openNew(false);
+	    if (ActionEvent.isAction(event, "change-format"))
+		return actions.anotherFormat();
+	    if (ActionEvent.isAction(event, "another-charset"))
+		return actions.anotherCharset();
 	    return false;
 	case CLOSE:
 	    actions.closeApp();
@@ -147,21 +122,6 @@ class ReaderArea extends DocTreeArea
 	return doc != null?doc.getTitle():strings.appName();
     }
 
-    private boolean openUrl(boolean openPopup)
-    {
-	if (!openPopup && !hasHref())
-	    return false;
-	String href = hasHref()?getHref():"";
-	if (openPopup)
-	{
-	    final String res = Popups.simple(luwrain, "Открыть URL", "Введите адрес ссылки:", href);
-	    if (res == null)
-		return true;
-	    href = res;
-	}
-	return actions.jumpByHref(href);
-    }
-
     private boolean onBackspace(KeyboardEvent event)
     {
 	/*
@@ -177,18 +137,7 @@ class ReaderArea extends DocTreeArea
     void onFetchedDoc(Result res)
     {
 	NullCheck.notNull(res, "res");
-	if (res.type() != Result.Type.OK)
-	{
-	    actions.showErrorPage(res);
-	    return;
-	}
-	Document newDoc = res.doc();
-	newDoc.buildView(luwrain.getAreaVisibleWidth(this));
-	setDocument(newDoc);
-	actions.onNewDocument(res);
-	luwrain.silence();
-	luwrain.playSound(Sounds.INTRO_REGULAR);
-	luwrain.say(newDoc.getTitle());
+	actions.onNewResult(res);
     }
 
     @Override protected String noContentStr()
@@ -206,38 +155,5 @@ class ReaderArea extends DocTreeArea
 	if (width < MIN_VISIBLE_WIDTH)
 	    width = MIN_VISIBLE_WIDTH;
 	return width;
-    }
-
-    private int chooseFormat()
-    {
-	/*
-	final String[] formats = FormatsList.getSupportedFormatsList();
-	final String[] formatsStr = new String[formats.length];
-	for(int i = 0;i < formats.length;++i)
-	{
-	    final int pos = formats[i].indexOf(":");
-	    if (pos < 0 || pos + 1 >= formats[i].length())
-	    {
-		formatsStr[i] = formats[i];
-		continue;
-	    }
-	    formatsStr[i] = formats[i].substring(pos + 1);
-	}
-	final Object selected = Popups.fixedList(luwrain, "Выберите формат для просмотра:", formatsStr, 0);//FIXME:
-	if (selected == null)
-	    return Factory.UNRECOGNIZED;
-	String format = null;
-	for(int i = 0;i < formatsStr.length;++i)
-	    if (selected == formatsStr[i])
-		format = formats[i];
-	if (format == null)
-	    return Factory.UNRECOGNIZED;
-	final int pos = format.indexOf(":");
-	if (pos < 0 || pos + 1>= format.length())
-	    return Factory.UNRECOGNIZED;
-	luwrain.message(format.substring(0, pos));
-	return DocInfo.formatByStr(format.substring(0, pos));
-	*/
-	return 0;
     }
 }
