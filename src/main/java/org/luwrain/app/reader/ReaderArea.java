@@ -34,7 +34,6 @@ class ReaderArea extends DocTreeArea
     private Luwrain luwrain;
     private Strings strings;
     private Actions actions;
-    private DocInfo docInfo;
 
     ReaderArea(Luwrain luwrain, Strings strings,
 	       Actions actions)
@@ -79,21 +78,7 @@ class ReaderArea extends DocTreeArea
 	switch(event.getCode())
 	{
 	case ACTION:
-	    if (ActionEvent.isAction(event, "open-in-narrator"))
-		return actions.openInNarrator();
-	    if (ActionEvent.isAction(event, "doc-mode"))
-		return actions.docMode();
-	    if (ActionEvent.isAction(event, "book-mode"))
-		return actions.bookMode();
-	    if (ActionEvent.isAction(event, "open-url"))
-		return actions.openNew(true);
-	    if (ActionEvent.isAction(event, "open-file"))
-		return actions.openNew(false);
-	    if (ActionEvent.isAction(event, "change-format"))
-		return actions.anotherFormat();
-	    if (ActionEvent.isAction(event, "another-charset"))
-		return actions.anotherCharset();
-	    return false;
+	    return actions.onAreaAction(event);
 	case CLOSE:
 	    actions.closeApp();
 	    return true;
@@ -104,16 +89,7 @@ class ReaderArea extends DocTreeArea
 
     @Override public Action[] getAreaActions()
     {
-	return new Action[]{
-	    new Action("open-file", strings.actionTitle("open-file"), new KeyboardEvent(KeyboardEvent.Special.F5)),
-	    new Action("open-url", strings.actionTitle("open-url"), new KeyboardEvent(KeyboardEvent.Special.F6)),
-	    new Action("open-in-narrator", strings.actionTitle("open-in-narrator"), new KeyboardEvent(KeyboardEvent.Special.F8)),
-	    new Action("change-format", strings.actionTitle("change-format"), new KeyboardEvent(KeyboardEvent.Special.F9)),
-	    new Action("change-charset", strings.actionTitle("change-charset"), new KeyboardEvent(KeyboardEvent.Special.F10)),
-	    new Action("book-mode", strings.actionTitle("book-mode")),
-	    new Action("bdoc-mode", strings.actionTitle("doc-mode")),
-	    new Action("info", strings.actionTitle("info"), new KeyboardEvent(KeyboardEvent.Special.F8)),
-	};
+	return actions.areaActions();
     }
 
     @Override public String getAreaName()

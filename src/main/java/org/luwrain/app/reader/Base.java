@@ -24,6 +24,7 @@ import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
+import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 
 class Base
@@ -85,19 +86,32 @@ class Base
 	NullCheck.notNull(href, "href");
 	if (fetchingInProgress())
 	    return false;
+	if (isInBookMode())
+	{
+	    final Document doc = book.getDocument(href);
+	    if (doc == null)
+	    {
+		luwrain.launchApp("reader", new String[]{href});
+		return true;
+	    }
+	    setDocument(area, doc);
+	    return true;
+	}
+	URL url = null;
 	try {
-	    if (!fetch(area, new DocInfo(new URL(href))))
+	    url = new URL(href);
+	}
+	    catch(MalformedURLException e)
+	    {
+		e.printStackTrace();
+		luwrain.message(strings.badUrl(href), Luwrain.MESSAGE_ERROR);
+		return true;
+	    }
+	    if (!fetch(area, new DocInfo(url)))
 		return false;
 	    luwrain.message(strings.fetching(href));
 	    return true;
 	}
-	catch(MalformedURLException e)
-	{
-	    e.printStackTrace();
-	    luwrain.message(strings.badUrl(href), Luwrain.MESSAGE_ERROR);
-	    return true;
-	}
-    }
 
     boolean fetchingInProgress()
     {
@@ -139,12 +153,17 @@ class Base
 	{
 	    book = res.book();
 	    bookTreeModelSource.setDocuments(book.getDocuments());
-	    currentDoc = book.getFirstDocument();
+	    currentDoc = book.getStartingDocument();
 	    return currentDoc;
 	}
 	currentDoc = res.doc();
 	bookTreeModelSource.setDocuments(new Document[]{currentDoc});
 	return currentDoc;
+    }
+
+    boolean isInBookMode()
+    {
+	return book != null;
     }
 
     Document currentDoc()
@@ -163,8 +182,13 @@ class Base
 	lines.addLine("");
     }
 
-    boolean openNew(boolean url)
+    boolean openNew(boolean url, String currentHref)
     {
+	if (url)
+	{
+	    final String res = Popups.simple(luwrain, "Открыть URL", "Введите адрес ссылки:", currentHref);
+	    return true;
+	}
 	/*
 	if (!openPopup && !hasHref())
 	    return false;
@@ -225,4 +249,33 @@ class Base
 	return true;
     }
 
+    boolean playAudio(String[] ids)
+    {
+	NullCheck.notNullItems(ids, "ids");
+	if (currentDoc == null || currentDoc.getUrl() == null)
+	{
+	    Log.debug("reader", "no current document or no associated URL to play audio by IDs");
+	    return false;
+	}
+	    final URL url = currentDoc.getUrl();
+	    for(String id: ids)
+	    {
+		final AudioInfo audioInfo = book.findAudioForId(url.toString() + "#" + id);
+		if (audioInfo != null)
+		    luwrain.message(audioInfo.toString());
+		break;
+	    }
+	    return true;
+    }
+
+    void setDocument(ReaderArea area, Document doc)
+    {
+	NullCheck.notNull(area, "area");
+	NullCheck.notNull(doc, "doc");
+	doc.buildView(luwrain.getAreaVisibleWidth(area));
+	area.setDocument(doc);
+	luwrain.silence();
+	luwrain.playSound(Sounds.INTRO_REGULAR);
+	luwrain.say(doc.getTitle());
+    }
 }

@@ -100,12 +100,18 @@ public class ReaderApp implements Application, Actions
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
+		    case ACTION:
+			return actions.onAreaAction(event);
 		    case CLOSE:
 			actions.closeApp();
 			return true;
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
+		}
+		@Override public Action[] getAreaActions()
+		{
+		    return actions.areaActions();
 		}
 	    };
 
@@ -136,12 +142,18 @@ public class ReaderApp implements Application, Actions
 			NullCheck.notNull(event, "event");
 			switch(event.getCode())
 			{
+			case ACTION:
+			    return actions.onAreaAction(event);
 			case CLOSE:
 			    actions.closeApp();
 			    return true;
 			default:
 			    return super.onEnvironmentEvent(event);
 			}
+		    }
+		    @Override public Action[] getAreaActions()
+		    {
+			return actions.areaActions();
 		    }
 		};
 
@@ -162,6 +174,8 @@ public class ReaderApp implements Application, Actions
 			NullCheck.notNull(event, "evet");
 			switch(event.getCode())
 			{
+			case ACTION:
+			    return actions.onAreaAction(event);
 			case CLOSE:
 			    actions.closeApp();
 			    return true;
@@ -169,12 +183,66 @@ public class ReaderApp implements Application, Actions
 			    return super.onEnvironmentEvent(event);
 			}
 		    }
+		    @Override public Action[] getAreaActions()
+		    {
+			return actions.areaActions();
+		    }
 		};
     }
 
 @Override public boolean onNotesClick(Object item)
     {
 	return false;
+    }
+
+    @Override public Action[] areaActions()
+    {
+	return new Action[]{
+	    new Action("open-file", strings.actionTitle("open-file"), new KeyboardEvent(KeyboardEvent.Special.F5)),
+	    new Action("open-url", strings.actionTitle("open-url"), new KeyboardEvent(KeyboardEvent.Special.F6)),
+	    new Action("open-in-narrator", strings.actionTitle("open-in-narrator"), new KeyboardEvent(KeyboardEvent.Special.F8)),
+	    new Action("change-format", strings.actionTitle("change-format"), new KeyboardEvent(KeyboardEvent.Special.F9)),
+	    new Action("change-charset", strings.actionTitle("change-charset"), new KeyboardEvent(KeyboardEvent.Special.F10)),
+	    new Action("book-mode", strings.actionTitle("book-mode")),
+	    new Action("bdoc-mode", strings.actionTitle("doc-mode")),
+	    new Action("play-audio", strings.actionTitle("play-audio"), new KeyboardEvent(KeyboardEvent.Special.F7)),
+	    new Action("info", strings.actionTitle("info"), new KeyboardEvent(KeyboardEvent.Special.F8)),
+	};
+    }
+
+    @Override public boolean onAreaAction(EnvironmentEvent event)
+    {
+	NullCheck.notNull(event, "event");
+	if (ActionEvent.isAction(event, "open-in-narrator"))
+	    return openInNarrator();
+	if (ActionEvent.isAction(event, "doc-mode"))
+	    return docMode();
+	if (ActionEvent.isAction(event, "book-mode"))
+	    return bookMode();
+	if (ActionEvent.isAction(event, "open-url"))
+	    return openNew(true);
+	if (ActionEvent.isAction(event, "open-file"))
+	    return openNew(false);
+	if (ActionEvent.isAction(event, "change-format"))
+	    return anotherFormat();
+	if (ActionEvent.isAction(event, "another-charset"))
+	    return anotherCharset();
+
+	if (ActionEvent.isAction(event, "play-audio"))
+	    return playAudio();
+
+
+	return false;
+    }
+
+    private boolean playAudio()
+    {
+	if (!base.isInBookMode())
+	    return false;
+	final String[] ids = readerArea.getHtmlIds();
+	if (ids == null || ids.length < 1)
+	    return false;
+	return base.playAudio(ids);
     }
 
     @Override public boolean jumpByHref(String href)
@@ -193,31 +261,31 @@ public class ReaderApp implements Application, Actions
 	final Document doc = base.acceptNewSuccessfulResult(res);
 	if (doc == null)
 	    return;
-	readerArea.setDocument(doc);
-	luwrain.silence();
-	luwrain.playSound(Sounds.INTRO_REGULAR);
-	luwrain.say(doc.getTitle());
+	base.setDocument(readerArea, doc);
+	if (base.isInBookMode())
+	    bookMode(); else
+	    docMode();
     }
 
-    @Override public boolean openInNarrator()
+    private boolean openInNarrator()
     {
 	base.openInNarrator();
 	return true;
     }
 
-    @Override public boolean openNew(boolean url)
+    private boolean openNew(boolean url)
     {
-	base.openNew(url);
+	base.openNew(url, readerArea.hasHref()?readerArea.getHref():"");
 	return true;
     }
 
-    @Override public boolean anotherFormat()
+    private boolean anotherFormat()
     {
 	base.anotherFormat();
 	return true;
     }
 
-    @Override public boolean anotherCharset()
+    private boolean anotherCharset()
     {
 	base.anotherCharset();
 	return true;

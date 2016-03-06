@@ -16,18 +16,16 @@
 
 package org.luwrain.app.reader;
 
+import org.luwrain.core.*;
+import org.luwrain.core.events.*;
 import org.luwrain.doctree.*;
 
 public interface Actions
 {
     void closeApp();
     boolean fetchingInProgress();
-    boolean anotherCharset();
-    boolean anotherFormat();
-    boolean openNew(boolean url);
     boolean jumpByHref(String href);
     void onNewResult(Result res);
-    boolean openInNarrator();
     boolean onNotesClick(Object item);
     void showErrorPage(Result res);
     boolean showDocInfo();
@@ -37,4 +35,6 @@ public interface Actions
     void goToNotesArea();
     boolean docMode();
     boolean bookMode();
+    Action[] areaActions();
+    boolean onAreaAction(EnvironmentEvent event);
 }
