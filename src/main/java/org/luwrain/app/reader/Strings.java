@@ -35,4 +35,5 @@ public interface Strings
     String treeAreaName();
     String notesAreaName();
     String bookTreeRoot();
+    String infoPageField(String name);
 }

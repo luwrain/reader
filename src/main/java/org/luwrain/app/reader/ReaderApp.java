@@ -299,23 +299,18 @@ public class ReaderApp implements Application, Actions
 
     @Override public boolean showDocInfo()
     {
-	/*
-	final Result currentDoc = base.currentDoc();
-	if (currentDoc == null)
-	    return false;
 	infoArea.clear();
-	base.prepareInfoText(currentDoc, infoArea);
+	base.prepareDocInfoText(infoArea);
 	layouts.show(INFO_MODE_LAYOUT_INDEX);
+	luwrain.say("Информация о документе");
 	return true;
-	*/
-	return false;
     }
 
     @Override public void showErrorPage(Result res)
     {
 	NullCheck.notNull(res, "res");
 	infoArea.clear();
-	base.prepareInfoText(res, infoArea);
+	base.prepareErrorText(res, infoArea);
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
 	layouts.show(INFO_MODE_LAYOUT_INDEX);
@@ -332,7 +327,6 @@ public class ReaderApp implements Application, Actions
 	layouts.show(BOOK_MODE_LAYOUT_INDEX);
 	return true;
     }
-
 
     @Override public boolean returnFromInfoArea()
     {

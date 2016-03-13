@@ -26,6 +26,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
+import org.luwrain.player.*;
 
 class Base
 {
@@ -34,6 +35,7 @@ class Base
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
     private Strings strings;
+    private Player player;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final FixedListModel notesModel = new FixedListModel();
@@ -47,6 +49,9 @@ class Base
 	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.strings = strings;
+	player = (Player)luwrain.getSharedObject(Player.SHARED_OBJECT_NAME);
+	if (player == null)
+	    Log.warning("reader", "player object is null, no audio listening is available");
 	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Document[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
 	return true;
@@ -171,7 +176,7 @@ class Base
 	return currentDoc;
     }
 
-    void prepareInfoText(Result res, MutableLines lines)
+    void prepareErrorText(Result res, MutableLines lines)
     {
 	lines.addLine("Code: " + res.type().toString());
 	if (res.type() == Result.Type.HTTP_ERROR)
@@ -181,6 +186,25 @@ class Base
 	lines.addLine("Charset: " + res.charset());
 	lines.addLine("");
     }
+
+    void prepareDocInfoText(MutableLines lines)
+    {
+	NullCheck.notNull(lines, "lines");
+	if (currentDoc == null)
+	    return;
+	if (currentDoc.getTitle() != null)
+	    lines.addLine(strings.infoPageField("title") + ": " + currentDoc.getTitle());
+
+	if (currentDoc.getUrl() != null)
+	    lines.addLine(strings.infoPageField("url") + ": " + currentDoc.getUrl());
+
+
+	final Map<String, String> attr = currentDoc.getInfoAttr();
+	for(Map.Entry<String, String> e: attr.entrySet())
+	    if (!strings.infoPageField(e.getKey()).isEmpty())
+		lines.addLine(strings.infoPageField(e.getKey()) + ": " + e.getValue());
+    }
+
 
     boolean openNew(boolean url, String currentHref)
     {
@@ -262,7 +286,10 @@ class Base
 	    {
 		final AudioInfo audioInfo = book.findAudioForId(url.toString() + "#" + id);
 		if (audioInfo != null)
-		    luwrain.message(audioInfo.toString());
+		{
+		    player.play(new SingleLocalFilePlaylist(audioInfo.src()), 0, audioInfo.beginPosMsec());
+		    //		    luwrain.message("" + audioInfo.startPosMsec());
+		}
 		break;
 	    }
 	    return true;
@@ -274,6 +301,7 @@ class Base
 	NullCheck.notNull(doc, "doc");
 	doc.buildView(luwrain.getAreaVisibleWidth(area));
 	area.setDocument(doc);
+	currentDoc = doc;
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
 	luwrain.say(doc.getTitle());
