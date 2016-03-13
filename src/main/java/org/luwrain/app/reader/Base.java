@@ -28,7 +28,7 @@ import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.player.*;
 
-class Base
+class Base implements Listener
 {
     static private final String DEFAULT_ENCODING = "UTF-8";
 
@@ -36,6 +36,8 @@ class Base
     private Luwrain luwrain;
     private Strings strings;
     private Player player;
+    private AudioFollowingHandler audioFollowingHandler = null;
+    private Playlist currentPlaylist = null;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final FixedListModel notesModel = new FixedListModel();
@@ -50,7 +52,8 @@ class Base
 	this.luwrain = luwrain;
 	this.strings = strings;
 	player = (Player)luwrain.getSharedObject(Player.SHARED_OBJECT_NAME);
-	if (player == null)
+	if (player != null)
+	    player.addListener(this); else
 	    Log.warning("reader", "player object is null, no audio listening is available");
 	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Document[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
@@ -273,8 +276,9 @@ class Base
 	return true;
     }
 
-    boolean playAudio(String[] ids)
+    boolean playAudio(ReaderArea area, String[] ids)
     {
+	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
 	if (currentDoc == null || currentDoc.getUrl() == null)
 	{
@@ -287,7 +291,9 @@ class Base
 		final AudioInfo audioInfo = book.findAudioForId(url.toString() + "#" + id);
 		if (audioInfo != null)
 		{
-		    player.play(new SingleLocalFilePlaylist(audioInfo.src()), 0, audioInfo.beginPosMsec());
+		    audioFollowingHandler = new AudioFollowingHandler(area);
+		    currentPlaylist = new SingleLocalFilePlaylist(audioInfo.src());
+		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec());
 		    //		    luwrain.message("" + audioInfo.startPosMsec());
 		}
 		break;
@@ -305,5 +311,70 @@ class Base
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
 	luwrain.say(doc.getTitle());
+    }
+
+    @Override public void onNewPlaylist(Playlist playlist)
+    {
+    }
+
+    @Override public void onNewTrack(Playlist playlist, int trackNum)
+    {
+    }
+
+    @Override public void onTrackTime(Playlist playlist, int trackNum,  long msec)
+    {
+	if (!isInBookMode())
+	    return;
+	if (currentDoc == null)
+	{
+	    Log.warning("reader", "player listening notification with currentDoc equal to null");
+	    return;
+	}
+	if (currentDoc.getUrl() == null)
+	{
+	    Log.warning("reader", "player listening notification with the URL of the current document equal to null");
+	    return;
+	}
+	    if (playlist != currentPlaylist)
+		return;
+	if (playlist.getPlaylistItems() == null || trackNum >= playlist.getPlaylistItems().length)
+	    return;
+	final String track = playlist.getPlaylistItems()[trackNum];
+	final String link = book.findTextForAudio(track, msec);
+	if (link == null)
+	    return;
+	URL url = null;
+	URL docUrl = null;
+	try {
+	    url = new URL(link);
+	    docUrl = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile());
+	}
+	catch(MalformedURLException e)
+	{
+	    e.printStackTrace();
+	    return;
+	}
+	if (!currentDoc.getUrl().equals(docUrl))
+	    return;
+	if (url.getRef().isEmpty())
+	{
+	    Log.warning("reader", "the book provides the link to corresponding text with an empty \'id\' on audio listening");
+	    return;
+	}
+	final AudioFollowingVisitor visitor = new AudioFollowingVisitor(url.getRef());
+	Visitor.walk(currentDoc.getRoot(), visitor);
+	final Run resultingRun = visitor.result();
+
+	if (resultingRun == null)
+	    return;
+	if (audioFollowingHandler.prevRun == resultingRun)
+	    return;
+	//	luwrain.message(resultingRun.toString());
+	luwrain.runInMainThread(()->audioFollowingHandler.area.findRun(resultingRun));
+	audioFollowingHandler.prevRun = resultingRun;
+    }
+
+    @Override public void onPlayerStop()
+    {
     }
 }

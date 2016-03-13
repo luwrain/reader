@@ -242,7 +242,7 @@ public class ReaderApp implements Application, Actions
 	final String[] ids = readerArea.getHtmlIds();
 	if (ids == null || ids.length < 1)
 	    return false;
-	return base.playAudio(ids);
+	return base.playAudio(readerArea, ids);
     }
 
     @Override public boolean jumpByHref(String href)
