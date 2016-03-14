@@ -18,6 +18,7 @@ package org.luwrain.app.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
 
 public interface Actions
@@ -37,4 +38,5 @@ public interface Actions
     boolean bookMode();
     Action[] areaActions();
     boolean onAreaAction(EnvironmentEvent event);
+    boolean onTreeClick(TreeArea area, Object obj);
 }

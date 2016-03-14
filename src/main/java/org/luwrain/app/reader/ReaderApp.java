@@ -81,6 +81,7 @@ public class ReaderApp implements Application, Actions
 	treeParams.environment = new DefaultControlEnvironment(luwrain);
 	treeParams.model = base.getTreeModel();
 	treeParams.name = strings.treeAreaName();
+	treeParams.clickHandler = (area, obj)->onTreeClick(area, obj);
 
 	treeArea = new TreeArea(treeParams){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
@@ -190,6 +191,19 @@ public class ReaderApp implements Application, Actions
 		};
     }
 
+    @Override public boolean onTreeClick(TreeArea area, Object obj)
+    {
+	NullCheck.notNull(area, "area");
+	NullCheck.notNull(obj, "obj");
+	if (!(obj instanceof Book.Section))
+	    return false;
+	final Book.Section sect = (Book.Section)obj;
+	if (!jumpByHref(sect.href()))
+	    return false;
+	goToReaderArea();
+	return true;
+    }
+
 @Override public boolean onNotesClick(Object item)
     {
 	return false;
@@ -263,7 +277,10 @@ public class ReaderApp implements Application, Actions
 	    return;
 	base.setDocument(readerArea, doc);
 	if (base.isInBookMode())
-	    bookMode(); else
+	{
+	    bookMode(); 
+	    treeArea.refresh();
+	} else
 	    docMode();
     }
 

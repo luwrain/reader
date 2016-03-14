@@ -55,7 +55,7 @@ class Base implements Listener
 	if (player != null)
 	    player.addListener(this); else
 	    Log.warning("reader", "player object is null, no audio listening is available");
-	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Document[0]);
+	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Book.Section[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
 	return true;
     }
@@ -160,12 +160,12 @@ class Base implements Listener
 	if (res.book() != null)
 	{
 	    book = res.book();
-	    bookTreeModelSource.setDocuments(book.getDocuments());
+	    bookTreeModelSource.setSections(book.getBookSections());
 	    currentDoc = book.getStartingDocument();
 	    return currentDoc;
 	}
 	currentDoc = res.doc();
-	bookTreeModelSource.setDocuments(new Document[]{currentDoc});
+	//	bookTreeModelSource.setDocuments(new Document[]{currentDoc});
 	return currentDoc;
     }
 

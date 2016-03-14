@@ -1,6 +1,8 @@
 
 package org.luwrain.app.reader;
 
+import java.util.*;
+
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
@@ -8,20 +10,21 @@ import org.luwrain.doctree.*;
 class BookTreeModelSource implements CachedTreeModelSource
 {
     private String root;
-    private Document[] docs;
+    private Book.Section[] sections;
 
-    BookTreeModelSource(String root, Document[] docs)
+    BookTreeModelSource(String root, Book.Section[] sections)
     {
 	NullCheck.notNull(root, "root");
-	NullCheck.notNullItems(docs, "docs");
+	NullCheck.notNullItems(sections, "sections");
 	this.root = root;
-	this.docs = docs;
+	this.sections = sections;
     }
 
-    void setDocuments(Document[] docs)
+    void setSections(Book.Section[] sections)
     {
-	NullCheck.notNull(docs, "docs");
-	this.docs = docs;
+	NullCheck.notNullItems(sections, "sections");
+	this.sections = sections;
+	//	System.out.println("" + sections.length + " new sections");
     }
 
     @Override public Object getRoot()
@@ -31,18 +34,31 @@ class BookTreeModelSource implements CachedTreeModelSource
 
     @Override public Object[] getChildObjs(Object obj)
     {
+	final LinkedList res = new LinkedList();
 	if (obj == root)
-	    return docs;
-	if (obj instanceof Document)
 	{
-	    final Document doc = (Document)obj;
-return doc.getRoot().getSubnodes();
-	}
-	if (obj instanceof Node)
+	    for(Book.Section s: sections)
+		if (s.level() == 1)
+		    res.add(s);
+	} else
 	{
-	    final Node node = (Node)obj;
-	    return node.getSubnodes();
+	    int i = 0;
+	    for(i = 0;i < sections.length;++i)
+		if (sections[i] == obj)
+		    break;
+	    if (i < sections.length)
+	    {
+		final Book.Section sect = sections[i];
+		System.out.println("found for" + sect);
+		for(int k = i + 1;k < sections.length;++k)
+		{
+		    if (sections[k].level() <= sect.level())
+			break;
+		    if (sections[k].level() == sect.level() + 1)
+			res.add(sections[k]);
+		}
+	    }
 	}
-	return new Object[0];
+	return res.toArray(new Object[res.size()]);
     }
 }

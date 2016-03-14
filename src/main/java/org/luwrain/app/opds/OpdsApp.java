@@ -123,7 +123,6 @@ public class OpdsApp implements Application, Actions
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    //		    System.out.println(event);
 			if (event.isSpecial() && event.withShiftOnly())
 			    switch(event.getSpecial())
 			{

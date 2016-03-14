@@ -53,7 +53,6 @@ public class DocInfo
 
     public boolean load(String[] args)
     {
-	//	System.out.println("here");
 	NullCheck.notNullItems(args, "args");
 	if (args.length < 1)
 	    return false;
@@ -78,7 +77,6 @@ public class DocInfo
 	    }
 	}
 	String value = null;
-	//	System.out.println("here");
 	for(int i = 0;i < args.length;++i)
 	    switch(args[i])
 	    {
@@ -88,7 +86,6 @@ public class DocInfo
 		if (value == null)
 		    return false;
 		++i;
-		//		System.out.println("yurl");
 		break;
 	    case "--PATH":
 		type = Type.PATH;
@@ -114,7 +111,6 @@ public class DocInfo
 	    }
 	if (value == null)
 	    return false;
-	//	System.out.println("value=" + value);
 	switch(type)
 	{
 	case PATH:

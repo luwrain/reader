@@ -139,7 +139,6 @@ public class WikiApp implements Application, Actions
     {
 	try {
 	    final String url = "https://" + lang + ".wikipedia.org/wiki/" + URLEncoder.encode(title, "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
-	    System.out.println("opening " + url);
 	    luwrain.launchApp("reader", new String[]{"--URL", url});
 	}
 	catch (UnsupportedEncodingException e)
