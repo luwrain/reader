@@ -53,7 +53,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");//FIXME:
+		    final String url = Popups.simple(luwrain, "Open URL", "Enter the URL to open:", "");//FIXME:
 		    if (url != null && !url.trim().isEmpty())
 			luwrain.launchApp("reader", new String[]{"--URL", url.indexOf("://") >= 0?url:("http://" + url)});
 		}
@@ -66,7 +66,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String url = Popups.simple(luwrain, "Страница", "Введите адрес страницы:", "");//FIXME:
+		    final String url = Popups.simple(luwrain, "Open URL", "Enter the URL to open:", "");//FIXME:
 		    if (url != null && !url.trim().isEmpty())
 			luwrain.launchApp("reader", new String[]{"--URL", url.indexOf("://") >= 0?url:("http://" + url)});
 		}
@@ -80,10 +80,10 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String query = Popups.simple(luwrain, "Поиск в Google", "Введите поисковый запрос:", "");//FIXME:
+		    final String query = Popups.simple(luwrain, "Search in Google", "Enter the expression to search in Google:", "");//FIXME:
 		    if (query != null && !query.trim().isEmpty())
 		    {
-			final String url = "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=ru&ie=utf-8";
+			final String url = "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=en&ie=utf-8";
 			luwrain.launchApp("reader", new String[]{"--URL", url});
 		    }
 		}
@@ -96,7 +96,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-			luwrain.launchApp("reader", new String[]{"--URL", "http://luwrain.org/?mode=adapted&lang=ru"});
+			luwrain.launchApp("reader", new String[]{"--URL", "http://luwrain.org/?mode=adapted&lang=en"});
 		}
 	    },
 
