@@ -27,4 +27,5 @@ public interface Strings
     String queryResults();
     String queryPopupName();
     String queryPopupPrefix();
+    String noContent();
 }

@@ -23,7 +23,7 @@ import java.io.*;
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
-import org.luwrain.popups.Popups;
+import org.luwrain.popups.*;
 
 public class WikiApp implements Application, Actions
 {
@@ -33,6 +33,7 @@ public class WikiApp implements Application, Actions
     private Luwrain luwrain;
     private Strings strings;
     private ListArea area;
+    private HashSet<String> values = new HashSet<String>();
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
@@ -76,6 +77,10 @@ public class WikiApp implements Application, Actions
 		{
 		    return actions.getAreaActions();
 		}
+		@Override protected String noContentStr()
+		{
+		    return strings.noContent();
+		}
 	    };
     }
 
@@ -83,38 +88,29 @@ public class WikiApp implements Application, Actions
     {
 	if (base.isBusy())
 	    return false;
-	final String query = Popups.simple(luwrain, strings.queryPopupName(), strings.queryPopupPrefix(), "");
+	final String query = Popups.fixedEditList(luwrain, strings.queryPopupName(), strings.queryPopupPrefix(), "", values.toArray(new String[values.size()]));
 	if (query == null || query.trim().isEmpty())
 	    return true;
+	values.add(query);
 	base.search(lang, query, this);
 	return true;
     }
 
-    @Override public boolean openPage(Object o)
+    @Override public boolean openPage(Object obj)
     {
-	/*
-	  if (item == searchEn)
-	  return actions.search("en");
-		    if (item == searchRu)
-			return actions.search("ru");
-		    if (item instanceof Page)
-		    {
-			final Page page = (Page)item;
-			return actions.openPage(page.lang(), page.title());
-		    }
-		    return false;
+	if (obj == null || !(obj instanceof Page))
+	    return false;
+	final Page page = (Page)obj;
 	try {
-	    final String url = "https://" + lang + ".wikipedia.org/wiki/" + URLEncoder.encode(title, "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
+	    final String url = "https://" + URLEncoder.encode(page.lang()) + ".wikipedia.org/wiki/" + URLEncoder.encode(page.title(), "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
 	    luwrain.launchApp("reader", new String[]{"--URL", url});
 	}
 	catch (UnsupportedEncodingException e)
 	{
 	    e.printStackTrace();
-	    return false;
+	    luwrain.message(e.getMessage(), Luwrain.MESSAGE_ERROR);
 	}
 	return true;
-	*/
-	return false;
     }
 
     @Override public void showQueryRes(Page[] pages)

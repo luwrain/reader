@@ -24,28 +24,30 @@ class Appearance implements ListItemAppearance
     private Luwrain luwrain;
     private Strings strings;
 
-    public Appearance(Luwrain luwrain, Strings strings)
+    Appearance(Luwrain luwrain, Strings strings)
     {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.strings = strings;
-	if (luwrain == null)
-	    throw new NullPointerException("luwrain may not be null");
-	if (strings == null)
-	    throw new NullPointerException("strings may not be null");
     }
 
     @Override public void introduceItem(Object item, int flags)
     {
-	if (item == null)
-	    return;
+	NullCheck.notNull(item, "item");
 	luwrain.playSound(Sounds.NEW_LIST_ITEM);
+	if ((flags & BRIEF) > 0 && item instanceof Page)
+	{
+	    final Page page = (Page)item ;
+	    luwrain.say(page.title());
+	    return;
+	}
 	luwrain.say(item.toString());
     }
 
     @Override public String getScreenAppearance(Object item, int flags)
     {
-	if (item == null)
-	    return "";
+	NullCheck.notNull(item, "item");
 	return item.toString();
     }
 
@@ -56,8 +58,6 @@ class Appearance implements ListItemAppearance
 
     @Override public int getObservableRightBound(Object item)
     {
-	if (item == null)
-	    return 0;
-	return item.toString().length();
+	return getScreenAppearance(item, 0).length();
     }
 }
