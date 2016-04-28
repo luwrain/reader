@@ -16,10 +16,14 @@
 
 package org.luwrain.app.wiki;
 
-public interface Actions
+import org.luwrain.core.*;
+import org.luwrain.core.events.*;
+
+interface Actions
 {
     boolean closeApp();
-    boolean search(String lang);
     void showQueryRes(Page[] pages);
-    boolean openPage(String lang, String pageTitle);
+    boolean openPage(Object obj);
+    Action[] getAreaActions();
+    boolean onActionEvent(EnvironmentEvent event);
 }

@@ -118,7 +118,7 @@ public class ReaderApp implements Application, Actions
 
 	    readerArea = new ReaderArea(luwrain, strings, this);
 
-	    final ListParams listParams = new ListParams();
+	    final ListArea.Params listParams = new ListArea.Params();
 	    listParams.environment = treeParams.environment;
 	    listParams.model = base.getNotesModel();
 	    listParams.appearance = new DefaultListItemAppearance(listParams.environment);

@@ -112,7 +112,7 @@ public class OpdsApp implements Application, Actions
 	final Actions actions = this;
 	//	final Strings s = strings;
 
-	final ListParams params = new ListParams();
+	final ListArea.Params params = new ListArea.Params();
 	params.environment = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = new Appearance(luwrain, strings);

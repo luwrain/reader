@@ -16,35 +16,23 @@
 
 package org.luwrain.app.wiki;
 
+import org.luwrain.core.*;
+
 class Page
 {
     private String lang;
     private String title = "";
     private String comment = "";
 
-    public Page(String lang,
-		String title,
-		String comment)
+    Page(String lang,
+	 String title, String comment)
     {
+	NullCheck.notNull(lang, "lang");
+	NullCheck.notNull(title, "title");
+	NullCheck.notNull(comment, "comment");
 	this.lang = lang;
 	this.title = title;
 	this.comment = comment;
-	if (lang == null)
-	    throw new NullPointerException("lang may not be null");
-	if (title == null)
-	    throw new NullPointerException("title may not be null");
-	if (comment == null)
-	    throw new NullPointerException("comment may not be null");
-    }
-
-    public String title()
-    {
-	return title;
-    }
-
-    public String comment()
-    {
-	return comment;
     }
 
     @Override public String toString()
@@ -54,8 +42,7 @@ class Page
 	return title + ", " + comment;
     }
 
-    public String lang()
-    {
-	return lang;
-    }
+    String title() { return title; }
+    String comment() { return comment; }
+    String lang() { return lang; }
 }
