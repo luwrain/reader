@@ -114,6 +114,19 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	    new Command(){
 		@Override public String getName()
 		{
+		    return "wiki-current-word";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    final String word = luwrain.currentAreaWord(true);
+		    if (word != null && !word.trim().isEmpty())
+			luwrain.launchApp("wiki", new String[]{word});
+		}
+	    },
+
+	    new Command(){
+		@Override public String getName()
+		{
 		    return "opds";
 		}
 		@Override public void onCommand(Luwrain luwrain)
@@ -163,6 +176,8 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
+		    if (args != null && args.length == 1 && args[0] != null)
+		    return new Application[]{new WikiApp(args[0])};
 		    return new Application[]{new WikiApp()};
 		}
 	    };

@@ -34,6 +34,18 @@ public class WikiApp implements Application, Actions
     private Strings strings;
     private ListArea area;
     private HashSet<String> values = new HashSet<String>();
+    private String launchArg;
+
+    public WikiApp()
+    {
+	launchArg = null;
+    }
+
+    public WikiApp(String launchArg)
+    {
+	NullCheck.notNull(launchArg, "launchArg");
+	this.launchArg = launchArg;
+    }
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
@@ -45,6 +57,8 @@ public class WikiApp implements Application, Actions
 	    return false;
 	this.luwrain = luwrain;
 	createArea();
+	if (launchArg != null && !launchArg.trim().isEmpty())
+	    base.search(luwrain.launchContext().lang(), launchArg, this);
 	return true;
     }
 
