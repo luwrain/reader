@@ -19,7 +19,7 @@ package org.luwrain.app;
 import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
-import org.luwrain.cpanel.Section;
+import org.luwrain.cpanel.Factory;
 
 import org.luwrain.app.reader.ReaderApp;
 import org.luwrain.app.reader.DocInfo;
@@ -211,10 +211,8 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	return new Shortcut[]{reader, wiki, opds, narrator};
     }
 
-    @Override public Section[] getControlPanelSections(Luwrain luwrain)
+    @Override public Factory[] getControlPanelFactories(Luwrain luwrain)
     {
-	if (narratorSection == null)
-	    narratorSection = new org.luwrain.app.narrator.ControlPanelSection(luwrain.getRegistry());
-	return new Section[]{narratorSection};
+	return new Factory[0];
     }
 }
