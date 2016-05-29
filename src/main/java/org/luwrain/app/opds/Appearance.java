@@ -16,16 +16,18 @@
 
 package org.luwrain.app.opds;
 
+import java.util.*;
+
 import org.luwrain.util.Opds;
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 
-class Appearance implements ListItemAppearance
+class Appearance implements ListArea.Appearance
 {
     private Luwrain luwrain;
     private Strings strings;
 
-    public Appearance(Luwrain luwrain, Strings strings)
+Appearance(Luwrain luwrain, Strings strings)
     {
 	this.luwrain = luwrain;
 	this.strings = strings;
@@ -33,15 +35,15 @@ class Appearance implements ListItemAppearance
 	NullCheck.notNull(strings, "strings");
     }
 
-    @Override public void introduceItem(Object item, int flags)
+    @Override public void announceItem(Object item, Set<Flags> flags)
     {
-	if (item == null)
-	    return;
+	NullCheck.notNull(item, "item");
+	NullCheck.notNull(flags, "flags");
 	luwrain.playSound(Sounds.NEW_LIST_ITEM);
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
-	    if (entry.isCatalogOnly() && (flags & ListItemAppearance.BRIEF) == 0)
+	    if (entry.isCatalogOnly() && flags.contains(Flags.BRIEF))
 		luwrain.say(entry.toString() + " " + strings.catalog()); else
 		luwrain.say(entry.toString());
 	    return;
@@ -49,10 +51,10 @@ class Appearance implements ListItemAppearance
 		luwrain.say(item.toString());
     }
 
-    @Override public String getScreenAppearance(Object item, int flags)
+    @Override public String getScreenAppearance(Object item, Set<Flags> flags)
     {
-	if (item == null)
-	    return "";
+	NullCheck.notNull(item, "item");
+	NullCheck.notNull(flags, "flags");
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;

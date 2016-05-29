@@ -16,10 +16,12 @@
 
 package org.luwrain.app.wiki;
 
+import java.util.*;
+
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 
-class Appearance implements ListItemAppearance
+class Appearance implements ListArea.Appearance
 {
     private Luwrain luwrain;
     private Strings strings;
@@ -32,11 +34,12 @@ class Appearance implements ListItemAppearance
 	this.strings = strings;
     }
 
-    @Override public void introduceItem(Object item, int flags)
+    @Override public void announceItem(Object item, Set<Flags> flags)
     {
 	NullCheck.notNull(item, "item");
+	NullCheck.notNull(flags, "flags");
 	luwrain.playSound(Sounds.NEW_LIST_ITEM);
-	if ((flags & BRIEF) > 0 && item instanceof Page)
+	if (flags.contains(Flags.BRIEF) && item instanceof Page)
 	{
 	    final Page page = (Page)item ;
 	    luwrain.say(page.title());
@@ -45,9 +48,10 @@ class Appearance implements ListItemAppearance
 	luwrain.say(item.toString());
     }
 
-    @Override public String getScreenAppearance(Object item, int flags)
+    @Override public String getScreenAppearance(Object item, Set<Flags> flags)
     {
 	NullCheck.notNull(item, "item");
+	NullCheck.notNull(flags, "flags");
 	return item.toString();
     }
 
@@ -58,6 +62,6 @@ class Appearance implements ListItemAppearance
 
     @Override public int getObservableRightBound(Object item)
     {
-	return getScreenAppearance(item, 0).length();
+	return getScreenAppearance(item, EnumSet.noneOf(Flags.class)).length();
     }
 }
