@@ -58,10 +58,10 @@ class Base
 	    luwrain.message(strings.noChannelToSynth(), Luwrain.MESSAGE_ERROR);
 	    return true;
 	}
-	final Path path = Popups.chooseFile(luwrain, 
-					    strings.targetDirPopupName(), strings.targetDirPopupPrefix(),
-					    luwrain.launchContext().userHomeDirAsPath(), luwrain.launchContext().userHomeDirAsPath(),
-					    DefaultFileAcceptance.Type.ANY);
+	final Path homeDir = luwrain.getPathProperty("luwrain.dir.userhome");
+	final Path path = Popups.path(luwrain, 
+					    strings.targetDirPopupName(), strings.targetDirPopupPrefix(), homeDir,
+					    (pathArg)->{return true;});
 	if (path == null)
 	    return true;
 	task = new Task(strings, text, path, 

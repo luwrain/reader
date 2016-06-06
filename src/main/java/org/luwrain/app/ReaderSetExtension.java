@@ -29,8 +29,6 @@ import org.luwrain.app.narrator.NarratorApp;
 
 public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
 {
-    private org.luwrain.app.narrator.ControlPanelSection narratorSection = null;
-
     @Override public Command[] getCommands(Luwrain luwrain)
     {
 	return new Command[]{
@@ -213,6 +211,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 
     @Override public Factory[] getControlPanelFactories(Luwrain luwrain)
     {
-	return new Factory[0];
+	NullCheck.notNull(luwrain, "luwrain");
+	return new Factory[]{new org.luwrain.app.narrator.ControlPanelFactory(luwrain)};
     }
 }

@@ -18,6 +18,8 @@ package org.luwrain.app.narrator;
 
 public interface Strings
 {
+    static final String NAME = "luwrain.narrator";
+
     String appName();
     String targetDirPopupName();
     String targetDirPopupPrefix();
@@ -26,4 +28,6 @@ public interface Strings
     String noSupportedAudioFormats();
     String done();
     String compressing(String fileName);
+    String settingsFormName();
+    String settingsFormLameCommand(); 
 }

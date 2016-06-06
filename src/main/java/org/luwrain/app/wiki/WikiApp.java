@@ -136,7 +136,7 @@ public class WikiApp implements Application, Actions
 	}
 	base.getModel().setItems(pages);
 	area.refresh();
-	area.resetState(false);
+	area.reset(false);
 	luwrain.message(strings.querySuccess(pages.length), Luwrain.MESSAGE_DONE);
     }
 

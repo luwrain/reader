@@ -16,8 +16,18 @@
 
 package org.luwrain.app.narrator;
 
-interface RegistryOptions
+import org.luwrain.core.*;
+
+interface Settings
 {
+    static public final String REGISTRY_PATH = "/org/luwrain/app/narrator";
+
     String getLameCommand(String defValue);
     void setLameCommand(String command);
+
+    static Settings create(Registry registry)
+    {
+	NullCheck.notNull(registry, "registry");
+	return 	RegistryProxy.create(registry, REGISTRY_PATH, Settings.class);
+    }
 }
