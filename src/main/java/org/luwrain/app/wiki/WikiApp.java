@@ -58,7 +58,7 @@ public class WikiApp implements Application, Actions
 	this.luwrain = luwrain;
 	createArea();
 	if (launchArg != null && !launchArg.trim().isEmpty())
-	    base.search(luwrain.launchContext().lang(), launchArg, this);
+	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, this);
 	return true;
     }
 

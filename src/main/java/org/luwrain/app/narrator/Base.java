@@ -65,7 +65,7 @@ class Base
 	if (path == null)
 	    return true;
 	task = new Task(strings, text, path, 
-			luwrain.launchContext().scriptPath("lwr-audio-compress").toString(), channel){
+			luwrain.getPathProperty("luwrain.dir.scripts").resolve("lwr-audio-compress").toString(), channel){
 		@Override protected void progressLine(String text, boolean doneMessage)
 		{
 		    luwrain.enqueueEvent(new ProgressLineEvent(destArea, text));
