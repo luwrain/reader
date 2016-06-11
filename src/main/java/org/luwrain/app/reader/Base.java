@@ -33,6 +33,7 @@ class Base implements Listener
     static private final String DEFAULT_ENCODING = "UTF-8";
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private FutureTask task;
     private Luwrain luwrain;
     private Strings strings;
     private Player player;
@@ -43,7 +44,6 @@ class Base implements Listener
     private final FixedListModel notesModel = new FixedListModel();
     private Book book;
     private Document currentDoc = null;
-    private FutureTask task;
 
     boolean init(Luwrain luwrain, Strings strings)
     {
@@ -58,16 +58,6 @@ class Base implements Listener
 	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Book.Section[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
 	return true;
-    }
-
-    TreeArea.Model getTreeModel()
-    {
-	return bookTreeModel;
-    }
-
-    public ListArea.Model getNotesModel()
-    {
-	return notesModel;
     }
 
     boolean fetch(Actions actions, DocInfo docInfo)
@@ -363,7 +353,6 @@ class Base implements Listener
 	final AudioFollowingVisitor visitor = new AudioFollowingVisitor(url.getRef());
 	Visitor.walk(currentDoc.getRoot(), visitor);
 	final Run resultingRun = visitor.result();
-
 	if (resultingRun == null)
 	    return;
 	if (audioFollowingHandler.prevRun == resultingRun)
@@ -376,4 +365,20 @@ class Base implements Listener
     @Override public void onPlayerStop()
     {
     }
+
+    boolean hasDocument()
+    {
+	return currentDoc != null;
+    }
+
+    TreeArea.Model getTreeModel()
+    {
+	return bookTreeModel;
+    }
+
+ListArea.Model getNotesModel()
+    {
+	return notesModel;
+    }
+
 }

@@ -16,30 +16,12 @@
 
 package org.luwrain.app.reader;
 
-import org.luwrain.core.*;
-import org.luwrain.core.events.*;
-import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
 
-public interface Actions
+interface Actions
 {
     void closeApp();
-    //    boolean fetchingInProgress();
-    //    boolean jumpByHref(String href);
     void onNewResult(Result res);
-    //    boolean onNotesClick(Object item);
-    //    void showErrorPage(Result res);
-    //    boolean showDocInfo();
-    //    boolean returnFromInfoArea();
-    //    void goToTreeArea();
-    //    void goToReaderArea();
-    //    void goToNotesArea();
-    //    boolean docMode();
-    //    boolean bookMode();
-    //    Action[] areaActions();
-    //    boolean onAreaAction(EnvironmentEvent event);
-    //    boolean onTreeClick(TreeArea area, Object obj);
-    //    void onFetchedDoc(Result res);
     void setDocument(Document doc);
     int getReaderAreaVisibleWidth();
 }
