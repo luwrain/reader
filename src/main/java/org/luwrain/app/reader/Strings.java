@@ -26,13 +26,13 @@ public interface Strings
     String tableCellIntroduction(int row, int col, String text);
     String orderedListItemIntroduction(int index, String text);
     String unorderedListItemIntroduction(int index, String text);
-    String paragraphIntroduction(String text);
-    String sectionIntroduction(int level, String text);
+    String paragraphIntroduction();
+    String sectionIntroduction();
     String linkPrefix();
     String noContent();
     String noContentFetching();
     String fetching(String url);
-    String badUrl(String url);
+    String badUrl();
     String actionOpenFile();
     String actionOpenUrl();
     String actionOpenInNarrator();
@@ -42,9 +42,18 @@ public interface Strings
     String actionDocMode();
     String actionInfo(); 
     String actionPlayAudio();
+    String actionAddNote();
     String infoAreaName();
     String treeAreaName();
     String notesAreaName();
     String bookTreeRoot();
     String infoPageField(String name);
+    String openUrlPopupName();
+    String openUrlPopupPrefix();
+
+    String openPathPopupName();
+    String openPathPopupPrefix();
+    String pathToOpenMayNotBeDirectory();
+    String addNotePopupName();
+    String addNotePopupPrefix();
 }

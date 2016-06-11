@@ -31,7 +31,6 @@ public class DocInfo
     URL url = null;
     String contentType = "";
     String charset = "";
-    final LinkedList<URL> history = new LinkedList<URL>();
 
     public DocInfo()
     {

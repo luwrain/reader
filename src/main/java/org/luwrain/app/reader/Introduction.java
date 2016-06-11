@@ -75,7 +75,7 @@ private void inParagraph(Iterator it)
 		final ParagraphImpl para = it.getParagraph();
 		if (para.hasSingleLineOnly())
 		environment.say(it.getText()); else
-		    environment.say(strings.paragraphIntroduction(it.getText()));
+		    environment.say(strings.paragraphIntroduction() + " " + it.getText());
 	    }
 }
 
@@ -95,7 +95,7 @@ private void inParagraph(Iterator it)
 	final Section sect = it.getSection();
 	final String text = it.getText();
 	environment.playSound(Sounds.DOC_SECTION);
-	environment.say(strings.sectionIntroduction(sect.getSectionLevel(), text));
+	environment.say(text + " " + strings.sectionIntroduction() + sect.getSectionLevel());
     }
 
     private void inTableCell(Iterator it)

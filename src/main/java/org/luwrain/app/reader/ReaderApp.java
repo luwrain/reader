@@ -67,7 +67,7 @@ public class ReaderApp implements Application, Actions
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
 	layouts.add(new AreaLayout(infoArea));
 	if (docInfo != null)
-	    base.fetch(this, docInfo); else
+	    base.open(this, docInfo); else
 	    docInfo = new DocInfo();
 	return true;
     }
@@ -80,7 +80,7 @@ public class ReaderApp implements Application, Actions
 	treeParams.environment = new DefaultControlEnvironment(luwrain);
 	treeParams.model = base.getTreeModel();
 	treeParams.name = strings.treeAreaName();
-	treeParams.clickHandler = (area, obj)->onTreeClick(area, obj);
+	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
 
 	treeArea = new TreeArea(treeParams){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
@@ -286,7 +286,7 @@ public class ReaderApp implements Application, Actions
 
     private Action[] getTreeAreaActions()
     {
-	return getTreeAreaActions();
+	return getReaderAreaActions();
     }
 
     private boolean onTreeAreaAction(EnvironmentEvent event)
@@ -294,32 +294,42 @@ public class ReaderApp implements Application, Actions
 	return false;
     }
 
-    private boolean onTreeClick(TreeArea area, Object obj)
+    private boolean onTreeClick(Object obj)
     {
-	NullCheck.notNull(area, "area");
 	NullCheck.notNull(obj, "obj");
 	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
 	if (!jumpByHref(sect.href()))
 	    return false;
-	goToReaderArea();
+	//	goToReaderArea();
 	return true;
     }
 
     private Action[] getNotesAreaActions()
     {
-	return getTreeAreaActions();
+	final LinkedList<Action> res = new LinkedList<Action>();
+	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
+	for(Action a: getReaderAreaActions())
+	    res.add(a);
+	return res.toArray(new Action[res.size()]);
     }
 
     private boolean onNotesAreaAction(EnvironmentEvent event)
     {
+	if (ActionEvent.isAction(event, "add-note"))
+	    return addNote();
 	return false;
     }
 
     private boolean onNotesClick(Object item)
     {
-	return false;
+	NullCheck.notNull(item, "item");
+	if (!base.isInBookMode() || !(item instanceof Book.Note))
+	    return false;
+	final Book.Note note = (Book.Note)item;
+	base.jumpByNote(this, note);
+	return true;
     }
 
     private Action[] getInfoAreaActions()
@@ -331,15 +341,6 @@ public class ReaderApp implements Application, Actions
     private boolean onInfoAreaAction(EnvironmentEvent event)
     {
 	return false;
-    }
-
-    @Override public void setDocument(Document doc)
-    {
-    }
-
-    @Override public int getReaderAreaVisibleWidth()
-    {
-	return luwrain.getAreaVisibleWidth(readerArea); 
     }
 
     private boolean playAudio()
@@ -365,16 +366,17 @@ public class ReaderApp implements Application, Actions
 	    showErrorPage(res);
 	    return;
 	}
-	final Document doc = base.acceptNewSuccessfulResult(res);
+	final Document doc = base.acceptNewSuccessfulResult(res, getSuitableWidth());
 	if (doc == null)
 	    return;
-	base.setDocument(this, doc);
 	if (base.isInBookMode())
 	{
 	    bookMode(); 
 	    treeArea.refresh();
 	} else
 	    docMode();
+	readerArea.setDocument(doc);
+	goToReaderArea();
     }
 
     private boolean openInNarrator()
@@ -385,8 +387,7 @@ public class ReaderApp implements Application, Actions
 
     private boolean openNew(boolean url)
     {
-	base.openNew(url, readerArea.hasHref()?readerArea.getHref():"");
-	return true;
+	return base.openNew(this, url, readerArea.hasHref()?readerArea.getHref():"");
     }
 
     private boolean anotherFormat()
@@ -459,6 +460,16 @@ public class ReaderApp implements Application, Actions
 	if (width < 80)
 	    width = 80;
 	return width;
+    }
+
+    private boolean addNote()
+    {
+	if (!base.isInBookMode())
+	    return false;
+	if (!base.addNote())
+	    return true;
+	notesArea.refresh();
+	return true;
     }
 
     private boolean goToTreeArea()

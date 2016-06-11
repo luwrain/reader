@@ -22,6 +22,4 @@ interface Actions
 {
     void closeApp();
     void onNewResult(Result res);
-    void setDocument(Document doc);
-    int getReaderAreaVisibleWidth();
 }
