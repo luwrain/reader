@@ -84,7 +84,7 @@ private void inParagraph(Iterator it)
 	final ListItem item = it.getListItem();
 	final int itemIndex = item.getListItemIndex();
 	final String text = it.getText();
-	environment.playSound(Sounds.NEW_LIST_ITEM);
+	environment.playSound(Sounds.LIST_ITEM);
 	if (item.isListOrdered())
 	    environment.say(strings.orderedListItemIntroduction(itemIndex, text)); else
 	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
@@ -135,7 +135,7 @@ private void inParagraph(Iterator it)
 	if (!it.isEmptyRow())
 	{
 	    if (it.isContainerListItem() && it.isFirstRow())
-		environment.playSound(Sounds.NEW_LIST_ITEM);
+		environment.playSound(Sounds.LIST_ITEM);
 	    environment.say(it.getText());
 	} else
 	    environment.hint(Hints.EMPTY_LINE);

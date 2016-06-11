@@ -124,7 +124,7 @@ class Base
 		if(res.isBook())
 		{
 		    //			luwrain.launchApp("reader",new String[]{res.getFileName()});
-			luwrain.playSound(Sounds.MESSAGE_OK);
+			luwrain.playSound(Sounds.OK);
 	    	return true;
 		}
     	return false;

@@ -39,7 +39,7 @@ Appearance(Luwrain luwrain, Strings strings)
     {
 	NullCheck.notNull(item, "item");
 	NullCheck.notNull(flags, "flags");
-	luwrain.playSound(Sounds.NEW_LIST_ITEM);
+	luwrain.playSound(Sounds.LIST_ITEM);
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;

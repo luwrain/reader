@@ -7,9 +7,9 @@ import org.luwrain.doctree.*;
 class AudioFollowingHandler
 {
     Run prevRun;
-    ReaderArea area;
+    DocTreeArea area;
 
-    AudioFollowingHandler(ReaderArea area)
+    AudioFollowingHandler(DocTreeArea area)
     {
 	NullCheck.notNull(area, "area");
 	this.area = area;

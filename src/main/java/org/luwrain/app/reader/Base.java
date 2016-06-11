@@ -70,13 +70,13 @@ class Base implements Listener
 	return notesModel;
     }
 
-    boolean fetch(ReaderArea area, DocInfo docInfo)
+    boolean fetch(Actions actions, DocInfo docInfo)
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(actions, "actions");
 	NullCheck.notNull(docInfo, "docInfo");
 	if (task != null && !task.isDone())
 	    return false;
-	task = createTask(area, docInfo);
+	task = createTask(actions, docInfo);
 	executor.execute(task);
 	return true;
     }
@@ -88,9 +88,9 @@ class Base implements Listener
 	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
     }
 
-    boolean jumpByHref(ReaderArea area, String href)
+    boolean jumpByHref(Actions actions, String href)
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(actions, "actions");
 	NullCheck.notNull(href, "href");
 	if (fetchingInProgress())
 	    return false;
@@ -102,7 +102,7 @@ class Base implements Listener
 		luwrain.launchApp("reader", new String[]{href});
 		return true;
 	    }
-	    setDocument(area, doc);
+	    setDocument(actions, doc);
 	    return true;
 	}
 	URL url = null;
@@ -115,7 +115,7 @@ class Base implements Listener
 		luwrain.message(strings.badUrl(href), Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
-	    if (!fetch(area, new DocInfo(url)))
+	    if (!fetch(actions, new DocInfo(url)))
 		return false;
 	    luwrain.message(strings.fetching(href));
 	    return true;
@@ -126,9 +126,9 @@ class Base implements Listener
 	return task != null && !task.isDone();
     }
 
-    private FutureTask createTask(ReaderArea area, DocInfo docInfo)
+    private FutureTask createTask(Actions actions, DocInfo docInfo)
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(actions, "actions");
 	NullCheck.notNull(docInfo, "docInfo");
 	return new FutureTask(()->{
 		Result res = null;
@@ -145,12 +145,11 @@ class Base implements Listener
 		}
 		catch(Exception e)
 		{
-		    e.printStackTrace();
-		    luwrain.runInMainThread(()->luwrain.message(e.getMessage(), Luwrain.MESSAGE_ERROR));
+		    luwrain.crash(e);
 		}
 		final Result finalRes = res;
 		if (finalRes != null)
-		    luwrain.runInMainThread(()->area.onFetchedDoc(finalRes));
+		    luwrain.runInMainThread(()->actions.onNewResult(finalRes));
 	}, null);
     }
 
@@ -276,7 +275,7 @@ class Base implements Listener
 	return true;
     }
 
-    boolean playAudio(ReaderArea area, String[] ids)
+    boolean playAudio(DocTreeArea area, String[] ids)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
@@ -301,12 +300,12 @@ class Base implements Listener
 	    return true;
     }
 
-    void setDocument(ReaderArea area, Document doc)
+    void setDocument(Actions actions, Document doc)
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(actions, "actions");
 	NullCheck.notNull(doc, "doc");
-	doc.buildView(luwrain.getAreaVisibleWidth(area));
-	area.setDocument(doc);
+	doc.buildView(actions.getReaderAreaVisibleWidth());
+	actions.setDocument(doc);
 	currentDoc = doc;
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);

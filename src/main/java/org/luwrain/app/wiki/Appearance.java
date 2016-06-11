@@ -38,7 +38,7 @@ class Appearance implements ListArea.Appearance
     {
 	NullCheck.notNull(item, "item");
 	NullCheck.notNull(flags, "flags");
-	luwrain.playSound(Sounds.NEW_LIST_ITEM);
+	luwrain.playSound(Sounds.LIST_ITEM);
 	if (flags.contains(Flags.BRIEF) && item instanceof Page)
 	{
 	    final Page page = (Page)item ;

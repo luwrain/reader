@@ -18,6 +18,8 @@ package org.luwrain.app.reader;
 
 public interface Strings
 {
+    static final String NAME = "luwrain.reader";
+
     String appName();
     String tableIntroduction(int rows, int cols, String text);
     String tableIntroductionWithLevel(int level, int rows, int cols, String text);
