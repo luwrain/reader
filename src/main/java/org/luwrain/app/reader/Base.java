@@ -42,8 +42,10 @@ class Base implements Listener
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final FixedListModel notesModel = new FixedListModel();
+
     private Book book;
     private Document currentDoc = null;
+    private final LinkedList<Result> history = new LinkedList<Result>();
 
     private final LinkedList<String> enteredUrls = new LinkedList<String>();
 
@@ -68,6 +70,9 @@ class Base implements Listener
 	NullCheck.notNull(docInfo, "docInfo");
 	if (task != null && !task.isDone())
 	    return false;
+	final int currentRowIndex = actions.getCurrentRowIndex();
+	if (!history .isEmpty() && currentRowIndex >= 0)
+	    history.getLast().setStartingRowIndex(currentRowIndex);
 	task = createTask(actions, docInfo);
 	executor.execute(task);
 	return true;
@@ -147,11 +152,15 @@ class Base implements Listener
 	NullCheck.notNull(res, "res");
 	if (res.book() != null && res.book() != book)
 	{
+	    //Opening new book
 	    book = res.book();
 	    bookTreeModelSource.setSections(book.getBookSections());
 	    currentDoc = book.getStartingDocument();
+	    history.clear();
 	} else
 	currentDoc = res.doc();
+	res.clearDoc();//We need only address information
+	history.add(res);
 currentDoc.buildView(docWidth);
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
@@ -161,13 +170,14 @@ currentDoc.buildView(docWidth);
 
     void prepareErrorText(Result res, MutableLines lines)
     {
+	lines.addLine(strings.errorAreaIntro());
 	lines.addLine("Code: " + res.type().toString());
-	if (res.type() == Result.Type.HTTP_ERROR)
-	    lines.addLine("HTTP code: " + res.code());
-	lines.addLine("Address: " + res.resultAddr());
-	lines.addLine("Format: " + res.format());
-	lines.addLine("Charset: " + res.charset());
-	lines.addLine("");
+	if (!res.getProperty("url").isEmpty())
+	    lines.addLine(strings.infoAreaAddress() + " " + res.getProperty("url"));
+	if (!res.getProperty("format").isEmpty())
+	    lines.addLine(strings.infoAreaFormat() + " " + res.getProperty("format"));
+	if (!res.getProperty("charset").isEmpty())
+	    lines.addLine(strings.infoAreaCharset() + " " + res.getProperty("charset"));
     }
 
     void prepareDocInfoText(MutableLines lines)

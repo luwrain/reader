@@ -379,6 +379,11 @@ public class ReaderApp implements Application, Actions
 	goToReaderArea();
     }
 
+    @Override public int getCurrentRowIndex()
+    {
+	return 10;//FIXME:
+    }
+
     private boolean openInNarrator()
     {
 	base.openInNarrator();
@@ -421,9 +426,10 @@ public class ReaderApp implements Application, Actions
 	NullCheck.notNull(res, "res");
 	infoArea.clear();
 	base.prepareErrorText(res, infoArea);
-	luwrain.silence();
-	luwrain.playSound(Sounds.INTRO_REGULAR);
+	//	luwrain.silence();
+	//	luwrain.playSound(Sounds.INTRO_REGULAR);
 	layouts.show(INFO_MODE_LAYOUT_INDEX);
+	luwrain.message(strings.errorAnnouncement(), Luwrain.MESSAGE_ERROR);
     }
 
     private boolean docMode()

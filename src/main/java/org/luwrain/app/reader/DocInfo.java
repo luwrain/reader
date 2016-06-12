@@ -31,6 +31,7 @@ public class DocInfo
     URL url = null;
     String contentType = "";
     String charset = "";
+    int rowIndex;
 
     public DocInfo()
     {

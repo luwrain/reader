@@ -22,4 +22,5 @@ interface Actions
 {
     void closeApp();
     void onNewResult(Result res);
+    int getCurrentRowIndex();
 }

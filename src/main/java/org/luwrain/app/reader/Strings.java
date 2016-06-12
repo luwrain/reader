@@ -56,4 +56,9 @@ public interface Strings
     String pathToOpenMayNotBeDirectory();
     String addNotePopupName();
     String addNotePopupPrefix();
+    String infoAreaAddress();
+    String infoAreaFormat();
+    String infoAreaCharset();
+    String errorAreaIntro();
+    String errorAnnouncement();
 }
