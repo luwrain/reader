@@ -114,7 +114,7 @@ class Base implements Listener
 	}
 	if (!open(actions, new DocInfo(url)))
 	    return false;
-	luwrain.message(strings.fetching(href));
+	luwrain.message(strings.fetching() + " " + href);
 	return true;
     }
 

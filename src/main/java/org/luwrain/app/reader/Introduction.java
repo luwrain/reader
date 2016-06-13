@@ -69,31 +69,29 @@ class Introduction implements RowIntroduction
 		    inParagraph(it);
 }
 
-private void inParagraph(Iterator it)
-{
+    private void inParagraph(Iterator it)
     {
-		final ParagraphImpl para = it.getParagraph();
-		if (para.hasSingleLineOnly())
-		environment.say(it.getText()); else
-		    environment.say(strings.paragraphIntroduction() + " " + it.getText());
-	    }
-}
+	final ParagraphImpl para = it.getParagraph();
+	if (para.hasSingleLineOnly())
+	    environment.say(text(it)); else
+	    environment.say(strings.paragraphIntroduction() + " " + text(it));
+    }
 
     private void inListItem(Iterator it)
     {
 	final ListItem item = it.getListItem();
 	final int itemIndex = item.getListItemIndex();
-	final String text = it.getText();
+	final String text = text(it);
 	environment.playSound(Sounds.LIST_ITEM);
 	if (item.isListOrdered())
-	    environment.say(strings.orderedListItemIntroduction(itemIndex, text)); else
-	    environment.say(strings.unorderedListItemIntroduction(itemIndex, text));
+	    environment.say(text + " " + strings.orderedListItemIntroduction() + (itemIndex + 1)); else
+	    environment.say(text + " " + strings.unorderedListItemIntroduction() + " " + (itemIndex + 1));
     }
 
     private void inSection(Iterator it)
     {
 	final Section sect = it.getSection();
-	final String text = it.getText();
+	final String text = text(it);
 	environment.playSound(Sounds.DOC_SECTION);
 	environment.say(text + " " + strings.sectionIntroduction() + sect.getSectionLevel());
     }
@@ -107,26 +105,17 @@ private void inParagraph(Iterator it)
 	final int rowIndex = cell.getRowIndex();
 	final int colCount = table.getColCount();
 	final int rowCount = table.getRowCount();
-	if (rowCount < 2)
-	{
-	    simple(it);
-	    return;
-	}
 	String text = "";
-	    text = it.getText();
+	    text = text(it);
 	if (colIndex == 0 && rowIndex == 0)
-	{
-	    if (level > 1)
-		environment.say(strings.tableIntroductionWithLevel(level, rowCount, colCount, text)); else 
-	    environment.say(strings.tableIntroduction(rowCount, colCount, text));
-	} else
-	    environment.say(strings.tableCellIntroduction(rowIndex + 1, colIndex + 1, text));
+	    environment.say(text + " таблица столбцов " + colCount + " строк " + rowCount); else
+	    environment.say(text + " строка " + (rowIndex + 1) + " столбец " + (colIndex + 1));
     }
 
     private void simple(Iterator it)
     {
-	if (!it.isEmptyRow() || it.getText().trim().isEmpty())
-	    environment.say(it.getTextWithHref(strings.linkPrefix() + " ")); else
+	if (!it.isEmptyRow() || text(it).trim().isEmpty())
+	    environment.say(text(it)); else
 	    environment.hint(Hints.EMPTY_LINE);
     }
 
@@ -136,8 +125,13 @@ private void inParagraph(Iterator it)
 	{
 	    if (it.isContainerListItem() && it.isFirstRow())
 		environment.playSound(Sounds.LIST_ITEM);
-	    environment.say(it.getText());
+	    environment.say(text(it));
 	} else
 	    environment.hint(Hints.EMPTY_LINE);
+    }
+
+    private String text(Iterator it)
+    {
+	return it.getTextWithHref(strings.linkPrefix() + " ");
     }
 }

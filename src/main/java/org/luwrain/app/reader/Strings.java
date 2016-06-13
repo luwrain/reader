@@ -21,17 +21,17 @@ public interface Strings
     static final String NAME = "luwrain.reader";
 
     String appName();
-    String tableIntroduction(int rows, int cols, String text);
-    String tableIntroductionWithLevel(int level, int rows, int cols, String text);
-    String tableCellIntroduction(int row, int col, String text);
-    String orderedListItemIntroduction(int index, String text);
-    String unorderedListItemIntroduction(int index, String text);
+    //    String tableIntroduction();
+    //    String tableIntroductionWithLevel();
+    //    String tableCellIntroduction();
+    String orderedListItemIntroduction();
+    String unorderedListItemIntroduction();
     String paragraphIntroduction();
     String sectionIntroduction();
     String linkPrefix();
     String noContent();
     String noContentFetching();
-    String fetching(String url);
+    String fetching();
     String badUrl();
     String actionOpenFile();
     String actionOpenUrl();
@@ -50,7 +50,6 @@ public interface Strings
     String infoPageField(String name);
     String openUrlPopupName();
     String openUrlPopupPrefix();
-
     String openPathPopupName();
     String openPathPopupPrefix();
     String pathToOpenMayNotBeDirectory();
