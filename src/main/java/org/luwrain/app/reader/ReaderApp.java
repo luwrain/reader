@@ -42,13 +42,13 @@ public class ReaderApp implements Application, Actions
 
     public ReaderApp()
     {
-	docInfo2 = null;
+	startFrom = null;
     }
 
     public ReaderApp(DocInfo docInfo)
     {
 	NullCheck.notNull(docInfo, "docInfo");
-	this.docInfo2 = docInfo;
+	this.startFrom = docInfo;
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
@@ -65,8 +65,8 @@ public class ReaderApp implements Application, Actions
 	layouts.add(new AreaLayout(readerArea));
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
 	layouts.add(new AreaLayout(propertiesArea));
-	if (docInfo2 != null)
-	    base.open(this, docInfo2);
+	if (startFrom != null)
+	    base.open(this, startFrom);
 	/* else
 	    docInfo = new DocInfo();
 	*/

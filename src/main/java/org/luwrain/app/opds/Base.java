@@ -25,7 +25,6 @@ import org.luwrain.core.events.ThreadSyncEvent;
 import org.luwrain.controls.*;
 import org.luwrain.util.Opds;
 import org.luwrain.util.Opds.Entry;
-import org.luwrain.util.RegistryPath;
 
 class Base
 {
@@ -155,7 +154,7 @@ class Base
 	for(String s: dirs)
 	{
 	    final RemoteLibrary l = new RemoteLibrary();
-	    if (l.init(registry, RegistryPath.join(dir, s)))
+	    if (l.init(registry, Registry.join(dir, s)))
 		res.add(l);
 	}
 	libraries = res.toArray(new RemoteLibrary[res.size()]);
