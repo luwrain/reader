@@ -78,11 +78,12 @@ class Base implements Listener
 	return true;
     }
 
-    void openInNarrator()
+    boolean openInNarrator()
     {
 	final NarratorTextVisitor visitor = new NarratorTextVisitor();
 	Visitor.walk(currentDoc.getRoot(), visitor);
 	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
+	return true;
     }
 
     boolean jumpByHref(Actions actions, String href)

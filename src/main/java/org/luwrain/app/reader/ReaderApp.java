@@ -28,7 +28,7 @@ public class ReaderApp implements Application, Actions
 {
     static private final int DOC_MODE_LAYOUT_INDEX = 0;
     static private final int BOOK_MODE_LAYOUT_INDEX = 1;
-    static private final int INFO_MODE_LAYOUT_INDEX = 2;
+    static private final int PROPERTIES_MODE_LAYOUT_INDEX = 2;
 
     private Luwrain luwrain;
     private final Base base = new Base();
@@ -36,20 +36,19 @@ public class ReaderApp implements Application, Actions
     private DocTreeArea readerArea;
     private TreeArea treeArea;
     private ListArea notesArea;
-    private SimpleArea infoArea;
+    private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
-    private Document doc = null;
-    private DocInfo docInfo = null;
+        private DocInfo startFrom = null;
 
     public ReaderApp()
     {
-	docInfo = null;
+	docInfo2 = null;
     }
 
     public ReaderApp(DocInfo docInfo)
     {
 	NullCheck.notNull(docInfo, "docInfo");
-	this.docInfo = docInfo;
+	this.docInfo2 = docInfo;
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
@@ -65,10 +64,12 @@ public class ReaderApp implements Application, Actions
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(readerArea));
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
-	layouts.add(new AreaLayout(infoArea));
-	if (docInfo != null)
-	    base.open(this, docInfo); else
+	layouts.add(new AreaLayout(propertiesArea));
+	if (docInfo2 != null)
+	    base.open(this, docInfo2);
+	/* else
 	    docInfo = new DocInfo();
+	*/
 	return true;
     }
 
@@ -123,7 +124,7 @@ public class ReaderApp implements Application, Actions
 			switch(event.getSpecial())
 			{
 			case ENTER:
-			    return showDocInfo();
+			    return showDocProperties();
 			}
 		    if (event.isSpecial() && !event.isModified())
 			switch(event.getSpecial())
@@ -211,7 +212,7 @@ public class ReaderApp implements Application, Actions
 		}
 	    };
 
-	infoArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.infoAreaName()){
+	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.infoAreaName()){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -219,7 +220,7 @@ public class ReaderApp implements Application, Actions
 			switch(event.getSpecial())
 			{
 			case ESCAPE:
-			    return returnFromInfoArea();
+			    return closePropertiesArea();
 			}
 		    return super.onKeyboardEvent(event);
 		}
@@ -228,18 +229,12 @@ public class ReaderApp implements Application, Actions
 		    NullCheck.notNull(event, "evet");
 		    switch(event.getCode())
 		    {
-		    case ACTION:
-			return onInfoAreaAction(event);
 		    case CLOSE:
-			actions.closeApp();
+			closeApp();
 			return true;
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return getInfoAreaActions();
 		}
 	    };
     }
@@ -270,15 +265,15 @@ public class ReaderApp implements Application, Actions
 	if (ActionEvent.isAction(event, "open-file"))
 	    return openNew(false);
 	if (ActionEvent.isAction(event, "open-in-narrator"))
-	    return openInNarrator();
+	    return base.openInNarrator();
 	if (ActionEvent.isAction(event, "doc-mode"))
 	    return docMode();
 	if (ActionEvent.isAction(event, "book-mode"))
 	    return bookMode();
 	if (ActionEvent.isAction(event, "change-format"))
-	    return anotherFormat();
+	    return base.anotherFormat();
 	if (ActionEvent.isAction(event, "another-charset"))
-	    return anotherCharset();
+	    return base.anotherCharset();
 	if (ActionEvent.isAction(event, "play-audio"))
 	    return playAudio();
 	return false;
@@ -332,32 +327,6 @@ public class ReaderApp implements Application, Actions
 	return true;
     }
 
-    private Action[] getInfoAreaActions()
-    {
-	return new Action[]{
-	};
-    }
-
-    private boolean onInfoAreaAction(EnvironmentEvent event)
-    {
-	return false;
-    }
-
-    private boolean playAudio()
-    {
-	if (!base.isInBookMode())
-	    return false;
-	final String[] ids = readerArea.getHtmlIds();
-	if (ids == null || ids.length < 1)
-	    return false;
-	return base.playAudio(readerArea, ids);
-    }
-
-    private boolean jumpByHref(String href)
-    {
-	return base.jumpByHref(this, href);
-    }
-
     @Override public void onNewResult(Result res)
     {
 	NullCheck.notNull(res, "res");
@@ -379,15 +348,24 @@ public class ReaderApp implements Application, Actions
 	goToReaderArea();
     }
 
+    private boolean playAudio()
+    {
+	if (!base.isInBookMode())
+	    return false;
+	final String[] ids = readerArea.getHtmlIds();
+	if (ids == null || ids.length < 1)
+	    return false;
+	return base.playAudio(readerArea, ids);
+    }
+
+    private boolean jumpByHref(String href)
+    {
+	return base.jumpByHref(this, href);
+    }
+
     @Override public int getCurrentRowIndex()
     {
 	return 10;//FIXME:
-    }
-
-    private boolean openInNarrator()
-    {
-	base.openInNarrator();
-	return true;
     }
 
     private boolean openNew(boolean url)
@@ -395,28 +373,16 @@ public class ReaderApp implements Application, Actions
 	return base.openNew(this, url, readerArea.hasHref()?readerArea.getHref():"");
     }
 
-    private boolean anotherFormat()
-    {
-	base.anotherFormat();
-	return true;
-    }
-
-    private boolean anotherCharset()
-    {
-	base.anotherCharset();
-	return true;
-    }
-
     private boolean fetchingInProgress()
     {
 	return base.fetchingInProgress();
     }
 
-    private boolean showDocInfo()
+    private boolean showDocProperties()
     {
-	infoArea.clear();
-	base.prepareDocInfoText(infoArea);
-	layouts.show(INFO_MODE_LAYOUT_INDEX);
+	propertiesArea.clear();
+	base.prepareDocInfoText(propertiesArea);
+	layouts.show(PROPERTIES_MODE_LAYOUT_INDEX);
 	luwrain.say("Информация о документе");
 	return true;
     }
@@ -424,11 +390,11 @@ public class ReaderApp implements Application, Actions
     private void showErrorPage(Result res)
     {
 	NullCheck.notNull(res, "res");
-	infoArea.clear();
-	base.prepareErrorText(res, infoArea);
+	propertiesArea.clear();
+	base.prepareErrorText(res, propertiesArea);
 	//	luwrain.silence();
 	//	luwrain.playSound(Sounds.INTRO_REGULAR);
-	layouts.show(INFO_MODE_LAYOUT_INDEX);
+	layouts.show(PROPERTIES_MODE_LAYOUT_INDEX);
 	luwrain.message(strings.errorAnnouncement(), Luwrain.MESSAGE_ERROR);
     }
 
@@ -444,7 +410,7 @@ public class ReaderApp implements Application, Actions
 	return true;
     }
 
-    private boolean returnFromInfoArea()
+    private boolean closePropertiesArea()
     {
 	/*
 	  final Result currentDoc = base.currentDoc();
