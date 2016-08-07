@@ -60,4 +60,9 @@ public interface Strings
     String infoAreaCharset();
     String errorAreaIntro();
     String errorAnnouncement();
+    String unknownHost(String hostName );
+    String httpError(String httpCode);
+    String fetchingError(String descr);
+    String undeterminedContentType();
+    String unrecognizedFormat(String contentType);
 }

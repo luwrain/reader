@@ -21,6 +21,6 @@ import org.luwrain.doctree.*;
 interface Actions
 {
     void closeApp();
-    void onNewResult(Result res);
+    void onNewResult(UrlLoader.Result res);
     int getCurrentRowIndex();
 }

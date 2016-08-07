@@ -327,10 +327,10 @@ public class ReaderApp implements Application, Actions
 	return true;
     }
 
-    @Override public void onNewResult(Result res)
+    @Override public void onNewResult(UrlLoader.Result res)
     {
 	NullCheck.notNull(res, "res");
-	if (res.type() != Result.Type.OK)
+	if (res.type() != UrlLoader.Result.Type.OK)
 	{
 	    showErrorPage(res);
 	    return;
@@ -387,7 +387,7 @@ public class ReaderApp implements Application, Actions
 	return true;
     }
 
-    private void showErrorPage(Result res)
+    private void showErrorPage(UrlLoader.Result res)
     {
 	NullCheck.notNull(res, "res");
 	propertiesArea.clear();

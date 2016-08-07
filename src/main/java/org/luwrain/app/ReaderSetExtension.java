@@ -118,7 +118,8 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		{
 		    final String word = luwrain.currentAreaWord(true);
 		    if (word != null && !word.trim().isEmpty())
-			luwrain.launchApp("wiki", new String[]{word});
+			luwrain.launchApp("wiki", new String[]{word}); else
+			luwrain.launchApp("wiki");
 		}
 	    },
 

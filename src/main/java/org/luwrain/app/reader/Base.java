@@ -100,7 +100,10 @@ class Base implements Listener
 		luwrain.launchApp("reader", new String[]{href});
 		return true;
 	    }
-	    actions.onNewResult(new Result(book, doc));
+	    final UrlLoader.Result res = new UrlLoader.Result();
+	    res.book = book;
+	    res.doc = doc;
+	    actions.onNewResult(res);
 	    return true;
 	}
 	URL url = null;
@@ -124,23 +127,16 @@ class Base implements Listener
 	NullCheck.notNull(actions, "actions");
 	NullCheck.notNull(docInfo, "docInfo");
 	return new FutureTask(()->{
-		Result res = null;
+		UrlLoader.Result res = null;
 		try {
-		    switch(docInfo.type)
-		    {
-		    case URL:
-			res = Factory.fromUrl(docInfo.url, docInfo.contentType, docInfo.charset);
-			break;
-		    case PATH:
-			res = Factory.fromPath(docInfo.path, docInfo.contentType, docInfo.charset);
-			break;
-		    }
+		    final UrlLoader urlLoader = new UrlLoader(docInfo.url, docInfo.contentType);
+		    res = urlLoader.load();
 		}
 		catch(Exception e)
 		{
 		    luwrain.crash(e);
 		}
-		final Result finalRes = res;
+		final UrlLoader.Result finalRes = res;
 		if (finalRes != null)
 		    luwrain.runInMainThread(()->actions.onNewResult(finalRes));
 	}, null);
@@ -148,7 +144,7 @@ class Base implements Listener
 
 
     //Returns the document to be shown in readerArea
-    Document acceptNewSuccessfulResult(Result res, int docWidth)
+    Document acceptNewSuccessfulResult(UrlLoader.Result res, int docWidth)
     {
 	NullCheck.notNull(res, "res");
 	if (res.book() != null && res.book() != book)
@@ -160,8 +156,8 @@ class Base implements Listener
 	    history.clear();
 	} else
 	currentDoc = res.doc();
-	res.clearDoc();//We need only address information
-	history.add(res);
+	//	res.clearDoc();//We need only address information
+	//	history.add(res);
 currentDoc.buildView(docWidth);
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
@@ -169,10 +165,27 @@ currentDoc.buildView(docWidth);
 	return currentDoc;
     }
 
-    void prepareErrorText(Result res, MutableLines lines)
+    void prepareErrorText(UrlLoader.Result res, MutableLines lines)
     {
 	lines.addLine(strings.errorAreaIntro());
-	lines.addLine("Code: " + res.type().toString());
+	switch(res.type())
+	{
+	case UNKNOWN_HOST:
+	    lines.addLine(strings.unknownHost(res.getProperty("host")));
+	    break;
+	case HTTP_ERROR:
+	    lines.addLine(strings.httpError(res.getProperty("httpcode")));
+	    break;
+	case FETCHING_ERROR:
+	    lines.addLine(strings.fetchingError(res.getProperty("descr")));
+	    break;
+	case UNDETERMINED_CONTENT_TYPE:
+	    lines.addLine(strings.undeterminedContentType());
+	    break;
+	case UNRECOGNIZED_FORMAT:
+	    lines.addLine(strings.unrecognizedFormat(res.getProperty("contenttype")));
+	    break;
+	}
 	if (!res.getProperty("url").isEmpty())
 	    lines.addLine(strings.infoAreaAddress() + " " + res.getProperty("url"));
 	if (!res.getProperty("format").isEmpty())
