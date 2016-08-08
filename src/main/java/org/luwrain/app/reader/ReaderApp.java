@@ -38,17 +38,21 @@ public class ReaderApp implements Application, Actions
     private ListArea notesArea;
     private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
-        private DocInfo startFrom = null;
+    private String startingUrl;
+    private String startingContentType;
 
     public ReaderApp()
     {
-	startFrom = null;
+	startingUrl = "";
+    startingContentType = "";
     }
 
-    public ReaderApp(DocInfo docInfo)
+    public ReaderApp(String url, String contentType)
     {
-	NullCheck.notNull(docInfo, "docInfo");
-	this.startFrom = docInfo;
+	NullCheck.notNull(url, "url");
+	NullCheck.notNull(contentType, "contentType");
+	this.startingUrl = url;
+	this.startingContentType = contentType;
     }
 
     @Override public boolean onLaunch(Luwrain luwrain)
@@ -65,11 +69,7 @@ public class ReaderApp implements Application, Actions
 	layouts.add(new AreaLayout(readerArea));
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
 	layouts.add(new AreaLayout(propertiesArea));
-	if (startFrom != null)
-	    base.open(this, startFrom);
-	/* else
-	    docInfo = new DocInfo();
-	*/
+	openStartFrom();
 	return true;
     }
 
@@ -331,21 +331,24 @@ public class ReaderApp implements Application, Actions
     {
 	NullCheck.notNull(res, "res");
 	if (res.type() != UrlLoader.Result.Type.OK)
-	{
-	    showErrorPage(res);
+	    showErrorPage(res); else
+	    onNewDocument(res.book(), res.doc());
+    }
+
+    private void onNewDocument(Book book, Document doc)
+    {
+	if (book == null && doc == null)
 	    return;
-	}
-	final Document doc = base.acceptNewSuccessfulResult(res, getSuitableWidth());
-	if (doc == null)
-	    return;
+	final Document newDoc = base.acceptNewSuccessfulResult(book, doc, getSuitableWidth());
 	if (base.isInBookMode())
 	{
 	    bookMode(); 
 	    treeArea.refresh();
 	} else
 	    docMode();
-	readerArea.setDocument(doc);
+	readerArea.setDocument(newDoc);
 	goToReaderArea();
+	announceNewDoc(newDoc);
     }
 
     private boolean playAudio()
@@ -360,7 +363,21 @@ public class ReaderApp implements Application, Actions
 
     private boolean jumpByHref(String href)
     {
-	return base.jumpByHref(this, href);
+	if (base.isInBookMode())
+	{
+	    final Document doc = base.jumpByHrefInBook(href);
+	    if (doc == null)
+	    {
+		luwrain.launchApp("reader", new String[]{href});
+		return true;
+	    }
+	    bookMode(); 
+	    readerArea.setDocument(doc);
+	    goToReaderArea();
+	    announceNewDoc(doc);
+	    return true;
+	}
+	return base.jumpByHrefInNonBook(this, href);
     }
 
     @Override public int getCurrentRowIndex()
@@ -482,4 +499,25 @@ public class ReaderApp implements Application, Actions
     {
 	luwrain.closeApp();
     }
+
+    private void announceNewDoc(Document doc)
+    {
+	NullCheck.notNull(doc, "doc");
+	luwrain.silence();
+	luwrain.playSound(Sounds.INTRO_REGULAR);
+	luwrain.say(doc.getTitle());
+    }
+
+private void openStartFrom()
+{
+    try {
+	if (!startingUrl.isEmpty())
+	    base.open(this, new  URL(startingUrl), startingContentType);
+    }
+    catch(MalformedURLException e)
+    {
+	luwrain.crash(e);//FIXME:
+    }
+
+}
 }

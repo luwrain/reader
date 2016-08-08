@@ -22,7 +22,6 @@ import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
 
 import org.luwrain.app.reader.ReaderApp;
-import org.luwrain.app.reader.DocInfo;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
 import org.luwrain.app.narrator.NarratorApp;
@@ -159,10 +158,10 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		{
 		    if (args == null || args.length < 1)
 			return new Application[]{new ReaderApp()};
-		    final DocInfo docInfo = new DocInfo();
-		    if (docInfo.load(args))
-			return new Application[]{new ReaderApp(docInfo)};
-		    Log.warning("reader", "unable to parse command line argument for ReaderApp, starting in initial state");
+		    if (args.length == 1)
+			return new Application[]{new ReaderApp(args[0], "")};
+		    if (args.length == 2)
+			return new Application[]{new ReaderApp(args[0], args[1])};
 			return new Application[]{new ReaderApp()};
 
 		}

@@ -45,7 +45,7 @@ class Base implements Listener
 
     private Book book;
     private Document currentDoc = null;
-    private final LinkedList<Result> history = new LinkedList<Result>();
+    private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
     private final LinkedList<String> enteredUrls = new LinkedList<String>();
 
@@ -64,16 +64,17 @@ class Base implements Listener
 	return true;
     }
 
-    boolean open(Actions actions, DocInfo docInfo)
+    boolean open(Actions actions, URL url, String contentType)
     {
 	NullCheck.notNull(actions, "actions");
-	NullCheck.notNull(docInfo, "docInfo");
+	NullCheck.notNull(url, "url");
+	NullCheck.notNull(contentType, "contentType");
 	if (task != null && !task.isDone())
 	    return false;
 	final int currentRowIndex = actions.getCurrentRowIndex();
 	if (!history .isEmpty() && currentRowIndex >= 0)
-	    history.getLast().setStartingRowIndex(currentRowIndex);
-	task = createTask(actions, docInfo);
+	    history.getLast().startingRowIndex = currentRowIndex;
+	task = createTask(actions, url, contentType);
 	executor.execute(task);
 	return true;
     }
@@ -86,82 +87,75 @@ class Base implements Listener
 	return true;
     }
 
-    boolean jumpByHref(Actions actions, String href)
+    Document jumpByHrefInBook(String href)
+    {
+	NullCheck.notEmpty(href, "href");
+	if (!isInBookMode() || fetchingInProgress())
+	    return null;
+final Document doc = book.getDocument(href);
+if (doc == null)
+    return null;
+this.currentDoc = doc;
+	history.add(new HistoryItem(doc));
+	return doc;
+    }
+
+    boolean jumpByHrefInNonBook(Actions actions, String href)
     {
 	NullCheck.notNull(actions, "actions");
-	NullCheck.notNull(href, "href");
-	if (fetchingInProgress())
+	NullCheck.notEmpty(href, "href");
+	if (isInBookMode() || fetchingInProgress())
 	    return false;
-	if (isInBookMode())
-	{
-	    final Document doc = book.getDocument(href);
-	    if (doc == null)
-	    {
-		luwrain.launchApp("reader", new String[]{href});
-		return true;
-	    }
-	    final UrlLoader.Result res = new UrlLoader.Result();
-	    res.book = book;
-	    res.doc = doc;
-	    actions.onNewResult(res);
-	    return true;
-	}
 	URL url = null;
 	try {
 	    url = new URL(href);
 	}
 	catch(MalformedURLException e)
 	{
-	    e.printStackTrace();
 	    luwrain.message(strings.badUrl() + href, Luwrain.MESSAGE_ERROR);
 	    return true;
 	}
-	if (!open(actions, new DocInfo(url)))
+	if (!open(actions, url, ""))
 	    return false;
 	luwrain.message(strings.fetching() + " " + href);
 	return true;
     }
 
-    private FutureTask createTask(Actions actions, DocInfo docInfo)
+    private FutureTask createTask(Actions actions, URL url, String contentType)
     {
 	NullCheck.notNull(actions, "actions");
-	NullCheck.notNull(docInfo, "docInfo");
+	NullCheck.notNull(url, "url");
+    NullCheck.notNull(contentType, "contentType");
 	return new FutureTask(()->{
-		UrlLoader.Result res = null;
 		try {
-		    final UrlLoader urlLoader = new UrlLoader(docInfo.url, docInfo.contentType);
-		    res = urlLoader.load();
+		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
+		    final UrlLoader.Result res = urlLoader.load();
+		if (res != null)
+		    luwrain.runInMainThread(()->actions.onNewResult(res));
 		}
-		catch(Exception e)
+		catch(IOException e)
 		{
 		    luwrain.crash(e);
 		}
-		final UrlLoader.Result finalRes = res;
-		if (finalRes != null)
-		    luwrain.runInMainThread(()->actions.onNewResult(finalRes));
 	}, null);
     }
 
-
     //Returns the document to be shown in readerArea
-    Document acceptNewSuccessfulResult(UrlLoader.Result res, int docWidth)
+    Document acceptNewSuccessfulResult(Book book, Document doc,
+				       int docWidth)
     {
-	NullCheck.notNull(res, "res");
-	if (res.book() != null && res.book() != book)
+	if (book != null && this.book != book)
 	{
 	    //Opening new book
-	    book = res.book();
+	    this.book = book;
 	    bookTreeModelSource.setSections(book.getBookSections());
-	    currentDoc = book.getStartingDocument();
+	    this.currentDoc = book.getStartingDocument();
 	    history.clear();
 	} else
-	currentDoc = res.doc();
-	//	res.clearDoc();//We need only address information
-	//	history.add(res);
+	this.currentDoc = doc;
+	NullCheck.notNull(currentDoc, "currentDoc");
+	history.add(new HistoryItem(doc));
 currentDoc.buildView(docWidth);
-	luwrain.silence();
-	luwrain.playSound(Sounds.INTRO_REGULAR);
-	luwrain.say(currentDoc.getTitle());
 	return currentDoc;
     }
 
@@ -197,6 +191,7 @@ currentDoc.buildView(docWidth);
     void prepareDocInfoText(MutableLines lines)
     {
 	NullCheck.notNull(lines, "lines");
+	/*
 	if (currentDoc == null)
 	    return;
 	if (currentDoc.getTitle() != null)
@@ -207,6 +202,7 @@ currentDoc.buildView(docWidth);
 	for(Map.Entry<String, String> e: attr.entrySet())
 	    if (!strings.infoPageField(e.getKey()).isEmpty())
 		lines.addLine(strings.infoPageField(e.getKey()) + ": " + e.getValue());
+	*/
     }
 
     boolean openNew(Actions actions, boolean openUrl, String currentHref)
@@ -230,7 +226,7 @@ currentDoc.buildView(docWidth);
 		luwrain.message(strings.badUrl() + res, Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
-	    open(actions, new DocInfo(url));
+	    open(actions, url, "");
 	    return true;
 	}
 	final Path path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
@@ -338,7 +334,7 @@ currentDoc.buildView(docWidth);
 final String href = book.getHrefOfNoteDoc(note);
 if (href.isEmpty())
     return false;
-return jumpByHref(actions, href);
+return jumpByHrefInNonBook(actions, href);
     }
 
     @Override public void onNewPlaylist(Playlist playlist)
@@ -435,4 +431,15 @@ ListArea.Model getNotesModel()
 	return notesModel;
     }
 
+static private class HistoryItem
+{
+    String url;
+    int startingRowIndex;
+
+    HistoryItem(Document doc)
+    {
+	NullCheck.notNull(doc, "doc");
+	//FIXME:
+    }
+}
 }
