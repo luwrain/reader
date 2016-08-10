@@ -181,28 +181,39 @@ currentDoc.buildView(docWidth);
 	    break;
 	}
 	if (!res.getProperty("url").isEmpty())
-	    lines.addLine(strings.infoAreaAddress() + " " + res.getProperty("url"));
+	    lines.addLine(strings.propertiesAreaUrl(res.getProperty("url")));
 	if (!res.getProperty("format").isEmpty())
-	    lines.addLine(strings.infoAreaFormat() + " " + res.getProperty("format"));
+	    lines.addLine(strings.propertiesAreaFormat(res.getProperty("format")));
 	if (!res.getProperty("charset").isEmpty())
-	    lines.addLine(strings.infoAreaCharset() + " " + res.getProperty("charset"));
+	    lines.addLine(strings.propertiesAreaCharset(res.getProperty("charset")));
     }
 
-    void prepareDocInfoText(MutableLines lines)
+    boolean fillDocProperties(MutableLines lines)
     {
 	NullCheck.notNull(lines, "lines");
+	if (history.isEmpty())
+	    return false;
+	final HistoryItem item = history.getLast();
+	lines.beginLinesTrans();
+	lines.addLine(strings.propertiesAreaUrl(item.url()));
+		      lines.addLine(strings.propertiesAreaContentType(item.contentType()));
+				    lines.addLine(strings.propertiesAreaFormat(item.format()));
+						  lines.addLine(strings.propertiesAreaCharset(item.charset()));
+	lines.addLine("");
+	lines.endLinesTrans();
+
 	/*
-	if (currentDoc == null)
-	    return;
-	if (currentDoc.getTitle() != null)
 	    lines.addLine(strings.infoPageField("title") + ": " + currentDoc.getTitle());
-	if (currentDoc.getUrl() != null)
 	    lines.addLine(strings.infoPageField("url") + ": " + currentDoc.getUrl());
+	*/
+
+	    /*
 	final Map<String, String> attr = currentDoc.getInfoAttr();
 	for(Map.Entry<String, String> e: attr.entrySet())
 	    if (!strings.infoPageField(e.getKey()).isEmpty())
 		lines.addLine(strings.infoPageField(e.getKey()) + ": " + e.getValue());
 	*/
+	return true;
     }
 
     boolean openNew(Actions actions, boolean openUrl, String currentHref)
@@ -434,12 +445,23 @@ ListArea.Model getNotesModel()
 static private class HistoryItem
 {
     String url;
+    private String contentType;
+    private String format;
+    private String charset;
     int startingRowIndex;
 
     HistoryItem(Document doc)
     {
 	NullCheck.notNull(doc, "doc");
-	//FIXME:
+	url = doc.getProperty("url");
+	contentType = doc.getProperty("contenttype");
+	charset = doc.getProperty("charset");
+	format = doc.getProperty("format");
     }
+
+    String url() {return url;}
+    String contentType() {return contentType;}
+    String charset() {return charset;}
+    String format() {return format;}
 }
 }

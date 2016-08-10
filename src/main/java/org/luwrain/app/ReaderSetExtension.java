@@ -22,6 +22,7 @@ import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
 
 import org.luwrain.app.reader.ReaderApp;
+import org.luwrain.app.reader.Strings;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
 import org.luwrain.app.narrator.NarratorApp;
@@ -46,16 +47,20 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	    new Command(){
 		@Override public String getName()
 		{
-		    return "reader-open-url";
+		    return "reader-open";
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String url = Popups.simple(luwrain, "Open URL", "Enter the URL to open:", "");//FIXME:
+		    final Strings strings = (Strings)luwrain.i18n().getStrings(Strings.NAME);
+		    if (strings == null)
+			return;
+		    final String url = Popups.simple(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), "http://");
 		    if (url != null && !url.trim().isEmpty())
-			luwrain.launchApp("reader", new String[]{"--URL", url.indexOf("://") >= 0?url:("http://" + url)});
+			luwrain.launchApp("reader", new String[]{url.indexOf("://") >= 0?url:("http://" + url)});
 		}
 	    },
 
+	    //The same as reader-open
 	    new Command(){
 		@Override public String getName()
 		{
@@ -63,12 +68,14 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String url = Popups.simple(luwrain, "Open URL", "Enter the URL to open:", "");//FIXME:
+		    final Strings strings = (Strings)luwrain.i18n().getStrings(Strings.NAME);
+		    if (strings == null)
+			return;
+		    final String url = Popups.simple(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), "http://");
 		    if (url != null && !url.trim().isEmpty())
-			luwrain.launchApp("reader", new String[]{"--URL", url.indexOf("://") >= 0?url:("http://" + url)});
+			luwrain.launchApp("reader", new String[]{url.indexOf("://") >= 0?url:("http://" + url)});
 		}
 	    },
-
 
 	    new Command(){
 		@Override public String getName()
@@ -77,14 +84,52 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String query = Popups.simple(luwrain, "Search in Google", "Enter the expression to search in Google:", "");//FIXME:
+		    final Strings strings = (Strings)luwrain.i18n().getStrings(Strings.NAME);
+		    if (strings == null)
+			return;
+		    final String query = Popups.simple(luwrain, strings.searchGooglePopupName(), strings.searchGooglePopupPrefix(), "");
 		    if (query != null && !query.trim().isEmpty())
-		    {
-			final String url = "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=en&ie=utf-8";
-			luwrain.launchApp("reader", new String[]{"--URL", url});
-		    }
+			luwrain.launchApp("reader", new String[]{constructGoogleUrl(luwrain.getRegistry(), query)});
 		}
 	    },
+
+	    //The same as reader-search-google
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "reader-search";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    final Strings strings = (Strings)luwrain.i18n().getStrings(Strings.NAME);
+		    if (strings == null)
+			return;
+		    final String query = Popups.simple(luwrain, strings.searchGooglePopupName(), strings.searchGooglePopupPrefix(), "");
+		    if (query != null && !query.trim().isEmpty())
+			luwrain.launchApp("reader", new String[]{constructGoogleUrl(luwrain.getRegistry(), query)});
+		}
+	    },
+
+	    new Command(){
+		@Override public String getName()
+		{
+		    return "reader-open-auto";
+		}
+		@Override public void onCommand(Luwrain luwrain)
+		{
+		    final Strings strings = (Strings)luwrain.i18n().getStrings(Strings.NAME);
+		    if (strings == null)
+			return;
+		    final String query = Popups.simple(luwrain, strings.openAutodetectPopupName(), strings.openAutodetectPopupPrefix(), "");
+		    if (query == null || query.trim().isEmpty())
+			return;
+		    if (query.trim().toLowerCase().startsWith("http://") || query.trim().toLowerCase().startsWith("https://"))
+			luwrain.launchApp("reader", new String[]{query}); else
+			luwrain.launchApp("reader", new String[]{constructGoogleUrl(luwrain.getRegistry(), query)});
+		}
+	    },
+
+
 
 	    new Command(){
 		@Override public String getName()
@@ -93,7 +138,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-			luwrain.launchApp("reader", new String[]{"--URL", "http://luwrain.org/?mode=adapted&lang=en"});
+			luwrain.launchApp("reader", new String[]{"http://luwrain.org/?mode=adapted&lang=en"});
 		}
 	    },
 
@@ -213,5 +258,25 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	return new Factory[]{new org.luwrain.app.narrator.ControlPanelFactory(luwrain)};
+    }
+
+    private String constructGoogleUrl(Registry registry, String query)
+    {
+	NullCheck.notNull(registry, "registry");
+	NullCheck.notEmpty(query, "query");
+	final Settings sett = createSettings(registry);
+	return "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=" + sett.getGoogleLang("en") + "&ie=utf-8";
+    }
+
+    interface Settings
+    {
+	String getGoogleLang(String defValue);
+	void setGoogleLang(String value);
+    }
+
+    static Settings createSettings(Registry registry)
+    {
+	NullCheck.notNull(registry, "registry");
+	return RegistryProxy.create(registry, "/org/luwrain/app/reader", Settings.class);
     }
 }

@@ -120,12 +120,6 @@ public class ReaderApp implements Application, Actions
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && event.withShiftOnly())
-			switch(event.getSpecial())
-			{
-			case ENTER:
-			    return showDocProperties();
-			}
 		    if (event.isSpecial() && !event.isModified())
 			switch(event.getSpecial())
 			{
@@ -153,6 +147,8 @@ public class ReaderApp implements Application, Actions
 		    case CLOSE:
 			closeApp();
 			return true;
+		    case PROPERTIES:
+			return showDocProperties();
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
@@ -212,7 +208,7 @@ public class ReaderApp implements Application, Actions
 		}
 	    };
 
-	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.infoAreaName()){
+	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.propertiesAreaName()){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -398,9 +394,10 @@ public class ReaderApp implements Application, Actions
     private boolean showDocProperties()
     {
 	propertiesArea.clear();
-	base.prepareDocInfoText(propertiesArea);
+	if (!base.fillDocProperties(propertiesArea))
+	    return false;
 	layouts.show(PROPERTIES_MODE_LAYOUT_INDEX);
-	luwrain.say("Информация о документе");
+	luwrain.announceActiveArea();
 	return true;
     }
 
@@ -429,14 +426,11 @@ public class ReaderApp implements Application, Actions
 
     private boolean closePropertiesArea()
     {
-	/*
-	  final Result currentDoc = base.currentDoc();
-	  if (currentDoc == null)
-	  return false;
+	if (!base.hasDocument())
+	    return false;
 	  layouts.show(DOC_MODE_LAYOUT_INDEX);
+	  luwrain.announceActiveArea();
 	  return true;
-	*/
-	return false;
     }
 
     private int getSuitableWidth()

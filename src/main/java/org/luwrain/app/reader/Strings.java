@@ -43,11 +43,11 @@ public interface Strings
     String actionInfo(); 
     String actionPlayAudio();
     String actionAddNote();
-    String infoAreaName();
+    String propertiesAreaName();
     String treeAreaName();
     String notesAreaName();
     String bookTreeRoot();
-    String infoPageField(String name);
+    //    String infoPageField(String name);
     String openUrlPopupName();
     String openUrlPopupPrefix();
     String openPathPopupName();
@@ -55,9 +55,10 @@ public interface Strings
     String pathToOpenMayNotBeDirectory();
     String addNotePopupName();
     String addNotePopupPrefix();
-    String infoAreaAddress();
-    String infoAreaFormat();
-    String infoAreaCharset();
+    String propertiesAreaUrl(String value);
+    String propertiesAreaContentType(String value);
+    String propertiesAreaFormat(String value);
+    String propertiesAreaCharset(String value);
     String errorAreaIntro();
     String errorAnnouncement();
     String unknownHost(String hostName );
@@ -65,4 +66,9 @@ public interface Strings
     String fetchingError(String descr);
     String undeterminedContentType();
     String unrecognizedFormat(String contentType);
+
+    String searchGooglePopupName();
+    String searchGooglePopupPrefix();
+    String openAutodetectPopupName();
+String openAutodetectPopupPrefix();
 }
