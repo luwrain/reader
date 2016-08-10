@@ -130,10 +130,8 @@ public class ReaderApp implements Application, Actions
 			    if (hasHref())
 				return jumpByHref(getHref());
 			    return false;
-			    /*
 			      case BACKSPACE:
 			      return onBackspace(event);
-			    */
 			}
 		    return super.onKeyboardEvent(event);
 		}
@@ -355,6 +353,23 @@ public class ReaderApp implements Application, Actions
 	if (ids == null || ids.length < 1)
 	    return false;
 	return base.playAudio(readerArea, ids);
+    }
+
+    private boolean onBackspace(KeyboardEvent event)
+    {
+	NullCheck.notNull(event, "event");
+	if (base.isInBookMode())
+	{
+	    final Document doc = base.onPrevDocInBook();
+	    if (doc == null)
+		return false;
+	    bookMode(); 
+	    readerArea.setDocument(doc);
+	    goToReaderArea();
+	    announceNewDoc(doc);
+	    return true;
+	}
+	return base.onPrevDocInNonBook(this);
     }
 
     private boolean jumpByHref(String href)

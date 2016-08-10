@@ -129,8 +129,6 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    },
 
-
-
 	    new Command(){
 		@Override public String getName()
 		{
@@ -138,7 +136,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-			luwrain.launchApp("reader", new String[]{"http://luwrain.org/?mode=adapted&lang=en"});
+		    luwrain.launchApp("reader", new String[]{"http://luwrain.org/?mode=adapted&lang=en"});
 		}
 	    },
 
@@ -189,9 +187,9 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    },
 
-};
+	};
     }
-
+    
     @Override public Shortcut[] getShortcuts(Luwrain luwrain)
     {
 	final Shortcut reader = new Shortcut() {
@@ -207,7 +205,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 			return new Application[]{new ReaderApp(args[0], "")};
 		    if (args.length == 2)
 			return new Application[]{new ReaderApp(args[0], args[1])};
-			return new Application[]{new ReaderApp()};
+		    return new Application[]{new ReaderApp()};
 
 		}
 	    };
@@ -220,7 +218,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		@Override public Application[] prepareApp(String[] args)
 		{
 		    if (args != null && args.length == 1 && args[0] != null)
-		    return new Application[]{new WikiApp(args[0])};
+			return new Application[]{new WikiApp(args[0])};
 		    return new Application[]{new WikiApp()};
 		}
 	    };
@@ -244,7 +242,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		@Override public Application[] prepareApp(String[] args)
 		{
 		    if (args == null || args.length != 2)
-		    return new Application[]{new NarratorApp()};
+			return new Application[]{new NarratorApp()};
 		    if (args[0].equals("--TEXT"))
 			return new Application[]{new NarratorApp(args[1] != null?args[1]:"")};
 		    return new Application[]{new NarratorApp()};

@@ -117,7 +117,7 @@ public class WikiApp implements Application, Actions
 	final Page page = (Page)obj;
 	try {
 	    final String url = "https://" + URLEncoder.encode(page.lang()) + ".wikipedia.org/wiki/" + URLEncoder.encode(page.title(), "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
-	    luwrain.launchApp("reader", new String[]{"--URL", url});
+	    luwrain.launchApp("reader", new String[]{url});
 	}
 	catch (UnsupportedEncodingException e)
 	{

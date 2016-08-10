@@ -92,11 +92,26 @@ class Base implements Listener
 	NullCheck.notEmpty(href, "href");
 	if (!isInBookMode() || fetchingInProgress())
 	    return null;
-final Document doc = book.getDocument(href);
-if (doc == null)
-    return null;
-this.currentDoc = doc;
+	final Document doc = book.getDocument(href);
+	if (doc == null)
+	    return null;
+	this.currentDoc = doc;
 	history.add(new HistoryItem(doc));
+	return doc;
+    }
+
+    Document onPrevDocInBook()
+    {
+	if (!isInBookMode() || fetchingInProgress())
+	    return null;
+	if (history.size() < 2)
+	    return null;
+	history.pollLast();
+	final HistoryItem item = history.getLast();
+	final Document doc = book.getDocument(item.url());
+	if (doc == null)
+	    return null;
+	this.currentDoc = doc;
 	return doc;
     }
 
@@ -120,6 +135,31 @@ this.currentDoc = doc;
 	luwrain.message(strings.fetching() + " " + href);
 	return true;
     }
+
+    boolean onPrevDocInNonBook(Actions actions)
+    {
+	NullCheck.notNull(actions, "actions");
+	if (isInBookMode() || fetchingInProgress())
+	    return false;
+	if (history.size() < 2)
+	    return false;
+	history.pollLast();
+	final HistoryItem item = history.pollLast();
+	URL url = null;
+	try {
+	    url = new URL(item.url());
+	}
+	catch(MalformedURLException e)
+	{
+	    luwrain.message(strings.badUrl() + item.url(), Luwrain.MESSAGE_ERROR);
+	    return true;
+	}
+	if (!open(actions, url, ""))
+	    return false;
+	luwrain.message(strings.fetching() + " " + item.url());
+	return true;
+    }
+
 
     private FutureTask createTask(Actions actions, URL url, String contentType)
     {
