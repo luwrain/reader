@@ -23,6 +23,7 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
+import org.luwrain.doctree.loading.*;
 
 public class ReaderApp implements Application, Actions
 {
@@ -33,11 +34,12 @@ public class ReaderApp implements Application, Actions
     private Luwrain luwrain;
     private final Base base = new Base();
     private Strings strings;
-    private DocTreeArea readerArea;
+    private DoctreeArea readerArea;
     private TreeArea treeArea;
     private ListArea notesArea;
     private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
+    private Announcement announcement;
     private String startingUrl;
     private String startingContentType;
 
@@ -75,6 +77,9 @@ public class ReaderApp implements Application, Actions
 
     private void createAreas()
     {
+	announcement = new Announcement(new DefaultControlEnvironment(luwrain), strings);
+
+
 	final Actions actions = this;
 
 	final TreeArea.Params treeParams = new TreeArea.Params();
@@ -116,7 +121,7 @@ public class ReaderApp implements Application, Actions
 		}
 	    };
 
-	readerArea = new DocTreeArea(new DefaultControlEnvironment(luwrain), new Introduction(new DefaultControlEnvironment(luwrain), strings), null){
+	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain), null){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -127,8 +132,8 @@ public class ReaderApp implements Application, Actions
 			    goToNotesArea();
 			    return true;
 			case ENTER:
-			    if (hasHref())
-				return jumpByHref(getHref());
+			    if (Base.hasHref(this))
+				return jumpByHref(Base.getHref(this));
 			    return false;
 			      case BACKSPACE:
 			      return onBackspace(event);
@@ -159,6 +164,11 @@ public class ReaderApp implements Application, Actions
 		{
 		    final Document doc = getDocument();
 		    return doc != null?doc.getTitle():strings.appName();
+		}
+		@Override protected void announceRow(org.luwrain.doctree.Iterator it, boolean briefAnnouncement)
+		{
+		    NullCheck.notNull(it, "it");
+		    announcement.announce(it, briefAnnouncement);
 		}
 		@Override protected String noContentStr()
 		{
@@ -398,7 +408,7 @@ public class ReaderApp implements Application, Actions
 
     private boolean openNew(boolean url)
     {
-	return base.openNew(this, url, readerArea.hasHref()?readerArea.getHref():"");
+	return base.openNew(this, url, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
     }
 
     private boolean fetchingInProgress()

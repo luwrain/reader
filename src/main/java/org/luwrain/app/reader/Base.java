@@ -26,6 +26,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
+import org.luwrain.doctree.loading.*;
 import org.luwrain.player.*;
 
 class Base implements Listener
@@ -195,7 +196,14 @@ class Base implements Listener
 	this.currentDoc = doc;
 	NullCheck.notNull(currentDoc, "currentDoc");
 	history.add(new HistoryItem(doc));
-currentDoc.buildView(docWidth);
+	try {
+	    Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
+	    currentDoc.buildView(docWidth);
+	}
+	catch(Exception e)
+	{
+	    luwrain.crash(e);
+	}
 	return currentDoc;
     }
 
@@ -336,7 +344,7 @@ currentDoc.buildView(docWidth);
 	return true;
     }
 
-    boolean playAudio(DocTreeArea area, String[] ids)
+    boolean playAudio(DoctreeArea area, String[] ids)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
@@ -480,6 +488,21 @@ return jumpByHrefInNonBook(actions, href);
 ListArea.Model getNotesModel()
     {
 	return notesModel;
+    }
+
+    static String getHref(DoctreeArea area)
+    {
+	NullCheck.notNull(area, "area");
+	final Run run = area.getCurrentRun();
+	if (run == null)
+	    return "";
+	return run.href();//Never returns null
+    }
+
+    static boolean hasHref(DoctreeArea area)
+    {
+	NullCheck.notNull(area, "area");
+	return !getHref(area).isEmpty();
     }
 
 static private class HistoryItem

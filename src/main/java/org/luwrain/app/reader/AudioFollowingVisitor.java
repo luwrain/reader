@@ -30,7 +30,7 @@ class  AudioFollowingVisitor implements Visitor
 	this.desiredId = desiredId;
     }
 
-    @Override public void visit(ParagraphImpl para)
+    @Override public void visit(Paragraph para)
     {
 	NullCheck.notNull(para, "para");
 	if (resultingRun != null)
@@ -40,7 +40,7 @@ class  AudioFollowingVisitor implements Visitor
 		checkRun(r);
     }
 
-    @Override public void visitNode(NodeImpl node)
+    @Override public void visitNode(Node node)
     {
     }
 

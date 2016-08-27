@@ -21,7 +21,5 @@ interface Actions
     boolean closeApp();
     void onReady();
     boolean onClick(Object obj);
-    boolean showEntryInfo(Object obj);
     boolean onReturnBack();
-    void showMainList();
 }

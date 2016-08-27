@@ -171,26 +171,19 @@ class Base
 	return !history.isEmpty()?history.getLast():null;
     }
 
-    void onEntry(Area area, Opds.Entry entry)
+    void onEntry(Area area, Opds.Entry entry) throws MalformedURLException
     {
+	NullCheck.notNull(area, "area");
 	NullCheck.notNull(entry, "entry");
 	if (!entry.hasBooks())
 	{
 	    final Opds.Link catalogLink = entry.getCatalogLink();
 	    if (catalogLink == null)
 		return;
-	    try {
-		start(area, new URL(currentUrl(), catalogLink.url()));
-		return;
-	    }
-	    catch (MalformedURLException e)
-	    {
-		e.printStackTrace();
-		luwrain.message(strings.invalidLinkInSelectedEntry(catalogLink.url()), Luwrain.MESSAGE_ERROR);
-		return;
-	    }
+	    start(area, new URL(currentUrl(), catalogLink.url()));
+	    return;
 	}
-	//Opening a document
+	//Opening document
 	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
 	for(Opds.Link link: entry.links())
 	{
@@ -200,50 +193,29 @@ class Base
 	}
 	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
 	if (suitable.length == 1)
-	    try 
-	    {
-		luwrain.launchApp("reader", new String[]{
-			"--URL", 
-			new URL(currentUrl(), suitable[0].url().toString()).toString(), 
-			"--TYPE", 
-			suitable[0].type()});
-		return;
-	    }
-	    catch (MalformedURLException e)
-	    {
-		e.printStackTrace();
-		luwrain.message(strings.invalidLinkInSelectedEntry(suitable[0].url()), Luwrain.MESSAGE_ERROR);
-		return;
-	    }
-	for(Opds.Link link: suitable)
 	{
+	    openReader(new URL(currentUrl(), suitable[0].url().toString()), suitable[0].type());
+	    return;
+	}
+	for(Opds.Link link: suitable)
 	    if (link.type().equals("application/fb2+zip") ||
 		link.type().equals("application/fb2"))
-		try {
-		    Log.debug("reader", link.url().toString());
-		    Log.debug("reader", link.type());
-		    luwrain.launchApp("reader", new String[]{
-			    "--URL", 
-			    new URL(currentUrl(), link.url().toString()).toString(),
-			    "--TYPE",
-			    link.type()});
-		    return;
-		}
-		catch (MalformedURLException e)
-		{
-		    e.printStackTrace();
-		    luwrain.message(strings.invalidLinkInSelectedEntry(suitable[0].url()), Luwrain.MESSAGE_ERROR);
-		    return;
-		}
-	}
+	    {
+		openReader(new URL(currentUrl(), link.url().toString()), link.type());
+		return;
+	    }
 	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
     }
 
-    void fillEntryInfo(Opds.Entry entry, MutableLines lines)
+    void fillEntryProperties(Opds.Entry entry, MutableLines lines)
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(lines, "lines");
 
+	lines.addLine(entry.parentUrl().toString());
+	lines.addLine("");
+
+	/*
 	lines.addLine("Подкаталоги :");
 	for(Opds.Link link: entry.links())
 	{
@@ -293,5 +265,34 @@ class Base
 	    }
 	}
 	lines.addLine("");
+	*/
+
+	for(Opds.Link l: entry.links())
+	{
+	    final StringBuilder b = new StringBuilder();
+	    try {
+	    final URL url = new URL(currentUrl(), l.url());
+	    b.append(url.toString());
+	    }
+	    catch(MalformedURLException e)
+	    {
+		b.append(l.url());
+	    }
+if (l.type() != null)
+    b.append(" " + l.type());
+lines.addLine(new String(b));
+	}
+	lines.addLine("");
+    }
+
+    private void openReader(URL url, String contentType)
+    {
+	NullCheck.notNull(url, "url");
+	NullCheck.notNull(contentType, "contentType");
+	Log.debug("opds", "launching reader for " + url.toString() + " and content type \'" + contentType + "\'");
+		    luwrain.launchApp("reader", new String[]{
+			    "--URL", 
+url.toString(),
+contentType});
     }
 }

@@ -34,7 +34,7 @@ public class OpdsApp implements Application, Actions
     private Luwrain luwrain;
     private Strings strings;
     private ListArea listArea;
-    private SimpleArea infoArea;
+    private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
 
     @Override public boolean onLaunch(Luwrain luwrain)
@@ -49,8 +49,91 @@ public class OpdsApp implements Application, Actions
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(listArea));
-	layouts.add(new AreaLayout(infoArea));
+	layouts.add(new AreaLayout(propertiesArea));
 	return true;
+    }
+
+
+    private void createAreas()
+    {
+	final Actions actions = this;
+	//	final Strings s = strings;
+
+	final ListArea.Params params = new ListArea.Params();
+	params.environment = new DefaultControlEnvironment(luwrain);
+	params.model = base.getModel();
+	params.appearance = new Appearance(luwrain, strings);
+	params.clickHandler = (area, index, obj)->actions.onClick(obj);
+	params.name = "FIXME";
+
+	listArea = new ListArea(params){
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+		    {
+		    case BACKSPACE:
+			return actions.onReturnBack();
+		    }
+		    return super.onKeyboardEvent(event);
+		}
+		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    switch(event.getCode())
+		    {
+		    case PROPERTIES:
+			if (selected() == null)
+			    return false;
+			return showEntryProperties(selected());
+		    case CLOSE:
+			closeApp();
+			return true;
+		    case THREAD_SYNC:
+			actions.onReady();
+			return true;
+		    default:
+			return super.onEnvironmentEvent(event);
+		    }
+		}
+		@Override protected String noContentStr()
+		{
+		    if (base.isFetchingInProgress())
+			return "Идёт загрузка. Пожалуйста, подождите.";
+		    return super.noContentStr();
+		}
+	    };
+
+	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), "Просмотр информации"){
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			    switch(event.getSpecial())
+			{
+		    case ESCAPE:
+			closePropertiesArea();
+			return true;
+			}
+		    return super.onKeyboardEvent(event);
+		}
+		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    switch(event.getCode())
+		    {
+		    case CANCEL:
+			closePropertiesArea();
+			return true;
+		    case CLOSE:
+closeApp();
+			return true;
+		    default:
+			return super.onEnvironmentEvent(event);
+		    }
+		}
+	    };
     }
 
     @Override public void onReady()
@@ -82,18 +165,20 @@ public class OpdsApp implements Application, Actions
 	}
     }
 
-    @Override public boolean showEntryInfo(Object obj)
+private boolean showEntryProperties(Object obj)
     {
-	if (obj == null && !(obj instanceof Opds.Entry))
+	NullCheck.notNull(obj, "obj");
+	if (!(obj instanceof Opds.Entry))
 	    return false;
 	final Opds.Entry entry = (Opds.Entry)obj;
-	infoArea.clear();
-	base.fillEntryInfo(entry, infoArea);
+	propertiesArea.clear();
+	base.fillEntryProperties(entry, propertiesArea);
 	layouts.show(1);
+	luwrain.announceActiveArea();
 	return true;
     }
 
-    @Override public void showMainList()
+ private void closePropertiesArea()
     {
 	layouts.show(0);
     }
@@ -106,93 +191,6 @@ public class OpdsApp implements Application, Actions
 	    return true;
     }
 
-
-    private void createAreas()
-    {
-	final Actions actions = this;
-	//	final Strings s = strings;
-
-	final ListArea.Params params = new ListArea.Params();
-	params.environment = new DefaultControlEnvironment(luwrain);
-	params.model = base.getModel();
-	params.appearance = new Appearance(luwrain, strings);
-	params.clickHandler = (area, index, obj)->actions.onClick(obj);
-	params.name = "FIXME";
-
-	listArea = new ListArea(params){
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-			if (event.isSpecial() && event.withShiftOnly())
-			    switch(event.getSpecial())
-			{
-		    case ENTER:
-			return actions.showEntryInfo(selected());
-			}
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-		    {
-		    case BACKSPACE:
-			return actions.onReturnBack();
-		    }
-		    return super.onKeyboardEvent(event);
-		}
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    switch(event.getCode())
-		    {
-		    case CLOSE:
-			actions.closeApp();
-			return true;
-		    case THREAD_SYNC:
-			actions.onReady();
-			return true;
-		    default:
-			return super.onEnvironmentEvent(event);
-		    }
-		}
-		@Override protected String noContentStr()
-		{
-		    if (base.isFetchingInProgress())
-			return "Идёт загрузка. Пожалуйста, подождите.";
-		    return super.noContentStr();
-		}
-	    };
-
-	infoArea = new SimpleArea(new DefaultControlEnvironment(luwrain), "Просмотр информации"){
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			    switch(event.getSpecial())
-			{
-		    case ESCAPE:
-			actions.showMainList();
-			return true;
-			}
-		    return super.onKeyboardEvent(event);
-		}
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    switch(event.getCode())
-		    {
-		    case CANCEL:
-			actions.showMainList();
-			return true;
-		    case CLOSE:
-			actions.closeApp();
-			return true;
-		    default:
-			return super.onEnvironmentEvent(event);
-		    }
-		}
-	    };
-
-
-
-    }
 
     @Override public String getAppName()
     {

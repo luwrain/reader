@@ -24,7 +24,7 @@ class NarratorTextVisitor implements Visitor
 
     private final StringBuilder builder = new StringBuilder();
 
-    @Override public void visitNode(NodeImpl node)
+    @Override public void visitNode(Node node)
     {
     }
 
@@ -33,7 +33,7 @@ class NarratorTextVisitor implements Visitor
 	builder.append("Элемент списка");
     }
 
-    @Override public void visit(ParagraphImpl para)
+    @Override public void visit(Paragraph para)
     {
 	final String[] lines = RowPartsBuilder.paraToLines(para, 80);
 	if (lines.length < 1)

@@ -17,6 +17,7 @@
 package org.luwrain.app.reader;
 
 import org.luwrain.doctree.*;
+import org.luwrain.doctree.loading.*;
 
 interface Actions
 {
