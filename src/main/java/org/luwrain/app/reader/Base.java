@@ -197,7 +197,9 @@ class Base implements Listener
 	NullCheck.notNull(currentDoc, "currentDoc");
 	history.add(new HistoryItem(doc));
 	try {
-	    Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
+	    //	    Log.debug("res", currentDoc.getProperty("url"));
+	    if (currentDoc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
+		Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
 	    currentDoc.buildView(docWidth);
 	}
 	catch(Exception e)

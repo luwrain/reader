@@ -17,21 +17,13 @@ public class GDotCom implements Visitor
 	while (info != null)
 	{
 	    if (info.getName().equals("ol") && info.getAttr("id").equals("gbzc"))
-		node.setImportance(-1);  else
+		node.setImportance(-1); else
 		if (info.getName().equals("ol") && info.getAttr("id").equals("gbmm"))
-		    node.setImportance(-1);  else
+		    node.setImportance(-1); else
 		    if (info.getName().equals("ol") && info.getAttr("class").equals("gbtc"))
-			node.setImportance(-1);  /*else
-			if (info.getName().equals("ol"))
-			{
-			    Log.debug("filter", info.name);
-			    if (info.attrs != null)
-				for(Map.Entry<String, String> e: info.attrs.entrySet())
-				    Log.debug("filter", e.getKey() + "=" + e.getValue());
-				    }*/
+			node.setImportance(-1);  
 	    info = info.parent;
 	}
-	//	Log.debug("filter", "---");
     }
 
     @Override public void visit(ListItem node)
@@ -65,51 +57,15 @@ public class GDotCom implements Visitor
 	    node.setImportance(-1);
 	    return;
 	}
-
-	/*
-	    final String sectText = getFirstSectionText(node);
-	    if (sectText != null)
-		Log.debug("text", sectText);
-	    if (sectText == null || sectText.toLowerCase().matches("search options"))
-	    {
-		node.setImportance(-1);
-		return;
-	    }
-
-	*/
-	Log.debug("filter", "text \"" + node.getCompleteText() + "\"");
 	ExtraInfo info = node.extraInfo;
 	while (info != null)
 	{
-
-
-
 	    if (info.getName().equals("th"))
 		node.setImportance(-1); else
-		/*
-		if (info.getName().equals("td") && info.getAttr("class").equals("sfbgg"))
-		node.setImportance(-1); else
-		*/
-
 		if (info.getName().equals("td") && info.getAttr("id").equals("leftnav"))
-		node.setImportance(-1);/* else
-
-
-		if (info.getName().equals("td") && info.getAttr("class").equals("lst-td tia"))
-		node.setImportance(-1); else
-		if (info.getName().equals("td") && info.getAttr("class").equals("lst-td"))
-		node.setImportance(-1); else
-		    if (info.getName().equals("td"))
-		{
-	    Log.debug("filter", info.name);
-	    if (info.attrs != null)
-		for(Map.Entry<String, String> e: info.attrs.entrySet())
-		    Log.debug("filter", e.getKey() + "=" + e.getValue());
-		}
-				       */
+		    node.setImportance(-1);
 	    info = info.parent;
-	    }
-	//	Log.debug("filter", "---");
+	}
     }
 
     @Override public void visit(Table node)
@@ -129,19 +85,5 @@ public class GDotCom implements Visitor
 	    if (hasSection(n))
 		return true;
 	return false;
-    }
-
-    static private String getFirstSectionText(Node node)
-    {
-	NullCheck.notNull(node, "node");
-	if (node instanceof Section)
-	    return node.getCompleteText();
-	for(Node n: node.getSubnodes() )
-	{
-	    final String res = getFirstSectionText(n);
-	    if (res != null)
-		return res;
-	}
-	return null;
     }
 }

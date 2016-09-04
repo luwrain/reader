@@ -59,6 +59,16 @@ class Announcement
 		environment.say(it.getText());
 	    return;
 	}
+
+	if (node instanceof Section)
+	{
+	    if (!Layout.hasTitleRun(node))
+		environment.say(it.getText(), Sounds.DOC_SECTION); else
+		environment.say(it.getText());
+	    return;
+	}
+
+
 		environment.say(it.getText());
     }
 
