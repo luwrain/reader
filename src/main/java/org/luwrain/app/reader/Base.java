@@ -443,7 +443,11 @@ return jumpByHrefInNonBook(actions, href);
 	final String track = playlist.getPlaylistItems()[trackNum];
 	final String link = book.findTextForAudio(track, msec);
 	if (link == null)
+	{
+	    System.out.println("no link");
 	    return;
+	}
+	System.out.println("link " + link);
 	URL url = null;
 	URL docUrl = null;
 	try {

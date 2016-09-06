@@ -14,7 +14,4 @@ class AudioFollowingHandler
 	NullCheck.notNull(area, "area");
 	this.area = area;
     }
-
-
 }
-
