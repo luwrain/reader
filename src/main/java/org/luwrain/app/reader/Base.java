@@ -366,8 +366,19 @@ class Base implements Listener
 		final AudioInfo audioInfo = book.findAudioForId(url.toString() + "#" + id);
 		if (audioInfo != null)
 		{
+		    Log.debug("reader", "audio info found:" + audioInfo.src() + " from " + audioInfo.beginPosMsec());
+		    URL audioFileUrl = null;
+		    try {
+			audioFileUrl = new URL(url, audioInfo.src());
+		    }
+		    catch(MalformedURLException e)
+		    {
+			Log.error("reader", "unable to prepare the URL for player" + e.getMessage());
+			e.printStackTrace();
+			continue;
+		    }
 		    audioFollowingHandler = new AudioFollowingHandler(area);
-		    currentPlaylist = new SingleLocalFilePlaylist(audioInfo.src());
+		    currentPlaylist = new SingleLocalFilePlaylist(audioFileUrl.toString());
 		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec());
 		    //		    luwrain.message("" + audioInfo.startPosMsec());
 		}
