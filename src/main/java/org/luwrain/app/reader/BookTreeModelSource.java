@@ -24,7 +24,6 @@ class BookTreeModelSource implements CachedTreeModelSource
     {
 	NullCheck.notNullItems(sections, "sections");
 	this.sections = sections;
-	//	System.out.println("" + sections.length + " new sections");
     }
 
     @Override public Object getRoot()
@@ -49,7 +48,6 @@ class BookTreeModelSource implements CachedTreeModelSource
 	    if (i < sections.length)
 	    {
 		final Book.Section sect = sections[i];
-		System.out.println("found for" + sect);
 		for(int k = i + 1;k < sections.length;++k)
 		{
 		    if (sections[k].level() <= sect.level())

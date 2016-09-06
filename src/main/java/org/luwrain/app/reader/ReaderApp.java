@@ -133,7 +133,7 @@ public class ReaderApp implements Application, Actions
 			    return true;
 			case ENTER:
 			    if (Base.hasHref(this))
-				return jumpByHref(Base.getHref(this));
+				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
 			    return false;
 			      case BACKSPACE:
 			      return onBackspace(event);
@@ -299,7 +299,7 @@ public class ReaderApp implements Application, Actions
 	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
-	if (!jumpByHref(sect.href()))
+	if (!jumpByHref(sect.href(), luwrain.getAreaVisibleWidth(readerArea)))
 	    return false;
 	//	goToReaderArea();
 	return true;
@@ -334,6 +334,7 @@ public class ReaderApp implements Application, Actions
     @Override public void onNewResult(UrlLoader.Result res)
     {
 	NullCheck.notNull(res, "res");
+	Log.debug("reader", "new result, type is " + res.type().toString());
 	if (res.type() != UrlLoader.Result.Type.OK)
 	    showErrorPage(res); else
 	    onNewDocument(res.book(), res.doc());
@@ -382,11 +383,11 @@ public class ReaderApp implements Application, Actions
 	return base.onPrevDocInNonBook(this);
     }
 
-    private boolean jumpByHref(String href)
+    private boolean jumpByHref(String href, int width)
     {
 	if (base.isInBookMode())
 	{
-	    final Document doc = base.jumpByHrefInBook(href);
+	    final Document doc = base.jumpByHrefInBook(href, width);
 	    if (doc == null)
 	    {
 		luwrain.launchApp("reader", new String[]{href});

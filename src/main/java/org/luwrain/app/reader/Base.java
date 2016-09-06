@@ -88,15 +88,18 @@ class Base implements Listener
 	return true;
     }
 
-    Document jumpByHrefInBook(String href)
+    Document jumpByHrefInBook(String href, int width)
     {
 	NullCheck.notEmpty(href, "href");
+	Log.debug("reader", "opening href in book mode:" + href);
 	if (!isInBookMode() || fetchingInProgress())
 	    return null;
 	final Document doc = book.getDocument(href);
 	if (doc == null)
 	    return null;
+	Log.debug("reader", "book provided new document for this href");
 	this.currentDoc = doc;
+	this.currentDoc.buildView(width);
 	history.add(new HistoryItem(doc));
 	return doc;
     }
@@ -188,14 +191,16 @@ class Base implements Listener
 	if (book != null && this.book != book)
 	{
 	    //Opening new book
+	    Log.debug("reader", "new book detected, opening");
 	    this.book = book;
 	    bookTreeModelSource.setSections(book.getBookSections());
+	    Log.debug("doctree", "" + book.getBookSections().length + " book section provided");
 	    this.currentDoc = book.getStartingDocument();
 	    history.clear();
 	} else
 	this.currentDoc = doc;
 	NullCheck.notNull(currentDoc, "currentDoc");
-	history.add(new HistoryItem(doc));
+	history.add(new HistoryItem(currentDoc));
 	try {
 	    //	    Log.debug("res", currentDoc.getProperty("url"));
 	    if (currentDoc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
