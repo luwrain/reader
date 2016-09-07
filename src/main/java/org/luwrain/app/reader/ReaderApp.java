@@ -299,6 +299,7 @@ public class ReaderApp implements Application, Actions
 	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
+	Log.debug("reader", "click in sections tree to open:" + sect.href());
 	if (!jumpByHref(sect.href(), luwrain.getAreaVisibleWidth(readerArea)))
 	    return false;
 	//	goToReaderArea();
