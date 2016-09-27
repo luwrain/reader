@@ -25,7 +25,7 @@ import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
 
-public class ReaderApp implements Application, Actions
+public class ReaderApp implements Application
 {
     static private final int DOC_MODE_LAYOUT_INDEX = 0;
     static private final int BOOK_MODE_LAYOUT_INDEX = 1;
@@ -80,7 +80,7 @@ public class ReaderApp implements Application, Actions
 	announcement = new Announcement(new DefaultControlEnvironment(luwrain), strings);
 
 
-	final Actions actions = this;
+	//	final Actions actions = this;
 
 	final TreeArea.Params treeParams = new TreeArea.Params();
 	treeParams.environment = new DefaultControlEnvironment(luwrain);
@@ -109,7 +109,7 @@ public class ReaderApp implements Application, Actions
 		    case ACTION:
 			return onTreeAreaAction(event);
 		    case CLOSE:
-			actions.closeApp();
+			closeApp();
 			return true;
 		    default:
 			return super.onEnvironmentEvent(event);
@@ -204,7 +204,7 @@ public class ReaderApp implements Application, Actions
 		    case ACTION:
 			return onNotesAreaAction(event);
 		    case CLOSE:
-			actions.closeApp();
+			closeApp();
 			return true;
 		    default:
 			return super.onEnvironmentEvent(event);
@@ -332,7 +332,7 @@ public class ReaderApp implements Application, Actions
 	return true;
     }
 
-    @Override public void onNewResult(UrlLoader.Result res)
+    void onNewResult(UrlLoader.Result res)
     {
 	NullCheck.notNull(res, "res");
 	Log.debug("reader", "new result, type is " + res.type().toString());
@@ -403,7 +403,7 @@ public class ReaderApp implements Application, Actions
 	return base.jumpByHrefInNonBook(this, href);
     }
 
-    @Override public int getCurrentRowIndex()
+    int getCurrentRowIndex()
     {
 	return 10;//FIXME:
     }
@@ -516,7 +516,7 @@ public class ReaderApp implements Application, Actions
 	return layouts.getCurrentLayout();
     }
 
-    @Override public void closeApp()
+    private void closeApp()
     {
 	luwrain.closeApp();
     }

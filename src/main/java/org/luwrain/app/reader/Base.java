@@ -65,17 +65,17 @@ class Base implements Listener
 	return true;
     }
 
-    boolean open(Actions actions, URL url, String contentType)
+    boolean open(ReaderApp app, URL url, String contentType)
     {
-	NullCheck.notNull(actions, "actions");
+	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
 	if (task != null && !task.isDone())
 	    return false;
-	final int currentRowIndex = actions.getCurrentRowIndex();
+	final int currentRowIndex = app.getCurrentRowIndex();
 	if (!history .isEmpty() && currentRowIndex >= 0)
 	    history.getLast().startingRowIndex = currentRowIndex;
-	task = createTask(actions, url, contentType);
+	task = createTask(app, url, contentType);
 	executor.execute(task);
 	return true;
     }
@@ -119,9 +119,9 @@ class Base implements Listener
 	return doc;
     }
 
-    boolean jumpByHrefInNonBook(Actions actions, String href)
+    boolean jumpByHrefInNonBook(ReaderApp app, String href)
     {
-	NullCheck.notNull(actions, "actions");
+	NullCheck.notNull(app, "app");
 	NullCheck.notEmpty(href, "href");
 	if (isInBookMode() || fetchingInProgress())
 	    return false;
@@ -134,15 +134,15 @@ class Base implements Listener
 	    luwrain.message(strings.badUrl() + href, Luwrain.MESSAGE_ERROR);
 	    return true;
 	}
-	if (!open(actions, url, ""))
+	if (!open(app, url, ""))
 	    return false;
 	luwrain.message(strings.fetching() + " " + href);
 	return true;
     }
 
-    boolean onPrevDocInNonBook(Actions actions)
+    boolean onPrevDocInNonBook(ReaderApp app)
     {
-	NullCheck.notNull(actions, "actions");
+	NullCheck.notNull(app, "app");
 	if (isInBookMode() || fetchingInProgress())
 	    return false;
 	if (history.size() < 2)
@@ -158,16 +158,16 @@ class Base implements Listener
 	    luwrain.message(strings.badUrl() + item.url(), Luwrain.MESSAGE_ERROR);
 	    return true;
 	}
-	if (!open(actions, url, ""))
+	if (!open(app, url, ""))
 	    return false;
 	luwrain.message(strings.fetching() + " " + item.url());
 	return true;
     }
 
 
-    private FutureTask createTask(Actions actions, URL url, String contentType)
+    private FutureTask createTask(ReaderApp app, URL url, String contentType)
     {
-	NullCheck.notNull(actions, "actions");
+	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
     NullCheck.notNull(contentType, "contentType");
 	return new FutureTask(()->{
@@ -175,7 +175,7 @@ class Base implements Listener
 		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
 		    final UrlLoader.Result res = urlLoader.load();
 		if (res != null)
-		    luwrain.runInMainThread(()->actions.onNewResult(res));
+		    luwrain.runInMainThread(()->app.onNewResult(res));
 		}
 		catch(IOException e)
 		{
@@ -271,8 +271,9 @@ class Base implements Listener
 	return true;
     }
 
-    boolean openNew(Actions actions, boolean openUrl, String currentHref)
+    boolean openNew(ReaderApp app, boolean openUrl, String currentHref)
     {
+	NullCheck.notNull(app, "app");
 	if (fetchingInProgress())
 	    return false;
 	if (openUrl)
@@ -292,7 +293,7 @@ class Base implements Listener
 		luwrain.message(strings.badUrl() + res, Luwrain.MESSAGE_ERROR);
 		return true;
 	    }
-	    open(actions, url, "");
+	    open(app, url, "");
 	    return true;
 	}
 	final Path path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
@@ -403,15 +404,16 @@ class Base implements Listener
 	return true;
     }
 
-    boolean jumpByNote(Actions actions, Book.Note note)
+    boolean jumpByNote(ReaderApp app, Book.Note note)
     {
+	NullCheck.notNull(app, "app");
 	NullCheck.notNull(note, "note");
 	if (!isInBookMode())
 	    return false;
 final String href = book.getHrefOfNoteDoc(note);
 if (href.isEmpty())
     return false;
-return jumpByHrefInNonBook(actions, href);
+return jumpByHrefInNonBook(app, href);
     }
 
     @Override public void onNewPlaylist(Playlist playlist)
