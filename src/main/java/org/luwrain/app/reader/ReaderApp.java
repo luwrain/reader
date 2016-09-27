@@ -75,6 +75,20 @@ public class ReaderApp implements Application
 	return true;
     }
 
+    void onNewResult(UrlLoader.Result res)
+    {
+	NullCheck.notNull(res, "res");
+	Log.debug("reader", "new result, type is " + res.type().toString());
+	if (res.type() != UrlLoader.Result.Type.OK)
+	    showErrorPage(res); else
+	    onNewDocument(res.book(), res.doc());
+    }
+
+    int getCurrentRowIndex()
+    {
+	return 10;//FIXME:
+    }
+
     private void createAreas()
     {
 	announcement = new Announcement(new DefaultControlEnvironment(luwrain), strings);
@@ -107,7 +121,7 @@ public class ReaderApp implements Application
 		    switch(event.getCode())
 		    {
 		    case ACTION:
-			return onTreeAreaAction(event);
+			return onAction(event);
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -122,6 +136,7 @@ public class ReaderApp implements Application
 	    };
 
 	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain), null){
+
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -134,19 +149,20 @@ public class ReaderApp implements Application
 			case ENTER:
 			    if (Base.hasHref(this))
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
-			    return false;
-			      case BACKSPACE:
-			      return onBackspace(event);
+			    return Actions.onPlayAudio(base, readerArea);
+			case BACKSPACE:
+			    return onBackspace(event);
 			}
 		    return super.onKeyboardEvent(event);
 		}
+
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
 		    case ACTION:
-			return onReaderAreaAction(event);
+			return onAction(event);
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -156,6 +172,7 @@ public class ReaderApp implements Application
 			return super.onEnvironmentEvent(event);
 		    }
 		}
+
 		@Override public Action[] getAreaActions()
 		{
 		    return Actions.getReaderAreaActions(strings, base.hasDocument());
@@ -202,7 +219,7 @@ public class ReaderApp implements Application
 		    switch(event.getCode())
 		    {
 		    case ACTION:
-			return onNotesAreaAction(event);
+			return onAction(event);
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -243,13 +260,13 @@ public class ReaderApp implements Application
 	    };
     }
 
-    private boolean onReaderAreaAction(EnvironmentEvent event)
+    private boolean onAction(EnvironmentEvent event)
     {
 	NullCheck.notNull(event, "event");
 	if (ActionEvent.isAction(event, "open-url"))
-	return base.openNew(this, true, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
+	    return base.openNew(this, true, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-file"))
-	return base.openNew(this, false, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
+	    return base.openNew(this, false, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 	if (ActionEvent.isAction(event, "doc-mode"))
@@ -262,11 +279,8 @@ public class ReaderApp implements Application
 	    return base.anotherCharset();
 	if (ActionEvent.isAction(event, "play-audio"))
 	    return Actions.onPlayAudio(base, readerArea);
-	return false;
-    }
-
-    private boolean onTreeAreaAction(EnvironmentEvent event)
-    {
+	if (ActionEvent.isAction(event, "add-note"))
+	    return addNote();
 	return false;
     }
 
@@ -283,13 +297,6 @@ public class ReaderApp implements Application
 	return true;
     }
 
-    private boolean onNotesAreaAction(EnvironmentEvent event)
-    {
-	if (ActionEvent.isAction(event, "add-note"))
-	    return addNote();
-	return false;
-    }
-
     private boolean onNotesClick(Object item)
     {
 	NullCheck.notNull(item, "item");
@@ -298,15 +305,6 @@ public class ReaderApp implements Application
 	final Book.Note note = (Book.Note)item;
 	base.jumpByNote(this, note);
 	return true;
-    }
-
-    void onNewResult(UrlLoader.Result res)
-    {
-	NullCheck.notNull(res, "res");
-	Log.debug("reader", "new result, type is " + res.type().toString());
-	if (res.type() != UrlLoader.Result.Type.OK)
-	    showErrorPage(res); else
-	    onNewDocument(res.book(), res.doc());
     }
 
     private void onNewDocument(Book book, Document doc)
@@ -361,10 +359,6 @@ public class ReaderApp implements Application
 	return base.jumpByHrefInNonBook(this, href);
     }
 
-    int getCurrentRowIndex()
-    {
-	return 10;//FIXME:
-    }
 
     private boolean showDocProperties()
     {
@@ -430,6 +424,31 @@ public class ReaderApp implements Application
 	return true;
     }
 
+    private void closeApp()
+    {
+	luwrain.closeApp();
+    }
+
+    private void announceNewDoc(Document doc)
+    {
+	NullCheck.notNull(doc, "doc");
+	luwrain.silence();
+	luwrain.playSound(Sounds.INTRO_REGULAR);
+	luwrain.say(doc.getTitle());
+    }
+
+private void openStartFrom()
+{
+    try {
+	if (!startingUrl.isEmpty())
+	    base.open(this, new  URL(startingUrl), startingContentType);
+    }
+    catch(MalformedURLException e)
+    {
+	luwrain.crash(e);//FIXME:
+    }
+}
+
     private boolean goToTreeArea()
     {
 	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
@@ -463,30 +482,4 @@ public class ReaderApp implements Application
     {
 	return layouts.getCurrentLayout();
     }
-
-    private void closeApp()
-    {
-	luwrain.closeApp();
-    }
-
-    private void announceNewDoc(Document doc)
-    {
-	NullCheck.notNull(doc, "doc");
-	luwrain.silence();
-	luwrain.playSound(Sounds.INTRO_REGULAR);
-	luwrain.say(doc.getTitle());
-    }
-
-private void openStartFrom()
-{
-    try {
-	if (!startingUrl.isEmpty())
-	    base.open(this, new  URL(startingUrl), startingContentType);
-    }
-    catch(MalformedURLException e)
-    {
-	luwrain.crash(e);//FIXME:
-    }
-
-}
 }
