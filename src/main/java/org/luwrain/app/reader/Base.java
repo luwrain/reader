@@ -29,7 +29,7 @@ import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
 import org.luwrain.player.*;
 
-class Base implements Listener
+class Base
 {
     static private final String DEFAULT_ENCODING = "UTF-8";
 
@@ -37,9 +37,7 @@ class Base implements Listener
     private FutureTask task;
     private Luwrain luwrain;
     private Strings strings;
-    private Player player;
-    private AudioFollowingHandler audioFollowingHandler = null;
-    private Playlist currentPlaylist = null;
+    private AudioPlaying audioPlaying = null;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final FixedListModel notesModel = new FixedListModel();
@@ -56,10 +54,12 @@ class Base implements Listener
 	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.strings = strings;
-	player = (Player)luwrain.getSharedObject(Player.SHARED_OBJECT_NAME);
-	if (player != null)
-	    player.addListener(this); else
-	    Log.warning("reader", "player object is null, no audio listening is available");
+	audioPlaying = new AudioPlaying();
+	if (!audioPlaying.init(luwrain))
+	{
+	    Log.warning("reader", "unable to initialize audio playing (likely no system player), no audio listening is available");
+	    audioPlaying = null;
+	}
 	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Book.Section[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
 	return true;
@@ -354,38 +354,7 @@ class Base implements Listener
 
     boolean playAudio(DoctreeArea area, String[] ids)
     {
-	NullCheck.notNull(area, "area");
-	NullCheck.notNullItems(ids, "ids");
-	if (currentDoc == null || currentDoc.getUrl() == null)
-	{
-	    Log.debug("reader", "no current document or no associated URL to play audio by IDs");
-	    return false;
-	}
-	    final URL url = currentDoc.getUrl();
-	    for(String id: ids)
-	    {
-		final AudioInfo audioInfo = book.findAudioForId(url.toString() + "#" + id);
-		if (audioInfo != null)
-		{
-		    Log.debug("reader", "audio info found:" + audioInfo.src() + " from " + audioInfo.beginPosMsec());
-		    URL audioFileUrl = null;
-		    try {
-			audioFileUrl = new URL(url, audioInfo.src());
-		    }
-		    catch(MalformedURLException e)
-		    {
-			Log.error("reader", "unable to prepare the URL for player" + e.getMessage());
-			e.printStackTrace();
-			continue;
-		    }
-		    audioFollowingHandler = new AudioFollowingHandler(area);
-		    currentPlaylist = new SingleLocalFilePlaylist(audioFileUrl.toString());
-		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec());
-		    //		    luwrain.message("" + audioInfo.startPosMsec());
-		}
-		break;
-	    }
-	    return true;
+	return false;
     }
 
     boolean addNote()
@@ -414,74 +383,6 @@ final String href = book.getHrefOfNoteDoc(note);
 if (href.isEmpty())
     return false;
 return jumpByHrefInNonBook(app, href);
-    }
-
-    @Override public void onNewPlaylist(Playlist playlist)
-    {
-    }
-
-    @Override public void onNewTrack(Playlist playlist, int trackNum)
-    {
-    }
-
-    @Override public void onTrackTime(Playlist playlist, int trackNum,  long msec)
-    {
-	if (!isInBookMode())
-	    return;
-	if (currentDoc == null)
-	{
-	    Log.warning("reader", "player listening notification with currentDoc equal to null");
-	    return;
-	}
-	if (currentDoc.getUrl() == null)
-	{
-	    Log.warning("reader", "player listening notification with the URL of the current document equal to null");
-	    return;
-	}
-	    if (playlist != currentPlaylist)
-		return;
-	if (playlist.getPlaylistItems() == null || trackNum >= playlist.getPlaylistItems().length)
-	    return;
-	final String track = playlist.getPlaylistItems()[trackNum];
-	final String link = book.findTextForAudio(track, msec);
-	if (link == null)
-	{
-	    System.out.println("no link");
-	    return;
-	}
-	System.out.println("link " + link);
-	URL url = null;
-	URL docUrl = null;
-	try {
-	    url = new URL(link);
-	    docUrl = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile());
-	}
-	catch(MalformedURLException e)
-	{
-	    e.printStackTrace();
-	    return;
-	}
-	if (!currentDoc.getUrl().equals(docUrl))
-	    return;
-	if (url.getRef().isEmpty())
-	{
-	    Log.warning("reader", "the book provides the link to corresponding text with an empty \'id\' on audio listening");
-	    return;
-	}
-	final AudioFollowingVisitor visitor = new AudioFollowingVisitor(url.getRef());
-	Visitor.walk(currentDoc.getRoot(), visitor);
-	final Run resultingRun = visitor.result();
-	if (resultingRun == null)
-	    return;
-	if (audioFollowingHandler.prevRun == resultingRun)
-	    return;
-	//	luwrain.message(resultingRun.toString());
-	luwrain.runInMainThread(()->audioFollowingHandler.area.findRun(resultingRun));
-	audioFollowingHandler.prevRun = resultingRun;
-    }
-
-    @Override public void onPlayerStop()
-    {
     }
 
     boolean hasDocument()
