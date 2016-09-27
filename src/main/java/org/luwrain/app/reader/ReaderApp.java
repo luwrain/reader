@@ -117,7 +117,7 @@ public class ReaderApp implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return getTreeAreaActions();
+		    return Actions.getTreeAreaActions(strings, base.hasDocument());
 		}
 	    };
 
@@ -158,7 +158,7 @@ public class ReaderApp implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return getReaderAreaActions();
+		    return Actions.getReaderAreaActions(strings, base.hasDocument());
 		}
 		@Override public String getAreaName()
 		{
@@ -172,7 +172,7 @@ public class ReaderApp implements Application
 		}
 		@Override protected String noContentStr()
 		{
-		    return fetchingInProgress()?strings.noContentFetching():strings.noContent();
+		    return base.fetchingInProgress()?strings.noContentFetching():strings.noContent();
 		}
 	    };
 
@@ -212,7 +212,7 @@ public class ReaderApp implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return getNotesAreaActions();
+		    return Actions.getNotesAreaActions(strings, base.hasDocument());
 		}
 	    };
 
@@ -243,31 +243,13 @@ public class ReaderApp implements Application
 	    };
     }
 
-    private Action[] getReaderAreaActions()
-    {
-	final LinkedList<Action> res = new LinkedList<Action>();
-	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-	if (base.hasDocument())
-	{
-	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
-	    res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-	    res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-	    res.add(new Action("book-mode", strings.actionBookMode()));
-	    res.add(new Action("doc-mode", strings.actionDocMode()));
-	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
-	    res.add(new Action("info", strings.actionInfo(), new KeyboardEvent(KeyboardEvent.Special.F8)));
-	}
-	return res.toArray(new Action[res.size()]);
-    }
-
     private boolean onReaderAreaAction(EnvironmentEvent event)
     {
 	NullCheck.notNull(event, "event");
 	if (ActionEvent.isAction(event, "open-url"))
-	    return openNew(true);
+	return base.openNew(this, true, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-file"))
-	    return openNew(false);
+	return base.openNew(this, false, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 	if (ActionEvent.isAction(event, "doc-mode"))
@@ -279,13 +261,8 @@ public class ReaderApp implements Application
 	if (ActionEvent.isAction(event, "another-charset"))
 	    return base.anotherCharset();
 	if (ActionEvent.isAction(event, "play-audio"))
-	    return playAudio();
+	    return Actions.onPlayAudio(base, readerArea);
 	return false;
-    }
-
-    private Action[] getTreeAreaActions()
-    {
-	return getReaderAreaActions();
     }
 
     private boolean onTreeAreaAction(EnvironmentEvent event)
@@ -304,15 +281,6 @@ public class ReaderApp implements Application
 	    return false;
 	//	goToReaderArea();
 	return true;
-    }
-
-    private Action[] getNotesAreaActions()
-    {
-	final LinkedList<Action> res = new LinkedList<Action>();
-	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
-	for(Action a: getReaderAreaActions())
-	    res.add(a);
-	return res.toArray(new Action[res.size()]);
     }
 
     private boolean onNotesAreaAction(EnvironmentEvent event)
@@ -357,16 +325,6 @@ public class ReaderApp implements Application
 	announceNewDoc(newDoc);
     }
 
-    private boolean playAudio()
-    {
-	if (!base.isInBookMode())
-	    return false;
-	final String[] ids = readerArea.getHtmlIds();
-	if (ids == null || ids.length < 1)
-	    return false;
-	return base.playAudio(readerArea, ids);
-    }
-
     private boolean onBackspace(KeyboardEvent event)
     {
 	NullCheck.notNull(event, "event");
@@ -406,16 +364,6 @@ public class ReaderApp implements Application
     int getCurrentRowIndex()
     {
 	return 10;//FIXME:
-    }
-
-    private boolean openNew(boolean url)
-    {
-	return base.openNew(this, url, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
-    }
-
-    private boolean fetchingInProgress()
-    {
-	return base.fetchingInProgress();
     }
 
     private boolean showDocProperties()
