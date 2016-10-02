@@ -17,9 +17,12 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.net.*;
+import javax.activation.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
 
@@ -42,6 +45,59 @@ interface Actions
 	    res.add(new Action("info", strings.actionInfo(), new KeyboardEvent(KeyboardEvent.Special.F8)));
 	}
 	return res.toArray(new Action[res.size()]);
+    }
+
+    static boolean onChangeFormat(ReaderApp app, Luwrain luwrain,
+				  Strings strings, Base base)
+    {
+	NullCheck.notNull(app, "app");
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(base, "base");
+	if (base.fetchingInProgress())
+	    return false;
+	final String[] formats;
+	try {
+	    formats = (String[])luwrain.getSharedObject(org.luwrain.doctree.Extension.FORMATS_OBJECT_NAME);
+	}
+	catch(Exception e)
+	{
+	    Log.error("reader", "no formats shared object:" + e.getClass().getName() + ":" + e.getMessage());
+	    e.printStackTrace();
+	    return false;
+	}
+	final URL url = base.getCurrentUrl();
+	if (url == null)
+	return false;
+	final String contentType = base.getCurrentContentType();
+	final String chosen = (String)Popups.fixedList(luwrain, strings.changeFormatPopupName(), formats);
+	if (chosen == null || chosen.isEmpty())
+	    return true;
+	if (contentType.isEmpty())
+	{
+	    base.open(app, url, chosen);
+	    return true;
+	}
+	try {
+	    final MimeType mime = new MimeType(contentType);
+	    final String charset = mime.getParameter("charset");
+	    if (charset == null || charset.isEmpty())
+	    {
+		base.open(app, url, chosen);
+		return true;
+	    }
+	    final MimeType newMime = new MimeType(chosen);
+	    mime.setParameter("charset", charset);
+	    base.open(app, url, newMime.toString());
+	    return true;
+	}
+	catch(MimeTypeParseException e)
+	{
+	    Log.warning("reader", "unable to parse current content type \'" + contentType + "\':" + e.getMessage());
+	    e.printStackTrace();
+	    base.open(app, url, chosen);
+return true;
+	}
     }
 
     static Action[] getTreeAreaActions(Strings strings, boolean hasDocument)

@@ -62,4 +62,5 @@ public interface Strings
     String undeterminedContentType();
     String unknownHost(String hostName );
     String unrecognizedFormat(String contentType);
+    String changeFormatPopupName();
 }

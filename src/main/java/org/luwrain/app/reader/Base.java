@@ -88,6 +88,27 @@ class Base
 	return true;
     }
 
+    boolean jumpByHrefInNonBook(ReaderApp app, String href)
+    {
+	NullCheck.notNull(app, "app");
+	NullCheck.notEmpty(href, "href");
+	if (isInBookMode() || fetchingInProgress())
+	    return false;
+	final URL url;
+	try {
+	    url = new URL(href);
+	}
+	catch(MalformedURLException e)
+	{
+	    luwrain.message(strings.badUrl() + href, Luwrain.MESSAGE_ERROR);
+	    return true;
+	}
+	if (!open(app, url, ""))
+	    return false;
+	luwrain.message(strings.fetching() + " " + href);
+	return true;
+    }
+
     Document jumpByHrefInBook(String href, int width)
     {
 	NullCheck.notEmpty(href, "href");
@@ -119,27 +140,6 @@ class Base
 	return doc;
     }
 
-    boolean jumpByHrefInNonBook(ReaderApp app, String href)
-    {
-	NullCheck.notNull(app, "app");
-	NullCheck.notEmpty(href, "href");
-	if (isInBookMode() || fetchingInProgress())
-	    return false;
-	URL url = null;
-	try {
-	    url = new URL(href);
-	}
-	catch(MalformedURLException e)
-	{
-	    luwrain.message(strings.badUrl() + href, Luwrain.MESSAGE_ERROR);
-	    return true;
-	}
-	if (!open(app, url, ""))
-	    return false;
-	luwrain.message(strings.fetching() + " " + href);
-	return true;
-    }
-
     boolean onPrevDocInNonBook(ReaderApp app)
     {
 	NullCheck.notNull(app, "app");
@@ -162,26 +162,6 @@ class Base
 	    return false;
 	luwrain.message(strings.fetching() + " " + item.url());
 	return true;
-    }
-
-
-    private FutureTask createTask(ReaderApp app, URL url, String contentType)
-    {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(url, "url");
-    NullCheck.notNull(contentType, "contentType");
-	return new FutureTask(()->{
-		try {
-		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
-		    final UrlLoader.Result res = urlLoader.load();
-		if (res != null)
-		    luwrain.runInMainThread(()->app.onNewResult(res));
-		}
-		catch(IOException e)
-		{
-		    luwrain.crash(e);
-		}
-	}, null);
     }
 
     //Returns the document to be shown in readerArea
@@ -309,42 +289,23 @@ class Base
 	return false;
     }
 
-    private int chooseFormat()
+    private FutureTask createTask(ReaderApp app, URL url, String contentType)
     {
-	/*
-	  final String[] formats = FormatsList.getSupportedFormatsList();
-	final String[] formatsStr = new String[formats.length];
-	for(int i = 0;i < formats.length;++i)
-	{
-	    final int pos = formats[i].indexOf(":");
-	    if (pos < 0 || pos + 1 >= formats[i].length())
-	    {
-		formatsStr[i] = formats[i];
-		continue;
-	    }
-	    formatsStr[i] = formats[i].substring(pos + 1);
-	}
-	final Object selected = Popups.fixedList(luwrain, "Выберите формат для просмотра:", formatsStr, 0);//FIXME:
-	if (selected == null)
-	    return Factory.UNRECOGNIZED;
-	String format = null;
-	for(int i = 0;i < formatsStr.length;++i)
-	    if (selected == formatsStr[i])
-		format = formats[i];
-	if (format == null)
-	    return Factory.UNRECOGNIZED;
-	final int pos = format.indexOf(":");
-	if (pos < 0 || pos + 1>= format.length())
-	    return Factory.UNRECOGNIZED;
-	luwrain.message(format.substring(0, pos));
-	return DocInfo.formatByStr(format.substring(0, pos));
-	*/
-	return 0;
-    }
-
-    boolean anotherFormat()
-    {
-	return true;
+	NullCheck.notNull(app, "app");
+	NullCheck.notNull(url, "url");
+    NullCheck.notNull(contentType, "contentType");
+	return new FutureTask(()->{
+		try {
+		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
+		    final UrlLoader.Result res = urlLoader.load();
+		if (res != null)
+		    luwrain.runInMainThread(()->app.onNewResult(res));
+		}
+		catch(IOException e)
+		{
+		    luwrain.crash(e);
+		}
+	}, null);
     }
 
     boolean anotherCharset()
@@ -403,6 +364,19 @@ return jumpByHrefInNonBook(app, href);
     boolean isInBookMode()
     {
 	return book != null;
+    }
+
+    String getCurrentContentType()
+    {
+	if (currentDoc == null)
+	    return "";
+	final String res = currentDoc.getProperty("contenttype");
+	return res != null?res:"";
+    }
+
+    URL getCurrentUrl()
+    {
+	return currentDoc != null?currentDoc.getUrl():null;
     }
 
     TreeArea.Model getTreeModel()

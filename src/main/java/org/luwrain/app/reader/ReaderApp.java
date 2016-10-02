@@ -21,6 +21,7 @@ import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
@@ -79,6 +80,7 @@ public class ReaderApp implements Application
     {
 	NullCheck.notNull(res, "res");
 	Log.debug("reader", "new result, type is " + res.type().toString());
+	luwrain.onAreaNewBackgroundSound(readerArea);
 	if (res.type() != UrlLoader.Result.Type.OK)
 	    showErrorPage(res); else
 	    onNewDocument(res.book(), res.doc());
@@ -187,6 +189,22 @@ public class ReaderApp implements Application
 		    NullCheck.notNull(it, "it");
 		    announcement.announce(it, briefAnnouncement);
 		}
+		@Override public boolean onAreaQuery(AreaQuery query)
+		{
+		    NullCheck.notNull(query, "query");
+		    switch(query.getQueryCode())
+		    {
+		    case AreaQuery.BACKGROUND_SOUND:
+if (base.fetchingInProgress())
+			{
+			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
+			return true;
+			}
+			return false;
+		    default:
+			return super.onAreaQuery(query);
+		    }
+		}
 		@Override protected String noContentStr()
 		{
 		    return base.fetchingInProgress()?strings.noContentFetching():strings.noContent();
@@ -274,7 +292,7 @@ public class ReaderApp implements Application
 	if (ActionEvent.isAction(event, "book-mode"))
 	    return bookMode();
 	if (ActionEvent.isAction(event, "change-format"))
-	    return base.anotherFormat();
+	    return Actions.onChangeFormat(this, luwrain, strings, base);
 	if (ActionEvent.isAction(event, "another-charset"))
 	    return base.anotherCharset();
 	if (ActionEvent.isAction(event, "play-audio"))
@@ -337,7 +355,12 @@ public class ReaderApp implements Application
 	    announceNewDoc(doc);
 	    return true;
 	}
-	return base.onPrevDocInNonBook(this);
+	if (base.onPrevDocInNonBook(this))
+	{
+	    luwrain.onAreaNewBackgroundSound(readerArea);
+	    return true;
+	}
+	return false;
     }
 
     private boolean jumpByHref(String href, int width)
@@ -356,9 +379,13 @@ public class ReaderApp implements Application
 	    announceNewDoc(doc);
 	    return true;
 	}
-	return base.jumpByHrefInNonBook(this, href);
+	if (base.jumpByHrefInNonBook(this, href))
+	{
+	    luwrain.onAreaNewBackgroundSound(readerArea);
+	    return true;
+	}
+	return false;
     }
-
 
     private boolean showDocProperties()
     {
