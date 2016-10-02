@@ -21,10 +21,12 @@ public interface Strings
     static final String NAME = "luwrain.reader";
 
     String actionAddNote();
-    String actionBookMode();
+    String actionShowNotes();
+    String actionHideNotes();
     String actionChangeCharset();
     String actionChangeFormat();
-    String actionDocMode();
+    String actionShowSectionsTree();
+    String actionHideSectionsTree();
     String actionInfo(); 
     String actionOpenFile();
     String actionOpenInNarrator();

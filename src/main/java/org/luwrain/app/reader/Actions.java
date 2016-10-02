@@ -31,22 +31,53 @@ class Actions
 {
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
 
-    static Action[] getReaderAreaActions(Strings strings, boolean hasDocument)
+    static Action[] getReaderAreaActions(Strings strings, boolean hasDocument,
+					 ReaderApp.Modes mode, boolean bookMode)
     {
 	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
-	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 	if (hasDocument)
 	{
+	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
 	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
+	    if (!bookMode)
+	    {
 	    res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
 	    res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-	    res.add(new Action("book-mode", strings.actionBookMode()));
-	    res.add(new Action("doc-mode", strings.actionDocMode()));
-	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
-	    res.add(new Action("info", strings.actionInfo(), new KeyboardEvent(KeyboardEvent.Special.F8)));
+	    }
+	    switch(mode)
+	    {
+	    case DOC:
+	    res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+	    break;
+	    case DOC_NOTES:
+		    res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		    break;
+	    case BOOK:
+	    res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+	    res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+	    break;
+	    case BOOK_TREE_ONLY:
+	    res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+	    res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+	    break;
+	    case BOOK_NOTES_ONLY:
+	    res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		    res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		    break;
+	    case BOOK_TREE_NOTES:
+	    res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		    res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		    break;
+	    }
 	}
+
+	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F5)));
+	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F6)));
+
+
+
 	return res.toArray(new Action[res.size()]);
     }
 
@@ -134,18 +165,22 @@ class Actions
 	}
     }
 
-    static Action[] getTreeAreaActions(Strings strings, boolean hasDocument)
+    static Action[] getTreeAreaActions(Strings strings, boolean hasDocument,
+				       ReaderApp.Modes mode, boolean bookMode)
     {
 	NullCheck.notNull(strings, "strings");
-	return getReaderAreaActions(strings, hasDocument);
+	NullCheck.notNull(mode, "mode");
+	return getReaderAreaActions(strings, hasDocument, mode, bookMode);
     }
 
-    static Action[] getNotesAreaActions(Strings strings, boolean hasDocument)
+    static Action[] getNotesAreaActions(Strings strings, boolean hasDocument,
+					ReaderApp.Modes mode, boolean bookMode)
     {
 	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
 	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
-	for(Action a: getReaderAreaActions(strings, hasDocument))
+	for(Action a: getReaderAreaActions(strings, hasDocument, mode, bookMode))
 	    res.add(a);
 	return res.toArray(new Action[res.size()]);
     }

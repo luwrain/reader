@@ -28,9 +28,13 @@ import org.luwrain.doctree.loading.*;
 
 public class ReaderApp implements Application
 {
-    static private final int DOC_MODE_LAYOUT_INDEX = 0;
-    static private final int BOOK_MODE_LAYOUT_INDEX = 1;
-    static private final int PROPERTIES_MODE_LAYOUT_INDEX = 2;
+    enum Modes {DOC, DOC_NOTES, BOOK, BOOK_TREE_ONLY, BOOK_NOTES_ONLY, BOOK_TREE_NOTES};
+
+    static private final int READER_ONLY_LAYOUT_INDEX = 0;
+    static private final int READER_TREE_LAYOUT_INDEX = 1;
+    static private final int READER_NOTES_LAYOUT_INDEX = 2;
+    static private final int READER_TREE_NOTES_LAYOUT_INDEX = 3;
+    static private final int PROPERTIES_LAYOUT_INDEX = 4;
 
     private Luwrain luwrain;
     private final Base base = new Base();
@@ -43,6 +47,7 @@ public class ReaderApp implements Application
     private Announcement announcement;
     private String startingUrl;
     private String startingContentType;
+    private Modes mode = Modes.DOC;
 
     public ReaderApp()
     {
@@ -70,6 +75,8 @@ public class ReaderApp implements Application
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(readerArea));
+	layouts.add(new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea));
+	layouts.add(new AreaLayout(AreaLayout.TOP_BOTTOM, readerArea, notesArea));
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
 	layouts.add(new AreaLayout(propertiesArea));
 	openStartFrom();
@@ -133,7 +140,7 @@ public class ReaderApp implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getTreeAreaActions(strings, base.hasDocument());
+		    return Actions.getTreeAreaActions(strings, base.hasDocument(), mode, base.isInBookMode());
 		}
 	    };
 
@@ -146,8 +153,20 @@ public class ReaderApp implements Application
 			switch(event.getSpecial())
 			{
 			case TAB:
-			    goToNotesArea();
-			    return true;
+			    switch(mode)
+			    {
+			    case DOC:
+			    case BOOK:
+				return false;
+			    case DOC_NOTES:
+			    case BOOK_NOTES_ONLY:
+			    case BOOK_TREE_NOTES:
+				return goToNotesArea();
+			    case BOOK_TREE_ONLY:
+return goToTreeArea();
+			    default:
+			    return false;
+			    }
 			case ENTER:
 			    if (Base.hasHref(this))
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
@@ -177,7 +196,7 @@ public class ReaderApp implements Application
 
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getReaderAreaActions(strings, base.hasDocument());
+		    return Actions.getReaderAreaActions(strings, base.hasDocument(), mode, base.isInBookMode());
 		}
 		@Override public String getAreaName()
 		{
@@ -247,7 +266,7 @@ if (base.fetchingInProgress())
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getNotesAreaActions(strings, base.hasDocument());
+		    return Actions.getNotesAreaActions(strings, base.hasDocument(), mode, base.isInBookMode());
 		}
 	    };
 
@@ -287,10 +306,12 @@ if (base.fetchingInProgress())
 	    return base.openNew(this, false, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
+	/*
 	if (ActionEvent.isAction(event, "doc-mode"))
 	    return docMode();
 	if (ActionEvent.isAction(event, "book-mode"))
 	    return bookMode();
+	*/
 	if (ActionEvent.isAction(event, "change-format"))
 	    return Actions.onChangeFormat(this, luwrain, strings, base);
 	if (ActionEvent.isAction(event, "change-charset"))
@@ -331,11 +352,8 @@ if (base.fetchingInProgress())
 	    return;
 	final Document newDoc = base.acceptNewSuccessfulResult(book, doc, getSuitableWidth());
 	if (base.isInBookMode())
-	{
-	    bookMode(); 
 	    treeArea.refresh();
-	} else
-	    docMode();
+	updateMode();
 	readerArea.setDocument(newDoc);
 	goToReaderArea();
 	announceNewDoc(newDoc);
@@ -349,7 +367,7 @@ if (base.fetchingInProgress())
 	    final Document doc = base.onPrevDocInBook();
 	    if (doc == null)
 		return false;
-	    bookMode(); 
+	    updateMode();
 	    readerArea.setDocument(doc);
 	    goToReaderArea();
 	    announceNewDoc(doc);
@@ -358,6 +376,7 @@ if (base.fetchingInProgress())
 	if (base.onPrevDocInNonBook(this))
 	{
 	    luwrain.onAreaNewBackgroundSound(readerArea);
+	    updateMode();
 	    return true;
 	}
 	return false;
@@ -373,8 +392,8 @@ if (base.fetchingInProgress())
 		luwrain.launchApp("reader", new String[]{href});
 		return true;
 	    }
-	    bookMode(); 
 	    readerArea.setDocument(doc);
+	    updateMode();
 	    goToReaderArea();
 	    announceNewDoc(doc);
 	    return true;
@@ -382,6 +401,7 @@ if (base.fetchingInProgress())
 	if (base.jumpByHrefInNonBook(this, href))
 	{
 	    luwrain.onAreaNewBackgroundSound(readerArea);
+	    updateMode();
 	    return true;
 	}
 	return false;
@@ -392,7 +412,7 @@ if (base.fetchingInProgress())
 	propertiesArea.clear();
 	if (!base.fillDocProperties(propertiesArea))
 	    return false;
-	layouts.show(PROPERTIES_MODE_LAYOUT_INDEX);
+	layouts.show(PROPERTIES_LAYOUT_INDEX);
 	luwrain.announceActiveArea();
 	return true;
     }
@@ -404,10 +424,63 @@ if (base.fetchingInProgress())
 	base.prepareErrorText(res, propertiesArea);
 	//	luwrain.silence();
 	//	luwrain.playSound(Sounds.INTRO_REGULAR);
-	layouts.show(PROPERTIES_MODE_LAYOUT_INDEX);
+	layouts.show(PROPERTIES_LAYOUT_INDEX);
 	luwrain.message(strings.errorAnnouncement(), Luwrain.MESSAGE_ERROR);
     }
 
+    private void updateMode()
+    {
+	switch(mode)
+	{
+	case DOC:
+	    if (base.isInBookMode())
+		switchMode(Modes.BOOK_TREE_ONLY);
+	    return;
+	case DOC_NOTES:
+	    if (base.isInBookMode())
+		switchMode(Modes.BOOK_TREE_NOTES);
+	    return;
+	case BOOK:
+	case BOOK_TREE_ONLY:
+	case BOOK_NOTES_ONLY:
+	case BOOK_TREE_NOTES:
+	    if (!base.isInBookMode())
+		switchMode(Modes.DOC);
+	    return;
+	}
+    }
+
+    //Doesn't check if the base in book mode
+    private void switchMode(Modes newMode)
+    {
+	NullCheck.notNull(newMode, "newMode");
+	switch(newMode)
+	{
+	case DOC:
+	    layouts.show(READER_ONLY_LAYOUT_INDEX);
+	    break;
+	case DOC_NOTES:
+	    layouts.show(READER_NOTES_LAYOUT_INDEX);
+	    break;
+	case BOOK:
+	    layouts.show(READER_ONLY_LAYOUT_INDEX);
+	    break;
+	case BOOK_TREE_ONLY:
+	    layouts.show(READER_TREE_LAYOUT_INDEX);
+	    break;
+	case BOOK_NOTES_ONLY:
+	    layouts.show(READER_NOTES_LAYOUT_INDEX);
+	    break;
+	case BOOK_TREE_NOTES:
+	    layouts.show(READER_TREE_NOTES_LAYOUT_INDEX);
+	    break;
+	default:
+	    return;
+	}
+	mode = newMode;
+    }
+
+    /*
     private boolean docMode()
     {
 	layouts.show(DOC_MODE_LAYOUT_INDEX);
@@ -419,12 +492,13 @@ if (base.fetchingInProgress())
 	layouts.show(BOOK_MODE_LAYOUT_INDEX);
 	return true;
     }
+    */
 
     private boolean closePropertiesArea()
     {
 	if (!base.hasDocument())
 	    return false;
-	  layouts.show(DOC_MODE_LAYOUT_INDEX);
+	switchMode(mode);
 	  luwrain.announceActiveArea();
 	  return true;
     }
@@ -478,24 +552,30 @@ private void openStartFrom()
 
     private boolean goToTreeArea()
     {
+	/*
 	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
 	    return false;
+	*/
 	luwrain.setActiveArea(treeArea);
 	return true;
     }
 
     private boolean goToReaderArea()
     {
+	/*
 	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
 	    return false;
+	*/
 	luwrain.setActiveArea(readerArea);
 	return true;
     }
 
     private boolean goToNotesArea()
     {
+	/*
 	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
 	    return false;
+	*/
 	luwrain.setActiveArea(notesArea);
 	return true;
     }
