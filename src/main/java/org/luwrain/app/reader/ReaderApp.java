@@ -293,8 +293,8 @@ if (base.fetchingInProgress())
 	    return bookMode();
 	if (ActionEvent.isAction(event, "change-format"))
 	    return Actions.onChangeFormat(this, luwrain, strings, base);
-	if (ActionEvent.isAction(event, "another-charset"))
-	    return base.anotherCharset();
+	if (ActionEvent.isAction(event, "change-charset"))
+	    return Actions.onChangeCharset(this, luwrain, strings, base);
 	if (ActionEvent.isAction(event, "play-audio"))
 	    return Actions.onPlayAudio(base, readerArea);
 	if (ActionEvent.isAction(event, "add-note"))

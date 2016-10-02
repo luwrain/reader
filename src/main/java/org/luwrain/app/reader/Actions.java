@@ -17,6 +17,7 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.nio.charset.*;
 import java.net.*;
 import javax.activation.*;
 
@@ -26,8 +27,10 @@ import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
 
-interface Actions
+class Actions
 {
+    static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
+
     static Action[] getReaderAreaActions(Strings strings, boolean hasDocument)
     {
 	NullCheck.notNull(strings, "strings");
@@ -68,7 +71,7 @@ interface Actions
 	}
 	final URL url = base.getCurrentUrl();
 	if (url == null)
-	return false;
+	    return false;
 	final String contentType = base.getCurrentContentType();
 	final String chosen = (String)Popups.fixedList(luwrain, strings.changeFormatPopupName(), formats);
 	if (chosen == null || chosen.isEmpty())
@@ -87,7 +90,7 @@ interface Actions
 		return true;
 	    }
 	    final MimeType newMime = new MimeType(chosen);
-	    mime.setParameter("charset", charset);
+	    newMime.setParameter("charset", charset);
 	    base.open(app, url, newMime.toString());
 	    return true;
 	}
@@ -96,7 +99,38 @@ interface Actions
 	    Log.warning("reader", "unable to parse current content type \'" + contentType + "\':" + e.getMessage());
 	    e.printStackTrace();
 	    base.open(app, url, chosen);
-return true;
+	    return true;
+	}
+    }
+
+    static boolean onChangeCharset(ReaderApp app, Luwrain luwrain,
+				   Strings strings, Base base)
+    {
+	NullCheck.notNull(app, "app");
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(base, "base");
+	if (base.fetchingInProgress())
+	    return false;
+	final URL url = base.getCurrentUrl();
+	if (url == null)
+	    return false;
+	final String contentType = base.getCurrentContentType();
+	if (contentType.isEmpty())
+	    return false;
+	final String chosen = (String)Popups.fixedList(luwrain, strings.changeCharsetPopupName(), charsets(luwrain.getRegistry()));
+	if (chosen == null || chosen.isEmpty())
+	    return true;
+	try {
+	    final MimeType newMime = new MimeType(contentType);
+	    newMime.setParameter("charset", chosen);
+	    base.open(app, url, newMime.toString());
+	    return true;
+	}
+	catch(MimeTypeParseException e)
+	{
+	    luwrain.crash(e);
+	    return true;
 	}
     }
 
@@ -126,5 +160,22 @@ return true;
 	if (ids == null || ids.length < 1)
 	    return false;
 	return base.playAudio(area, ids);
+    }
+
+    static String[] charsets(Registry registry)
+    {
+	NullCheck.notNull(registry, "registry");
+	final String[] settings = org.luwrain.core.Settings.getI18nCharsets(registry);
+	final LinkedList<String> res = new LinkedList<String>();
+	for(Map.Entry<String, Charset> e: AVAILABLE_CHARSETS.entrySet())
+	{
+	    int i;
+	    for (i = 0;i < settings.length;++i)
+		if (e.getKey().toLowerCase().trim().equals(settings[i].toLowerCase().trim()))
+		    break;
+	    if (i < settings.length)
+		res.add(e.getKey());
+	}
+	return res.toArray(new String[res.size()]);
     }
 }

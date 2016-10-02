@@ -308,11 +308,6 @@ class Base
 	}, null);
     }
 
-    boolean anotherCharset()
-    {
-	return true;
-    }
-
     boolean playAudio(DoctreeArea area, String[] ids)
     {
 	return false;
