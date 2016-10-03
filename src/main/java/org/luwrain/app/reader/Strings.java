@@ -66,4 +66,9 @@ public interface Strings
     String unrecognizedFormat(String contentType);
     String changeFormatPopupName();
     String changeCharsetPopupName();
+
+    String actionSaveBookmark();
+    String actionRestoreBookmark();
+    String bookmarkSaved();
+    String noBookmark();
 }

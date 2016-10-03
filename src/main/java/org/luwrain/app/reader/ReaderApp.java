@@ -112,6 +112,7 @@ public class ReaderApp implements Application
 	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
 
 	treeArea = new TreeArea(treeParams){
+
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -124,6 +125,7 @@ public class ReaderApp implements Application
 			}
 		    return super.onKeyboardEvent(event);
 		}
+
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -140,7 +142,7 @@ public class ReaderApp implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getTreeAreaActions(strings, base.hasDocument(), mode, base.isInBookMode());
+		    return Actions.getTreeAreaActions(strings, base.hasDocument(), mode);
 		}
 	    };
 
@@ -182,6 +184,10 @@ return goToTreeArea();
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
+			case SAVE:
+			    return Actions.onSaveBookmark(luwrain, strings, readerArea);
+
+
 		    case ACTION:
 			return onAction(event);
 		    case CLOSE:
@@ -196,7 +202,7 @@ return goToTreeArea();
 
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getReaderAreaActions(strings, base.hasDocument(), mode, base.isInBookMode());
+		    return Actions.getReaderAreaActions(strings, base.hasDocument(), mode);
 		}
 		@Override public String getAreaName()
 		{
@@ -266,7 +272,7 @@ if (base.fetchingInProgress())
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getNotesAreaActions(strings, base.hasDocument(), mode, base.isInBookMode());
+		    return Actions.getNotesAreaActions(strings, base.hasDocument(), mode);
 		}
 	    };
 
@@ -306,12 +312,15 @@ if (base.fetchingInProgress())
 	    return base.openNew(this, false, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
-	/*
-	if (ActionEvent.isAction(event, "doc-mode"))
-	    return docMode();
-	if (ActionEvent.isAction(event, "book-mode"))
-	    return bookMode();
-	*/
+
+	if (ActionEvent.isAction(event, "save-bookmark"))
+	    return Actions.onSaveBookmark(luwrain, strings, readerArea);
+
+	if (ActionEvent.isAction(event, "restore-bookmark"))
+	    return Actions.onRestoreBookmark(luwrain, strings, readerArea);
+
+
+
 	if (ActionEvent.isAction(event, "change-format"))
 	    return Actions.onChangeFormat(this, luwrain, strings, base);
 	if (ActionEvent.isAction(event, "change-charset"))

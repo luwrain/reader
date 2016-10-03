@@ -178,13 +178,16 @@ class Base
 	    this.currentDoc = book.getStartingDocument();
 	    history.clear();
 	} else
-	this.currentDoc = doc;
+	    this.currentDoc = doc;
 	NullCheck.notNull(currentDoc, "currentDoc");
 	history.add(new HistoryItem(currentDoc));
+	if (currentDoc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
+	    Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
+	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), currentDoc.getUrl().toString());
+	System.out.println("saved:" + savedPosition);
+	if (savedPosition > 0)
+	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
 	try {
-	    //	    Log.debug("res", currentDoc.getProperty("url"));
-	    if (currentDoc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
-		Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
 	    currentDoc.buildView(docWidth);
 	}
 	catch(Exception e)

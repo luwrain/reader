@@ -32,7 +32,7 @@ class Actions
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
 
     static Action[] getReaderAreaActions(Strings strings, boolean hasDocument,
-					 ReaderApp.Modes mode, boolean bookMode)
+					 ReaderApp.Modes mode)
     {
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(mode, "mode");
@@ -41,44 +41,76 @@ class Actions
 	{
 	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
 	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
-	    if (!bookMode)
-	    {
-	    res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-	    res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-	    }
+
+	    res.add(new Action("save-bookmark", strings.actionSaveBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2)));
+	    res.add(new Action("restore-bookmark", strings.actionRestoreBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
 	    switch(mode)
 	    {
 	    case DOC:
-	    res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-	    break;
+		res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		break;
 	    case DOC_NOTES:
-		    res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		    break;
+		res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		break;
 	    case BOOK:
-	    res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-	    res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-	    break;
+		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		break;
 	    case BOOK_TREE_ONLY:
-	    res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-	    res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-	    break;
+		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		break;
 	    case BOOK_NOTES_ONLY:
-	    res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		    res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		    break;
+		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		break;
 	    case BOOK_TREE_NOTES:
-	    res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		    res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		    break;
+		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
+		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		break;
 	    }
 	}
-
 	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F5)));
 	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-
-
-
 	return res.toArray(new Action[res.size()]);
+    }
+
+    static boolean onSaveBookmark(Luwrain luwrain, Strings strings, DoctreeArea area)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(area, "area");
+	final int value = area.getCurrentRowIndex();
+	if (value < 0)
+	    return false;
+	final URL url = area.getUrl();
+	if (url == null)
+	    return false;
+	Settings.setBookmark(luwrain.getRegistry(), url.toString(), value);
+	luwrain.message(strings.bookmarkSaved(), Luwrain.MESSAGE_OK);
+	return true;
+    }
+
+    static boolean onRestoreBookmark(Luwrain luwrain, Strings strings, DoctreeArea area)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(area, "area");
+	final URL url = area.getUrl();
+	if (url == null)
+	    return false;
+final int value = Settings.getBookmark(luwrain.getRegistry(), url.toString());
+if (value < 0 || !area.setCurrentRowIndex(value))
+{
+    luwrain.message(strings.noBookmark(), Luwrain.MESSAGE_ERROR);
+    return true;
+}
+luwrain.playSound(Sounds.DONE);
+	return true;
     }
 
     static boolean onChangeFormat(ReaderApp app, Luwrain luwrain,
@@ -166,21 +198,21 @@ class Actions
     }
 
     static Action[] getTreeAreaActions(Strings strings, boolean hasDocument,
-				       ReaderApp.Modes mode, boolean bookMode)
+				       ReaderApp.Modes mode)
     {
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(mode, "mode");
-	return getReaderAreaActions(strings, hasDocument, mode, bookMode);
+	return getReaderAreaActions(strings, hasDocument, mode);
     }
 
     static Action[] getNotesAreaActions(Strings strings, boolean hasDocument,
-					ReaderApp.Modes mode, boolean bookMode)
+					ReaderApp.Modes mode)
     {
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
 	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
-	for(Action a: getReaderAreaActions(strings, hasDocument, mode, bookMode))
+	for(Action a: getReaderAreaActions(strings, hasDocument, mode))
 	    res.add(a);
 	return res.toArray(new Action[res.size()]);
     }
