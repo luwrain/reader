@@ -71,4 +71,8 @@ public interface Strings
     String actionRestoreBookmark();
     String bookmarkSaved();
     String noBookmark();
+    String sectionsTreeShown();
+    String sectionsTreeHidden();
+    String notesShown();
+    String notesHidden();
 }

@@ -229,6 +229,122 @@ luwrain.playSound(Sounds.DONE);
 	return base.playAudio(area, ids);
     }
 
+static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, ReaderApp app)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(app, "app");
+	    final ReaderApp.Modes newMode;
+	switch(app.getCurrentMode())
+	{
+	case DOC:
+	case DOC_NOTES:
+	case BOOK_TREE_ONLY:
+	case BOOK_TREE_NOTES:
+	return false;
+	case BOOK:
+	    newMode = ReaderApp.Modes.BOOK_TREE_ONLY;
+	    break;
+	case BOOK_NOTES_ONLY:
+	    newMode = ReaderApp.Modes.BOOK_TREE_NOTES;
+	    break;
+	default:
+	    return false;
+	}
+	app.switchMode(newMode);
+	luwrain.message(strings.sectionsTreeShown());
+	return true;
+    }
+
+    static boolean onHideSectionsTree(Luwrain luwrain, Strings strings, ReaderApp app)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(app, "app");
+	    final ReaderApp.Modes newMode;
+	switch(app.getCurrentMode())
+	{
+	case DOC:
+	case DOC_NOTES:
+	case BOOK:
+	case BOOK_NOTES_ONLY:
+	    return false;
+	case BOOK_TREE_ONLY:
+	    newMode = ReaderApp.Modes.BOOK;
+	    break;
+	case BOOK_TREE_NOTES:
+	    newMode = ReaderApp.Modes.BOOK_NOTES_ONLY;
+	    break;
+	default:
+	    return false;
+	}
+	app.switchMode(newMode);
+	luwrain.message(strings.sectionsTreeHidden());
+	return true;
+    }
+
+static boolean onShowNotes(Luwrain luwrain, Strings strings, ReaderApp app)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(app, "app");
+	    final ReaderApp.Modes newMode;
+	switch(app.getCurrentMode())
+	{
+	case DOC:
+	    newMode = ReaderApp.Modes.DOC_NOTES;
+	    break;
+	case DOC_NOTES:
+	    return false;
+	case BOOK:
+	    newMode = ReaderApp.Modes.BOOK_NOTES_ONLY;
+	    break;
+	case BOOK_NOTES_ONLY:
+	    return false;
+	case BOOK_TREE_ONLY:
+	    newMode = ReaderApp.Modes.BOOK_TREE_NOTES;
+	    break;
+	case BOOK_TREE_NOTES:
+	    return false;
+	default:
+	    return false;
+	}
+	app.switchMode(newMode);
+	luwrain.message(strings.notesShown());
+	return true;
+    }
+
+static boolean onHideNotes(Luwrain luwrain, Strings strings, ReaderApp app)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(app, "app");
+	    final ReaderApp.Modes newMode;
+	switch(app.getCurrentMode())
+	{
+	case DOC:
+	    return false;
+	case DOC_NOTES:
+	    newMode = ReaderApp.Modes.DOC;
+	    break;
+	case BOOK:
+	    return false;
+	case BOOK_NOTES_ONLY:
+	    newMode = ReaderApp.Modes.BOOK;
+	    break;
+	case BOOK_TREE_ONLY:
+	    return false;
+	case BOOK_TREE_NOTES:
+	    newMode = ReaderApp.Modes.BOOK_TREE_ONLY;
+	    break;
+	default:
+	    return false;
+	}
+	app.switchMode(newMode);
+	luwrain.message(strings.notesHidden());
+	return true;
+    }
+
     static String[] charsets(Registry registry)
     {
 	NullCheck.notNull(registry, "registry");

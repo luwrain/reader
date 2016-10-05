@@ -313,6 +313,21 @@ if (base.fetchingInProgress())
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 
+	if (ActionEvent.isAction(event, "show-sections-tree"))
+	    return Actions.onShowSectionsTree(luwrain, strings, this);
+	if (ActionEvent.isAction(event, "hide-sections-tree"))
+	    return Actions.onHideSectionsTree(luwrain, strings, this);
+	if (ActionEvent.isAction(event, "show-notes"))
+	    return Actions.onShowNotes(luwrain, strings, this);
+	if (ActionEvent.isAction(event, "hide-notes"))
+	    return Actions.onHideNotes(luwrain, strings, this);
+
+
+
+
+
+
+
 	if (ActionEvent.isAction(event, "save-bookmark"))
 	    return Actions.onSaveBookmark(luwrain, strings, readerArea);
 
@@ -459,8 +474,13 @@ if (base.fetchingInProgress())
 	}
     }
 
+    Modes getCurrentMode()
+    {
+	return mode;
+    }
+
     //Doesn't check if the base in book mode
-    private void switchMode(Modes newMode)
+void switchMode(Modes newMode)
     {
 	NullCheck.notNull(newMode, "newMode");
 	switch(newMode)
@@ -487,21 +507,8 @@ if (base.fetchingInProgress())
 	    return;
 	}
 	mode = newMode;
+	readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
     }
-
-    /*
-    private boolean docMode()
-    {
-	layouts.show(DOC_MODE_LAYOUT_INDEX);
-	return true;
-    }
-
-    private boolean bookMode()
-    {
-	layouts.show(BOOK_MODE_LAYOUT_INDEX);
-	return true;
-    }
-    */
 
     private boolean closePropertiesArea()
     {
