@@ -67,9 +67,7 @@ class Announcement
 		environment.say(it.getText());
 	    return;
 	}
-
-
-		environment.say(it.getText());
+	announceText(it);
     }
 
     private void onTitle(Iterator it)
@@ -115,5 +113,18 @@ class Announcement
 	    return;
 }
 	environment.say("Строка " + (rowIndex + 1) + ", столбец " + (colIndex + 1));
+    }
+
+    private void announceText(Iterator it)
+    {
+	NullCheck.notNull(it, "it");
+	if (it.getText().trim().isEmpty())
+	{
+	    environment.hint(Hints.EMPTY_LINE);
+	    return;
+	}
+	if (it.getRowRelIndex() == 0)
+		environment.say("Параграф " + it.getText()); else
+		environment.say(it.getText());
     }
 }

@@ -18,9 +18,6 @@ class AudioPlaying  implements Listener
     private Document doc;
     private Playlist currentPlaylist = null;
 
-
-
-
     boolean init(Luwrain luwrain)
     {
 	NullCheck.notNull(luwrain, "luwrain");

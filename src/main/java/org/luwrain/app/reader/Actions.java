@@ -49,33 +49,33 @@ class Actions
 	    case DOC:
 		res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
 		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 		break;
 	    case DOC_NOTES:
 		res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
 		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 		break;
 	    case BOOK:
-		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
+		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 		break;
 	    case BOOK_TREE_ONLY:
-		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
+		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 		break;
 	    case BOOK_NOTES_ONLY:
-		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
+		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 		break;
 	    case BOOK_TREE_NOTES:
-		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F10)));
+		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
+		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
 		break;
 	    }
 	}
-	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F6)));
+	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F3, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
+	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F4, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
 	return res.toArray(new Action[res.size()]);
     }
 

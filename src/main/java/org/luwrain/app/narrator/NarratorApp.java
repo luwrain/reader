@@ -75,7 +75,7 @@ public class NarratorApp implements Application, Actions
 	final Strings s = strings;
 
 	editArea = new EditArea(new DefaultControlEnvironment(luwrain), strings.appName(), 
-				initialText != null?initialText.split("\n", -1):new String[0]){
+				initialText != null?initialText.split("\n", -1):new String[0], null){
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");

@@ -313,7 +313,13 @@ class Base
 
     boolean playAudio(DoctreeArea area, String[] ids)
     {
+	NullCheck.notNull(area, "area");
+	NullCheck.notNullItems(ids, "ids");
+	if (!isInBookMode())
+	    return false;
+	if (audioPlaying == null)
 	return false;
+	return audioPlaying.playAudio(book, currentDoc, area, ids);
     }
 
     boolean addNote()
