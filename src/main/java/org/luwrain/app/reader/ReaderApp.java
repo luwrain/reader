@@ -410,7 +410,7 @@ if (base.fetchingInProgress())
     {
 	if (base.isInBookMode())
 	{
-	    final Document doc = base.jumpByHrefInBook(href, width);
+	    final Document doc = base.jumpByHrefInBook(href, width, readerArea.getCurrentRowIndex());
 	    if (doc == null)
 	    {
 		luwrain.launchApp("reader", new String[]{href});

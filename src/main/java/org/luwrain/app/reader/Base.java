@@ -109,18 +109,42 @@ class Base
 	return true;
     }
 
-    Document jumpByHrefInBook(String href, int width)
+    boolean onPrevDocInNonBook(ReaderApp app)
+    {
+	NullCheck.notNull(app, "app");
+	if (isInBookMode() || fetchingInProgress())
+	    return false;
+	if (history.size() < 2)
+	    return false;
+	history.pollLast();
+	final HistoryItem item = history.pollLast();
+	URL url = null;
+	try {
+	    url = new URL(item.url);
+	}
+	catch(MalformedURLException e)
+	{
+	    luwrain.message(strings.badUrl() + item.url, Luwrain.MESSAGE_ERROR);
+	    return true;
+	}
+	if (!open(app, url, ""))
+	    return false;
+	luwrain.message(strings.fetching() + " " + item.url);
+	return true;
+    }
+
+    Document jumpByHrefInBook(String href, int width, int lastPos)
     {
 	NullCheck.notEmpty(href, "href");
-	Log.debug("reader", "opening href in book mode:" + href);
 	if (!isInBookMode() || fetchingInProgress())
 	    return null;
 	final Document doc = book.getDocument(href);
 	if (doc == null)
 	    return null;
-	Log.debug("reader", "book provided new document for this href");
 	this.currentDoc = doc;
 	this.currentDoc.buildView(width);
+	if (lastPos >= 0 && !history.isEmpty())
+	    history.getLast().lastRowIndex = lastPos;
 	history.add(new HistoryItem(doc));
 	return doc;
     }
@@ -133,36 +157,15 @@ class Base
 	    return null;
 	history.pollLast();
 	final HistoryItem item = history.getLast();
-	final Document doc = book.getDocument(item.url());
+	final Document doc = book.getDocument(item.url);
 	if (doc == null)
 	    return null;
 	this.currentDoc = doc;
+	if (item.lastRowIndex >= 0)
+	    this.currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + item.lastRowIndex);
 	return doc;
     }
 
-    boolean onPrevDocInNonBook(ReaderApp app)
-    {
-	NullCheck.notNull(app, "app");
-	if (isInBookMode() || fetchingInProgress())
-	    return false;
-	if (history.size() < 2)
-	    return false;
-	history.pollLast();
-	final HistoryItem item = history.pollLast();
-	URL url = null;
-	try {
-	    url = new URL(item.url());
-	}
-	catch(MalformedURLException e)
-	{
-	    luwrain.message(strings.badUrl() + item.url(), Luwrain.MESSAGE_ERROR);
-	    return true;
-	}
-	if (!open(app, url, ""))
-	    return false;
-	luwrain.message(strings.fetching() + " " + item.url());
-	return true;
-    }
 
     //Returns the document to be shown in readerArea
     Document acceptNewSuccessfulResult(Book book, Document doc,
@@ -233,10 +236,10 @@ class Base
 	    return false;
 	final HistoryItem item = history.getLast();
 	lines.beginLinesTrans();
-	lines.addLine(strings.propertiesAreaUrl(item.url()));
-		      lines.addLine(strings.propertiesAreaContentType(item.contentType()));
-				    lines.addLine(strings.propertiesAreaFormat(item.format()));
-						  lines.addLine(strings.propertiesAreaCharset(item.charset()));
+	lines.addLine(strings.propertiesAreaUrl(item.url));
+		      lines.addLine(strings.propertiesAreaContentType(item.contentType));
+				    lines.addLine(strings.propertiesAreaFormat(item.format));
+						  lines.addLine(strings.propertiesAreaCharset(item.charset));
 	lines.addLine("");
 	lines.endLinesTrans();
 
@@ -407,27 +410,4 @@ ListArea.Model getNotesModel()
 	NullCheck.notNull(area, "area");
 	return !getHref(area).isEmpty();
     }
-
-static private class HistoryItem
-{
-    String url;
-    private String contentType;
-    private String format;
-    private String charset;
-    int startingRowIndex;
-
-    HistoryItem(Document doc)
-    {
-	NullCheck.notNull(doc, "doc");
-	url = doc.getProperty("url");
-	contentType = doc.getProperty("contenttype");
-	charset = doc.getProperty("charset");
-	format = doc.getProperty("format");
-    }
-
-    String url() {return url;}
-    String contentType() {return contentType;}
-    String charset() {return charset;}
-    String format() {return format;}
-}
 }
