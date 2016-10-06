@@ -164,12 +164,14 @@ public class ReaderApp implements Application
 			    case DOC_NOTES:
 			    case BOOK_NOTES_ONLY:
 			    case BOOK_TREE_NOTES:
-				return goToNotesArea();
+				goToNotesArea();
+			    return true;
 			    case BOOK_TREE_ONLY:
-return goToTreeArea();
+goToTreeArea();
+return true;
 			    default:
 			    return false;
-			    }
+			}
 			case ENTER:
 			    if (Base.hasHref(this))
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
@@ -252,8 +254,21 @@ if (base.fetchingInProgress())
 			switch(event.getSpecial())
 			{
 			case TAB:
-			    goToTreeArea();
+			    switch(mode)
+			    {
+			    case DOC:
+			    case BOOK:
+			    case DOC_NOTES:
+			    case BOOK_NOTES_ONLY:
+				goToReaderArea();
+				return true;
+			    case BOOK_TREE_ONLY:
+			    case BOOK_TREE_NOTES:
+				goToTreeArea();
 			    return true;
+			    default:
+			    return false;
+			    }
 			}
 		    return super.onKeyboardEvent(event);
 		}
@@ -593,34 +608,19 @@ private void openStartFrom()
     }
 }
 
-    private boolean goToTreeArea()
+    private void goToTreeArea()
     {
-	/*
-	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
-	    return false;
-	*/
 	luwrain.setActiveArea(treeArea);
-	return true;
     }
 
-    private boolean goToReaderArea()
+    private void goToReaderArea()
     {
-	/*
-	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
-	    return false;
-	*/
 	luwrain.setActiveArea(readerArea);
-	return true;
     }
 
-    private boolean goToNotesArea()
+    private void goToNotesArea()
     {
-	/*
-	if (layouts.getCurrentIndex() != BOOK_MODE_LAYOUT_INDEX)
-	    return false;
-	*/
 	luwrain.setActiveArea(notesArea);
-	return true;
     }
 
     @Override public String getAppName()
