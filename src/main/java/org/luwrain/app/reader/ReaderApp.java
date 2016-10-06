@@ -23,6 +23,7 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
+import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
 
@@ -307,9 +308,9 @@ if (base.fetchingInProgress())
     {
 	NullCheck.notNull(event, "event");
 	if (ActionEvent.isAction(event, "open-url"))
-	    return base.openNew(this, true, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
+	    Actions.openNew(this, true, base, luwrain, strings, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-file"))
-	    return base.openNew(this, false, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
+	    return Actions.openNew(this, false, base, luwrain, strings, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 
@@ -344,6 +345,8 @@ if (base.fetchingInProgress())
 	    return Actions.onPlayAudio(base, readerArea);
 	if (ActionEvent.isAction(event, "add-note"))
 	    return addNote();
+	if (ActionEvent.isAction(event, "delete-note"))
+	    return onDeleteNote();
 	return false;
     }
 
@@ -363,10 +366,20 @@ if (base.fetchingInProgress())
     private boolean onNotesClick(Object item)
     {
 	NullCheck.notNull(item, "item");
-	if (!base.isInBookMode() || !(item instanceof Book.Note))
+	if (!(item instanceof Note))
 	    return false;
-	final Book.Note note = (Book.Note)item;
-	base.jumpByNote(this, note);
+	final Note note = (Note)item;
+	if (!base.isInBookMode())
+	{
+	    readerArea.setCurrentRowIndex(note.position);
+	    goToReaderArea();
+	    return true;
+	}
+	final Document doc = base.jumpByHrefInBook(note.url, luwrain.getAreaVisibleWidth(readerArea), readerArea.getCurrentRowIndex(), note.position);
+	if (doc == null)
+	    return false;
+	readerArea.setDocument(doc);
+	goToReaderArea();
 	return true;
     }
 
@@ -377,6 +390,8 @@ if (base.fetchingInProgress())
 	final Document newDoc = base.acceptNewSuccessfulResult(book, doc, getSuitableWidth());
 	if (base.isInBookMode())
 	    treeArea.refresh();
+	base.updateNotesModel();
+	notesArea.refresh();
 	updateMode();
 	readerArea.setDocument(newDoc);
 	goToReaderArea();
@@ -410,7 +425,7 @@ if (base.fetchingInProgress())
     {
 	if (base.isInBookMode())
 	{
-	    final Document doc = base.jumpByHrefInBook(href, width, readerArea.getCurrentRowIndex());
+	    final Document doc = base.jumpByHrefInBook(href, width, readerArea.getCurrentRowIndex(), -1);
 	    if (doc == null)
 	    {
 		luwrain.launchApp("reader", new String[]{href});
@@ -533,10 +548,22 @@ void switchMode(Modes newMode)
 
     private boolean addNote()
     {
-	if (!base.isInBookMode())
+	if (!base.hasDocument())
 	    return false;
-	if (!base.addNote())
+	if (!base.addNote(readerArea.getCurrentRowIndex()))
 	    return true;
+	notesArea.refresh();
+	return true;
+    }
+
+    private boolean onDeleteNote()
+    {
+	if (notesArea.selected() == null || !(notesArea.selected() instanceof Note))
+	    return false;
+	final Note note = (Note)notesArea.selected();
+	if (!Popups.confirmDefaultNo(luwrain, "Удаление закладки", "Вы действительно хотите удалить закладку \"" + note.comment + "\"?"))
+	    return true;
+	base.deleteNote(note);
 	notesArea.refresh();
 	return true;
     }

@@ -46,7 +46,7 @@ class Base
     private Document currentDoc = null;
     private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
-    private final LinkedList<String> enteredUrls = new LinkedList<String>();
+    //    private final LinkedList<String> enteredUrls = new LinkedList<String>();
 
     boolean init(Luwrain luwrain, Strings strings)
     {
@@ -70,6 +70,11 @@ class Base
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
+	if (isInBookMode())
+	{
+	    luwrain.launchApp("reader", new String[]{url.toString()});
+	    return true;
+	}
 	if (task != null && !task.isDone())
 	    return false;
 	final int currentRowIndex = app.getCurrentRowIndex();
@@ -77,14 +82,6 @@ class Base
 	    history.getLast().startingRowIndex = currentRowIndex;
 	task = createTask(app, url, contentType);
 	executor.execute(task);
-	return true;
-    }
-
-    boolean openInNarrator()
-    {
-	final NarratorTextVisitor visitor = new NarratorTextVisitor();
-	Visitor.walk(currentDoc.getRoot(), visitor);
-	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
 	return true;
     }
 
@@ -118,7 +115,7 @@ class Base
 	    return false;
 	history.pollLast();
 	final HistoryItem item = history.pollLast();
-	URL url = null;
+	final URL url;
 	try {
 	    url = new URL(item.url);
 	}
@@ -133,7 +130,7 @@ class Base
 	return true;
     }
 
-    Document jumpByHrefInBook(String href, int width, int lastPos)
+    Document jumpByHrefInBook(String href, int width, int lastPos, int newDesiredPos)
     {
 	NullCheck.notEmpty(href, "href");
 	if (!isInBookMode() || fetchingInProgress())
@@ -141,11 +138,16 @@ class Base
 	final Document doc = book.getDocument(href);
 	if (doc == null)
 	    return null;
+	if (doc != currentDoc)
+	{
+	    if (lastPos >= 0 && !history.isEmpty())
+		history.getLast().lastRowIndex = lastPos;
+	    history.add(new HistoryItem(doc));
+	}
 	this.currentDoc = doc;
+	if (newDesiredPos >= 0)
+	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
 	this.currentDoc.buildView(width);
-	if (lastPos >= 0 && !history.isEmpty())
-	    history.getLast().lastRowIndex = lastPos;
-	history.add(new HistoryItem(doc));
 	return doc;
     }
 
@@ -165,7 +167,6 @@ class Base
 	    this.currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + item.lastRowIndex);
 	return doc;
     }
-
 
     //Returns the document to be shown in readerArea
     Document acceptNewSuccessfulResult(Book book, Document doc,
@@ -187,7 +188,6 @@ class Base
 	if (currentDoc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
 	    Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
 	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), currentDoc.getUrl().toString());
-	System.out.println("saved:" + savedPosition);
 	if (savedPosition > 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
 	try {
@@ -198,6 +198,25 @@ class Base
 	    luwrain.crash(e);
 	}
 	return currentDoc;
+    }
+
+    private FutureTask createTask(ReaderApp app, URL url, String contentType)
+    {
+	NullCheck.notNull(app, "app");
+	NullCheck.notNull(url, "url");
+    NullCheck.notNull(contentType, "contentType");
+	return new FutureTask(()->{
+		try {
+		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
+		    final UrlLoader.Result res = urlLoader.load();
+		if (res != null)
+		    luwrain.runInMainThread(()->app.onNewResult(res));
+		}
+		catch(IOException e)
+		{
+		    luwrain.crash(e);
+		}
+	}, null);
     }
 
     void prepareErrorText(UrlLoader.Result res, MutableLines lines)
@@ -237,81 +256,12 @@ class Base
 	final HistoryItem item = history.getLast();
 	lines.beginLinesTrans();
 	lines.addLine(strings.propertiesAreaUrl(item.url));
-		      lines.addLine(strings.propertiesAreaContentType(item.contentType));
-				    lines.addLine(strings.propertiesAreaFormat(item.format));
-						  lines.addLine(strings.propertiesAreaCharset(item.charset));
+	lines.addLine(strings.propertiesAreaContentType(item.contentType));
+	lines.addLine(strings.propertiesAreaFormat(item.format));
+	lines.addLine(strings.propertiesAreaCharset(item.charset));
 	lines.addLine("");
 	lines.endLinesTrans();
-
-	/*
-	    lines.addLine(strings.infoPageField("title") + ": " + currentDoc.getTitle());
-	    lines.addLine(strings.infoPageField("url") + ": " + currentDoc.getUrl());
-	*/
-
-	    /*
-	final Map<String, String> attr = currentDoc.getInfoAttr();
-	for(Map.Entry<String, String> e: attr.entrySet())
-	    if (!strings.infoPageField(e.getKey()).isEmpty())
-		lines.addLine(strings.infoPageField(e.getKey()) + ": " + e.getValue());
-	*/
 	return true;
-    }
-
-    boolean openNew(ReaderApp app, boolean openUrl, String currentHref)
-    {
-	NullCheck.notNull(app, "app");
-	if (fetchingInProgress())
-	    return false;
-	if (openUrl)
-	{
-	    final String res = Popups.fixedEditList(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), currentHref.isEmpty()?"http://":currentHref, 
-						    enteredUrls.toArray(new String[enteredUrls.size()]));
-	    if (res == null)
-		return true;
-	    enteredUrls.add(res);
-	    URL url;
-	    try {
-		url = new URL(res);
-	    }
-	    catch(MalformedURLException e)
-	    {
-		e.printStackTrace(); 
-		luwrain.message(strings.badUrl() + res, Luwrain.MESSAGE_ERROR);
-		return true;
-	    }
-	    open(app, url, "");
-	    return true;
-	}
-	final Path path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
-				      luwrain.getPathProperty("luwrain.dir.userhome"),
-				      (pathToCheck)->{
-					  if (Files.isDirectory(pathToCheck))
-					  {
-					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MESSAGE_ERROR);
-					      return false;
-					  }
-					  return true;
-				      });
-	return false;
-    }
-
-    private FutureTask createTask(ReaderApp app, URL url, String contentType)
-    {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(url, "url");
-    NullCheck.notNull(contentType, "contentType");
-	return new FutureTask(()->{
-		try {
-		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
-		    final UrlLoader.Result res = urlLoader.load();
-		if (res != null)
-		    luwrain.runInMainThread(()->app.onNewResult(res));
-		}
-		catch(IOException e)
-		{
-		    luwrain.crash(e);
-		}
-	}, null);
     }
 
     boolean playAudio(DoctreeArea area, String[] ids)
@@ -325,32 +275,37 @@ class Base
 	return audioPlaying.playAudio(book, currentDoc, area, ids);
     }
 
-    boolean addNote()
+    private URL getNotesUrl()
     {
-	if (!isInBookMode() || !hasDocument())
-	    return false;
+	if (isInBookMode())
+	    return book.getStartingDocument().getUrl();
+	return currentDoc.getUrl();
+    }
+
+    void updateNotesModel()
+    {
+	if (currentDoc == null && book == null)
+	    return;
+	final URL url = getNotesUrl();
+	notesModel.setItems(Settings.getNotes(luwrain.getRegistry(), url.toString()));
+    }
+
+    boolean addNote(int pos)
+    {
+	NullCheck.notNull(currentDoc, "currentDoc");
 	final String text = Popups.simple(luwrain, strings.addNotePopupName(), strings.addNotePopupPrefix(), "");
 	if (text == null)
 	    return false;
-	final Book.Note note = book.createNote(currentDoc, 0);
-	if (note == null)
-	    return false;
-	note.setText(text);
-	book.addNote(note);
-	notesModel.setItems(book.getNotes());
+	Settings.addNote(luwrain.getRegistry(), getNotesUrl().toString(), currentDoc.getUrl().toString(), pos, text, "");
+	updateNotesModel();
 	return true;
     }
 
-    boolean jumpByNote(ReaderApp app, Book.Note note)
+    void deleteNote(Note note)
     {
-	NullCheck.notNull(app, "app");
 	NullCheck.notNull(note, "note");
-	if (!isInBookMode())
-	    return false;
-final String href = book.getHrefOfNoteDoc(note);
-if (href.isEmpty())
-    return false;
-return jumpByHrefInNonBook(app, href);
+	Settings.deleteNote(luwrain.getRegistry(), getNotesUrl().toString(), note.num);
+	updateNotesModel();
     }
 
     boolean hasDocument()
@@ -384,6 +339,14 @@ return jumpByHrefInNonBook(app, href);
     URL getCurrentUrl()
     {
 	return currentDoc != null?currentDoc.getUrl():null;
+    }
+
+    boolean openInNarrator()
+    {
+	final NarratorTextVisitor visitor = new NarratorTextVisitor();
+	Visitor.walk(currentDoc.getRoot(), visitor);
+	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
+	return true;
     }
 
     TreeArea.Model getTreeModel()

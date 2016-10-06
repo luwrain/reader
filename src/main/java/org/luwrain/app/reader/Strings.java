@@ -21,6 +21,7 @@ public interface Strings
     static final String NAME = "luwrain.reader";
 
     String actionAddNote();
+    String actionDeleteNote();
     String actionShowNotes();
     String actionHideNotes();
     String actionChangeCharset();

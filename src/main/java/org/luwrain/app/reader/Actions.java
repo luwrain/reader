@@ -17,6 +17,7 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.nio.file.*;
 import java.nio.charset.*;
 import java.net.*;
 import javax.activation.*;
@@ -30,6 +31,8 @@ import org.luwrain.doctree.loading.*;
 class Actions
 {
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
+
+static final LinkedList<String> enteredUrls = new LinkedList<String>();
 
     static Action[] getReaderAreaActions(Strings strings, boolean hasDocument,
 					 ReaderApp.Modes mode)
@@ -212,6 +215,7 @@ luwrain.playSound(Sounds.DONE);
 	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
 	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
+	res.add(new Action("delete-note", strings.actionDeleteNote(), new KeyboardEvent(KeyboardEvent.Special.DELETE)));
 	for(Action a: getReaderAreaActions(strings, hasDocument, mode))
 	    res.add(a);
 	return res.toArray(new Action[res.size()]);
@@ -360,5 +364,45 @@ static boolean onHideNotes(Luwrain luwrain, Strings strings, ReaderApp app)
 		res.add(e.getKey());
 	}
 	return res.toArray(new String[res.size()]);
+    }
+
+    static boolean openNew(ReaderApp app, boolean openUrl, Base base, 
+			   Luwrain luwrain, Strings strings,
+String currentHref)
+    {
+	NullCheck.notNull(app, "app");
+	if (base.fetchingInProgress())
+	    return false;
+	if (openUrl)
+	{
+	    final String res = Popups.fixedEditList(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), currentHref.isEmpty()?"http://":currentHref, 
+						    enteredUrls.toArray(new String[enteredUrls.size()]));
+	    if (res == null)
+		return true;
+	    enteredUrls.add(res);
+	    final URL url;
+	    try {
+		url = new URL(res);
+	    }
+	    catch(MalformedURLException e)
+	    {
+		e.printStackTrace(); 
+		luwrain.message(strings.badUrl() + res, Luwrain.MESSAGE_ERROR);
+		return true;
+	    }
+	    base.open(app, url, "");
+	    return true;
+	}
+	final Path path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
+				      luwrain.getPathProperty("luwrain.dir.userhome"),
+				      (pathToCheck)->{
+					  if (Files.isDirectory(pathToCheck))
+					  {
+					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MESSAGE_ERROR);
+					      return false;
+					  }
+					  return true;
+				      });
+	return false;
     }
 }
