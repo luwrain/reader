@@ -33,11 +33,14 @@ class Base
     private Strings strings;
     private FutureTask task;
     private RemoteLibrary[] libraries;
+    private final FixedListModel librariesModel = new FixedListModel();
     private final FixedListModel model = new FixedListModel();
     private final LinkedList<URL> history = new LinkedList<URL>();
 
     boolean init(Luwrain luwrain, Strings strings)
     {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.strings = strings;
 	loadLibraries();
@@ -45,27 +48,24 @@ class Base
 	return true;
     }
 
-    ListArea.Model getModel()
-    {
-	return model;
-    }
 
-    boolean start(Area area, URL url)
+    boolean start(OpdsApp app, URL url)
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
 	if (task != null && !task.isDone())
 	    return false;
-	task = constructTask(area, url);
+	task = constructTask(app, url);
+	Log.debug("opds", "starting fetching:" + url.toString());
 	executor.execute(task);
 	history.add(url);
 	model.clear();
 	return true;
     }
 
-    boolean returnBack(Area area)
+    boolean returnBack(OpdsApp app)
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(app, "app");
 	if (history.isEmpty() ||
 	    (task != null && !task.isDone()))
 	    return false;
@@ -76,89 +76,78 @@ class Base
 	    return true ;
 	}
 	history.pollLast();
-	task = constructTask(area, history.getLast());
+	task = constructTask(app, history.getLast());
 	executor.execute(task);
 	model.clear();
 	return true;
     }
 
-
-    boolean onReady()
+private void onFetchResult(OpdsApp app, Opds.Result res)
     {
-	Opds.Result res = null;
-	try {
-	    res = (Opds.Result)task.get();
-	}
-	catch(InterruptedException e)
-	{
-	    Thread.currentThread().interrupt();
-	    e.printStackTrace(); 
-	}
-	catch(ExecutionException e)
-	{
-	    e.printStackTrace();
-	}
-
-	if (res == null)
-	    return false;
+	NullCheck.notNull(app, "app");
+	NullCheck.notNull(res, "res");
+	Log.debug("opds", "fetching result:" + res.error().toString());
 	switch(res.error())
 	{
 	case FETCH:
 	    luwrain.message("Каталог не может быть доставлен с сервера по причине ошибки соединения", Luwrain.MESSAGE_ERROR);
-	    return false;
+	    return;
 	case PARSE:
 	    luwrain.message("Доставленные с сервера данные не являются корректным каталогом OPDS", Luwrain.MESSAGE_ERROR);
-	    return false;
+	    return;
 	case NEEDPAY:
 	    luwrain.message("Сервер требует оплату  или особые условия за указанную книгу", Luwrain.MESSAGE_ERROR);
-	    return false;
+	    return;
 	case NOERROR:
-		if(res.isDirectory())
-		{
-			for(Entry e:res.directory().entries())
-			model.setItems(res.directory().entries());
-			luwrain.playSound(Sounds.INTRO_REGULAR);
-	    	return true;
-		}
-		if(res.isBook())
-		{
-		    //			luwrain.launchApp("reader",new String[]{res.getFileName()});
-			luwrain.playSound(Sounds.OK);
-	    	return true;
-		}
-    	return false;
+	    break;
 	default:
-		return false;
+	    Log.error("opds", "unexpected OPDS fetch result:" + res.error().toString());
+	    return;
+	}
+	if(res.isDirectory())
+	{
+	    //	    final LinkedList<Opds.Entry> entries = new LinkedList<Opds.Entry>();
+	    //	    for(Entry e:res.directory().entries())
+	    Log.debug("opds", "" + res.directory().entries().length + " entries");
+		model.setItems(res.directory().entries());
+	    luwrain.playSound(Sounds.INTRO_REGULAR);
+	    app.updateAreas();
+	    return;
+	}
+	if(res.isBook())
+	{
+		    //			luwrain.launchApp("reader",new String[]{res.getFileName()});
+	    luwrain.playSound(Sounds.OK);
+	    app.updateAreas();
+	    return;
 	}
     }
 
-    private FutureTask<Opds.Result> constructTask(Area destArea, URL url)
+    private FutureTask<Opds.Result> constructTask(OpdsApp app, URL url)
     {
-	//	final Luwrain l = luwrain;
+	NullCheck.notNull(app, "app");
+	NullCheck.notNull(url, "url");
 	return new FutureTask<Opds.Result>(()->{
 		final Opds.Result res = Opds.fetch(url);
-		luwrain.enqueueEvent(new ThreadSyncEvent(destArea));
-		return res;
-	});
+		luwrain.runInMainThread(()->onFetchResult(app, res));
+	    }, null);
     }
 
     private void loadLibraries()
     {
 	libraries = new RemoteLibrary[0];
 	final Registry registry = luwrain.getRegistry();
-	final String dir = "/org/luwrain/app/opds/libraries";
-	final String[] dirs = registry.getDirectories(dir);
-	if (dirs == null || dirs.length <= 0)
-	    return;
+	registry.addDirectory(Settings.LIBRARIES_PATH);
 	final LinkedList<RemoteLibrary> res = new LinkedList<RemoteLibrary>();
-	for(String s: dirs)
+	for(String s: registry.getDirectories(Settings.LIBRARIES_PATH))
 	{
-	    final RemoteLibrary l = new RemoteLibrary();
-	    if (l.init(registry, Registry.join(dir, s)))
+	    final RemoteLibrary l = new RemoteLibrary(registry, Registry.join(Settings.LIBRARIES_PATH, s));
+	    if (!l.url.isEmpty())
 		res.add(l);
 	}
 	libraries = res.toArray(new RemoteLibrary[res.size()]);
 	Arrays.sort(libraries);
+	librariesModel.setItems(libraries);
     }
 
     boolean isFetchingInProgress()
@@ -171,16 +160,16 @@ class Base
 	return !history.isEmpty()?history.getLast():null;
     }
 
-    void onEntry(Area area, Opds.Entry entry) throws MalformedURLException
+    void onEntry(OpdsApp app, Opds.Entry entry) throws MalformedURLException
     {
-	NullCheck.notNull(area, "area");
+	NullCheck.notNull(app, "app");
 	NullCheck.notNull(entry, "entry");
 	if (!entry.hasBooks())
 	{
 	    final Opds.Link catalogLink = entry.getCatalogLink();
 	    if (catalogLink == null)
 		return;
-	    start(area, new URL(currentUrl(), catalogLink.url()));
+	    start(app, new URL(currentUrl(), catalogLink.url()));
 	    return;
 	}
 	//Opening document
@@ -295,4 +284,16 @@ lines.addLine(new String(b));
 url.toString(),
 contentType});
     }
+
+    ListArea.Model getLibrariesModel()
+    {
+	return librariesModel;
+    }
+
+
+    ListArea.Model getModel()
+    {
+	return model;
+    }
+
 }

@@ -22,62 +22,69 @@ import java.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.Opds;
 //import org.luwrain.popups.Popups;
 
-public class OpdsApp implements Application, Actions
+public class OpdsApp implements Application
 {
-    static private final String STRINGS_NAME = "luwrain.opds";
-
     private final Base base = new Base();
+    private Actions actions;
     private Luwrain luwrain;
     private Strings strings;
+    private ListArea librariesArea;
     private ListArea listArea;
+    private SimpleArea detailsArea;
     private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
-	Object o = luwrain.i18n().getStrings(STRINGS_NAME);
+	NullCheck.notNull(luwrain, "luwrain");
+	Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
 	if (!base.init(luwrain, strings))
 	    return false;
+	actions = new Actions(luwrain, this, strings);
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
-	layouts.add(new AreaLayout(listArea));
+	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, listArea, detailsArea));
 	layouts.add(new AreaLayout(propertiesArea));
 	return true;
     }
 
-
     private void createAreas()
     {
-	final Actions actions = this;
-	//	final Strings s = strings;
+	final ListArea.Params librariesParams = new ListArea.Params();
+	librariesParams.environment = new DefaultControlEnvironment(luwrain);
+	librariesParams.model = base.getLibrariesModel();
+	librariesParams.appearance = new Appearance(luwrain, strings);
+	//	params.clickHandler = (area, index, obj)->onClick(obj);
+	librariesParams.name = strings.librariesAreaName();
 
-	final ListArea.Params params = new ListArea.Params();
-	params.environment = new DefaultControlEnvironment(luwrain);
-	params.model = base.getModel();
-	params.appearance = new Appearance(luwrain, strings);
-	params.clickHandler = (area, index, obj)->actions.onClick(obj);
-	params.name = "FIXME";
+	librariesArea = new ListArea(librariesParams){
 
-	listArea = new ListArea(params){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
 			switch(event.getSpecial())
 		    {
+		    case TAB:
+			goToList();
+			return true;
+			/*
 		    case BACKSPACE:
-			return actions.onReturnBack();
+			return onReturnBack();
+			*/
 		    }
 		    return super.onKeyboardEvent(event);
 		}
+
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -90,19 +97,122 @@ public class OpdsApp implements Application, Actions
 		    case CLOSE:
 			closeApp();
 			return true;
-		    case THREAD_SYNC:
-			actions.onReady();
-			return true;
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
 		}
+
+		/*
 		@Override protected String noContentStr()
 		{
 		    if (base.isFetchingInProgress())
 			return "Идёт загрузка. Пожалуйста, подождите.";
 		    return super.noContentStr();
 		}
+		*/
+	    };
+
+	final ListArea.Params params = new ListArea.Params();
+	params.environment = new DefaultControlEnvironment(luwrain);
+	params.model = base.getModel();
+	params.appearance = new Appearance(luwrain, strings);
+	//	params.clickHandler = (area, index, obj)->onClick(obj);
+	params.name = strings.itemsAreaName();
+
+	listArea = new ListArea(params){
+
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+		    {
+		    case TAB:
+			goToDetails();
+			return true;
+		    case BACKSPACE:
+			return onReturnBack();
+		    }
+		    return super.onKeyboardEvent(event);
+		}
+
+		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+			return super.onEnvironmentEvent(event);
+		    switch(event.getCode())
+		    {
+		    case PROPERTIES:
+			if (selected() == null)
+			    return false;
+			return showEntryProperties(selected());
+		    case CLOSE:
+			closeApp();
+			return true;
+		    default:
+			return super.onEnvironmentEvent(event);
+		    }
+		}
+
+		@Override public boolean onAreaQuery(AreaQuery query)
+		{
+		    NullCheck.notNull(query, "query");
+		    switch(query.getQueryCode())
+		    {
+		    case AreaQuery.BACKGROUND_SOUND:
+			if (base.isFetchingInProgress())
+			{
+			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
+			    return true;
+			}
+			return false;
+		    default:
+			return super.onAreaQuery(query);
+		    }
+		}
+
+
+		@Override protected String noContentStr()
+		{
+		    if (base.isFetchingInProgress())
+			return "Идёт загрузка. Пожалуйста, подождите.";
+		    return super.noContentStr();
+		}
+	    };
+
+	librariesArea.setClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
+
+	detailsArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.detailsAreaName()){
+
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+		    {
+		    case TAB:
+			goToLibraries();
+			return true;		    
+}
+		    return super.onKeyboardEvent(event);
+		}
+
+		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+			return super.onEnvironmentEvent(event);
+		    switch(event.getCode())
+		    {
+		    case CLOSE:
+			closeApp();
+			return true;
+		    default:
+			return super.onEnvironmentEvent(event);
+		    }
+		}
+
 	    };
 
 	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), "Просмотр информации"){
@@ -136,33 +246,11 @@ closeApp();
 	    };
     }
 
-    @Override public void onReady()
+    void updateAreas()
     {
-	if (!base.onReady())
-	    return;
 	listArea.refresh();
 	listArea.resetHotPoint(false);
-    }
-
-    @Override public boolean onClick(Object obj)
-    {
-	if (obj == null)
-	    return false;
-	try {
-	    if (obj instanceof Opds.Entry)
-		base.onEntry(listArea, (Opds.Entry)obj); else
-		if (obj instanceof RemoteLibrary)
-		    base.start(listArea, new java.net.URL(((RemoteLibrary)obj).url)); else
-	    return false;
-	    listArea.refresh();
-	    return true;
-	}
-	catch (java.net.MalformedURLException e)
-	{
-	    e.printStackTrace();
-	    //FIXME:message;
-	    return false;
-	}
+	luwrain.onAreaNewBackgroundSound(listArea);
     }
 
 private boolean showEntryProperties(Object obj)
@@ -183,11 +271,13 @@ private boolean showEntryProperties(Object obj)
 	layouts.show(0);
     }
 
-    @Override public boolean onReturnBack()
+    private boolean onReturnBack()
     {
+	/*
 	if (!base.returnBack(listArea))
 	    return false;
 	listArea.refresh();
+	*/
 	    return true;
     }
 
@@ -202,7 +292,22 @@ private boolean showEntryProperties(Object obj)
 	return layouts.getCurrentLayout();
     }
 
-    @Override public boolean closeApp()
+    private void goToLibraries()
+    {
+	luwrain.setActiveArea(librariesArea);
+    }
+
+    private void goToList()
+    {
+	luwrain.setActiveArea(listArea);
+    }
+
+    private void goToDetails()
+    {
+	luwrain.setActiveArea(detailsArea);
+    }
+
+private boolean closeApp()
     {
 	/*
 	if (thread != null && !thread.done())

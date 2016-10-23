@@ -124,7 +124,10 @@ class Announcement
 	    return;
 	}
 	if (it.getRowRelIndex() == 0)
-		environment.say("Параграф " + it.getText()); else
+	{
+	    environment.playSound(Sounds.PARAGRAPH);
+		environment.say(it.getText());
+	} else
 		environment.say(it.getText());
     }
 }

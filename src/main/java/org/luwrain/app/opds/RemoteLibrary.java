@@ -20,32 +20,16 @@ import org.luwrain.core.*;
 
 class RemoteLibrary implements Comparable
 {
-interface RegistryParams 
-{
-    String getTitle();
-    void setTitle(String value);
-    String getUrl();
-    void setUrl(String value);
-}
+    final String title;
+    final String url;
 
-    String title;
-    String url;
-
-    boolean init(Registry registry, String regPath)
+    RemoteLibrary(Registry registry, String regPath)
     {
 	NullCheck.notNull(registry, "registry");
-	NullCheck.notNull(regPath, "regPath");
-	try {
-	    final RegistryParams params = RegistryProxy.create(registry, regPath, RegistryParams.class);
-	    title = params.getTitle();
-	    url = params.getUrl();
-	    return title != null && url != null && !url.trim().isEmpty();
-	}
-	catch(Exception e)
-	{
-	    e.printStackTrace();
-	    return false;
-	}
+	NullCheck.notEmpty(regPath, "regPath");
+	final Settings sett = RegistryProxy.create(registry, regPath, Settings.class);
+	title = sett.getTitle("");
+	url = sett.getUrl("");
     }
 
     @Override public String toString()
@@ -59,4 +43,12 @@ interface RegistryParams
 	    return 0;
 	return title.compareTo(((RemoteLibrary)o).title);
     }
-}
+
+    interface Settings
+    {
+	String getTitle(String defValue);
+	void setTitle(String value);
+	String getUrl(String defValue);
+	void setUrl(String value);
+    }
+    }
