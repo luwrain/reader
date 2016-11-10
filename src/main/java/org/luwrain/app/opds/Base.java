@@ -86,8 +86,8 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(res, "res");
-	Log.debug("opds", "fetching result:" + res.error().toString());
-	switch(res.error())
+	Log.debug("opds", "fetching result:" + res.getError().toString());
+	switch(res.getError())
 	{
 	case FETCH:
 	    luwrain.message("Каталог не может быть доставлен с сервера по причине ошибки соединения", Luwrain.MESSAGE_ERROR);
@@ -101,26 +101,16 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	case NOERROR:
 	    break;
 	default:
-	    Log.error("opds", "unexpected OPDS fetch result:" + res.error().toString());
+	    Log.error("opds", "unexpected OPDS fetch result:" + res.getError().toString());
 	    return;
 	}
-	if(res.isDirectory())
+	if(res.hasEntries())
 	{
-	    //	    final LinkedList<Opds.Entry> entries = new LinkedList<Opds.Entry>();
-	    //	    for(Entry e:res.directory().entries())
-	    Log.debug("opds", "" + res.directory().entries().length + " entries");
-		model.setItems(res.directory().entries());
+	    Log.debug("opds", "" + res.getEntries().length + " entries");
+		model.setItems(res.getEntries());
 	    luwrain.playSound(Sounds.INTRO_REGULAR);
-	    app.updateAreas();
-	    return;
 	}
-	if(res.isBook())
-	{
-		    //			luwrain.launchApp("reader",new String[]{res.getFileName()});
-	    luwrain.playSound(Sounds.OK);
 	    app.updateAreas();
-	    return;
-	}
     }
 
     private FutureTask<Opds.Result> constructTask(OpdsApp app, URL url)
@@ -169,12 +159,12 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	    final Opds.Link catalogLink = entry.getCatalogLink();
 	    if (catalogLink == null)
 		return;
-	    start(app, new URL(currentUrl(), catalogLink.url()));
+	    start(app, new URL(currentUrl(), catalogLink.getUrl()));
 	    return;
 	}
 	//Opening document
 	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
-	for(Opds.Link link: entry.links())
+	for(Opds.Link link: entry.getLinks())
 	{
 	    if (link.isCatalog() || link.isImage())
 		continue;
@@ -183,14 +173,14 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
 	if (suitable.length == 1)
 	{
-	    openReader(new URL(currentUrl(), suitable[0].url().toString()), suitable[0].type());
+	    openReader(new URL(currentUrl(), suitable[0].getUrl().toString()), suitable[0].getType());
 	    return;
 	}
 	for(Opds.Link link: suitable)
-	    if (link.type().equals("application/fb2+zip") ||
-		link.type().equals("application/fb2"))
+	    if (link.getType().equals("application/fb2+zip") ||
+		link.getType().equals("application/fb2"))
 	    {
-		openReader(new URL(currentUrl(), link.url().toString()), link.type());
+		openReader(new URL(currentUrl(), link.getUrl().toString()), link.getType());
 		return;
 	    }
 	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
@@ -201,7 +191,7 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(lines, "lines");
 
-	lines.addLine(entry.parentUrl().toString());
+	lines.addLine(entry.getParentUrl().toString());
 	lines.addLine("");
 
 	/*
@@ -256,19 +246,19 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	lines.addLine("");
 	*/
 
-	for(Opds.Link l: entry.links())
+	for(Opds.Link l: entry.getLinks())
 	{
 	    final StringBuilder b = new StringBuilder();
 	    try {
-	    final URL url = new URL(currentUrl(), l.url());
+	    final URL url = new URL(currentUrl(), l.getUrl());
 	    b.append(url.toString());
 	    }
 	    catch(MalformedURLException e)
 	    {
-		b.append(l.url());
+		b.append(l.getUrl());
 	    }
-if (l.type() != null)
-    b.append(" " + l.type());
+if (l.getType() != null)
+    b.append(" " + l.getType());
 lines.addLine(new String(b));
 	}
 	lines.addLine("");
