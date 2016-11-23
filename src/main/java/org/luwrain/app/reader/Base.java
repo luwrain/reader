@@ -26,6 +26,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
+import org.luwrain.doctree.control.*;
 import org.luwrain.doctree.loading.*;
 import org.luwrain.player.*;
 
@@ -147,7 +148,7 @@ class Base
 	this.currentDoc = doc;
 	if (newDesiredPos >= 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
-	this.currentDoc.buildView(width);
+	//	this.currentDoc.buildView(width);
 	return doc;
     }
 
@@ -191,7 +192,7 @@ class Base
 	if (savedPosition > 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
 	try {
-	    currentDoc.buildView(docWidth);
+	    //	    currentDoc.buildView(docWidth);
 	}
 	catch(Exception e)
 	{

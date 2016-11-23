@@ -25,6 +25,7 @@ import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
+import org.luwrain.doctree.control.*;
 import org.luwrain.doctree.loading.*;
 
 public class ReaderApp implements Application
@@ -147,7 +148,7 @@ public class ReaderApp implements Application
 		}
 	    };
 
-	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain), null){
+	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain)){
 
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
@@ -212,7 +213,7 @@ return true;
 		    final Document doc = getDocument();
 		    return doc != null?doc.getTitle():strings.appName();
 		}
-		@Override protected void announceRow(org.luwrain.doctree.Iterator it, boolean briefAnnouncement)
+		@Override protected void announceRow(org.luwrain.doctree.view.Iterator it, boolean briefAnnouncement)
 		{
 		    NullCheck.notNull(it, "it");
 		    announcement.announce(it, briefAnnouncement);
@@ -393,7 +394,7 @@ if (base.fetchingInProgress())
 	final Document doc = base.jumpByHrefInBook(note.url, luwrain.getAreaVisibleWidth(readerArea), readerArea.getCurrentRowIndex(), note.position);
 	if (doc == null)
 	    return false;
-	readerArea.setDocument(doc);
+	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	goToReaderArea();
 	return true;
     }
@@ -408,7 +409,7 @@ if (base.fetchingInProgress())
 	base.updateNotesModel();
 	notesArea.refresh();
 	updateMode();
-	readerArea.setDocument(newDoc);
+	readerArea.setDocument(newDoc, luwrain.getAreaVisibleWidth(readerArea));
 	goToReaderArea();
 	announceNewDoc(newDoc);
     }
@@ -422,7 +423,7 @@ if (base.fetchingInProgress())
 	    if (doc == null)
 		return false;
 	    updateMode();
-	    readerArea.setDocument(doc);
+	    readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	    goToReaderArea();
 	    announceNewDoc(doc);
 	    return true;
@@ -446,7 +447,7 @@ if (base.fetchingInProgress())
 		luwrain.launchApp("reader", new String[]{href});
 		return true;
 	    }
-	    readerArea.setDocument(doc);
+	    readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	    updateMode();
 	    goToReaderArea();
 	    announceNewDoc(doc);

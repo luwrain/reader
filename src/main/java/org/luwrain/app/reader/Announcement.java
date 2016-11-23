@@ -19,6 +19,9 @@ package org.luwrain.app.reader;
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.doctree.*;
+import org.luwrain.doctree.control.*;
+import org.luwrain.doctree.view.Iterator;
+import org.luwrain.doctree.view.Layout;
 
 class Announcement
 {
