@@ -46,7 +46,7 @@ public class ReaderApp implements Application
     private ListArea notesArea;
     private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
-    private Announcement announcement;
+
     private String startingUrl;
     private String startingContentType;
     private Modes mode = Modes.DOC;
@@ -102,7 +102,8 @@ public class ReaderApp implements Application
 
     private void createAreas()
     {
-	announcement = new Announcement(new DefaultControlEnvironment(luwrain), strings);
+	final org.luwrain.doctree.control.Strings announcementStrings = (org.luwrain.doctree.control.Strings)luwrain.i18n().getStrings("luwrain.doctree");
+	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
 
 
 	//	final Actions actions = this;
@@ -148,7 +149,7 @@ public class ReaderApp implements Application
 		}
 	    };
 
-	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain)){
+	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain), announcement){
 
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
@@ -391,7 +392,7 @@ if (base.fetchingInProgress())
 	    goToReaderArea();
 	    return true;
 	}
-	final Document doc = base.jumpByHrefInBook(note.url, luwrain.getAreaVisibleWidth(readerArea), readerArea.getCurrentRowIndex(), note.position);
+	final Document doc = base.jumpByHrefInBook(note.url, readerArea.getCurrentRowIndex(), note.position);
 	if (doc == null)
 	    return false;
 	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
@@ -403,7 +404,7 @@ if (base.fetchingInProgress())
     {
 	if (book == null && doc == null)
 	    return;
-	final Document newDoc = base.acceptNewSuccessfulResult(book, doc, getSuitableWidth());
+	final Document newDoc = base.acceptNewSuccessfulResult(book, doc);
 	if (base.isInBookMode())
 	    treeArea.refresh();
 	base.updateNotesModel();
@@ -441,7 +442,7 @@ if (base.fetchingInProgress())
     {
 	if (base.isInBookMode())
 	{
-	    final Document doc = base.jumpByHrefInBook(href, width, readerArea.getCurrentRowIndex(), -1);
+	    final Document doc = base.jumpByHrefInBook(href, readerArea.getCurrentRowIndex(), -1);
 	    if (doc == null)
 	    {
 		luwrain.launchApp("reader", new String[]{href});

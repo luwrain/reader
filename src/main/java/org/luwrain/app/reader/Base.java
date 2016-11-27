@@ -131,7 +131,7 @@ class Base
 	return true;
     }
 
-    Document jumpByHrefInBook(String href, int width, int lastPos, int newDesiredPos)
+    Document jumpByHrefInBook(String href, int lastPos, int newDesiredPos)
     {
 	NullCheck.notEmpty(href, "href");
 	if (!isInBookMode() || fetchingInProgress())
@@ -148,7 +148,6 @@ class Base
 	this.currentDoc = doc;
 	if (newDesiredPos >= 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
-	//	this.currentDoc.buildView(width);
 	return doc;
     }
 
@@ -170,8 +169,7 @@ class Base
     }
 
     //Returns the document to be shown in readerArea
-    Document acceptNewSuccessfulResult(Book book, Document doc,
-				       int docWidth)
+    Document acceptNewSuccessfulResult(Book book, Document doc)
     {
 	if (book != null && this.book != book)
 	{
@@ -192,7 +190,6 @@ class Base
 	if (savedPosition > 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
 	try {
-	    //	    currentDoc.buildView(docWidth);
 	}
 	catch(Exception e)
 	{
