@@ -37,7 +37,7 @@ class BookTreeModelSource implements CachedTreeModelSource
 	if (obj == root)
 	{
 	    for(Book.Section s: sections)
-		if (s.level() == 1)
+		if (s.level == 1)
 		    res.add(s);
 	} else
 	{
@@ -50,9 +50,9 @@ class BookTreeModelSource implements CachedTreeModelSource
 		final Book.Section sect = sections[i];
 		for(int k = i + 1;k < sections.length;++k)
 		{
-		    if (sections[k].level() <= sect.level())
+		    if (sections[k].level <= sect.level)
 			break;
-		    if (sections[k].level() == sect.level() + 1)
+		    if (sections[k].level == sect.level + 1)
 			res.add(sections[k]);
 		}
 	    }

@@ -47,8 +47,6 @@ class Base
     private Document currentDoc = null;
     private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
-    //    private final LinkedList<String> enteredUrls = new LinkedList<String>();
-
     boolean init(Luwrain luwrain, Strings strings)
     {
 	NullCheck.notNull(luwrain, "luwrain");
@@ -82,6 +80,7 @@ class Base
 	if (!history .isEmpty() && currentRowIndex >= 0)
 	    history.getLast().startingRowIndex = currentRowIndex;
 	task = createTask(app, url, contentType);
+	Log.debug("reader", "executing new task for fetching " + url);
 	executor.execute(task);
 	return true;
     }
@@ -207,11 +206,16 @@ class Base
 		try {
 		    final UrlLoader urlLoader = new UrlLoader(url, contentType);
 		    final UrlLoader.Result res = urlLoader.load();
+		    Log.debug("reader", "UrlLoader finished");
 		if (res != null)
+		{
+		    Log.debug("reader", "UrlLoader result not null, sending back to the application");
 		    luwrain.runInMainThread(()->app.onNewResult(res));
 		}
-		catch(IOException e)
+		}
+		catch(Exception e)
 		{
+		    Log.error("reader", "unable to fetch " + url + ":" + e.getClass().getName() + ":" + e.getMessage());
 		    luwrain.crash(e);
 		}
 	}, null);
