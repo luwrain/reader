@@ -43,7 +43,7 @@ Appearance(Luwrain luwrain, Strings strings)
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
-	    if (entry.isCatalogOnly() && flags.contains(Flags.BRIEF))
+	    if (Base.isCatalogOnly(entry) && flags.contains(Flags.BRIEF))
 		luwrain.say(entry.toString() + " " + strings.catalog()); else
 		luwrain.say(entry.toString());
 	    return;
@@ -58,7 +58,7 @@ Appearance(Luwrain luwrain, Strings strings)
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
-	    if (entry.isCatalogOnly())
+	    if (Base.isCatalogOnly(entry))
 		return "[" + entry.toString() + "]";
 		return " " + entry.toString() + " ";
 	}

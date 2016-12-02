@@ -19,15 +19,21 @@ package org.luwrain.app.opds;
 import java.util.*;
 import java.net.*;
 import java.util.concurrent.*;
+import javax.activation.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.ThreadSyncEvent;
 import org.luwrain.controls.*;
 import org.luwrain.util.Opds;
+import org.luwrain.util.Opds.Link;
 import org.luwrain.util.Opds.Entry;
 
 class Base
 {
+	static final String PROFILE_CATALOG = "opds-catalog";
+	static final String BASE_TYPE_CATALOG = "application/atom+xml";
+	static final String PRIMARY_TYPE_IMAGE = "image";
+
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
     private Strings strings;
@@ -47,7 +53,6 @@ class Base
 	model.setItems(libraries);
 	return true;
     }
-
 
     boolean start(OpdsApp app, URL url)
     {
@@ -154,33 +159,33 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(entry, "entry");
-	if (!entry.hasBooks())
+	if (!hasBooks(entry))
 	{
-	    final Opds.Link catalogLink = entry.getCatalogLink();
+	    final Opds.Link catalogLink = getCatalogLink(entry);
 	    if (catalogLink == null)
 		return;
-	    start(app, new URL(currentUrl(), catalogLink.getUrl()));
+	    start(app, new URL(currentUrl(), catalogLink.url));
 	    return;
 	}
 	//Opening document
 	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
-	for(Opds.Link link: entry.getLinks())
+	for(Opds.Link link: entry.links)
 	{
-	    if (link.isCatalog() || link.isImage())
+	    if (isCatalog(link) || isImage(link))
 		continue;
 	    s.add(link);
 	}
 	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
 	if (suitable.length == 1)
 	{
-	    openReader(new URL(currentUrl(), suitable[0].getUrl().toString()), suitable[0].getType());
+	    openReader(new URL(currentUrl(), suitable[0].url.toString()), suitable[0].type);
 	    return;
 	}
 	for(Opds.Link link: suitable)
-	    if (link.getType().equals("application/fb2+zip") ||
-		link.getType().equals("application/fb2"))
+	    if (link.type.equals("application/fb2+zip") ||
+		link.type.equals("application/fb2"))
 	    {
-		openReader(new URL(currentUrl(), link.getUrl().toString()), link.getType());
+		openReader(new URL(currentUrl(), link.url.toString()), link.type);
 		return;
 	    }
 	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
@@ -191,7 +196,7 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(lines, "lines");
 
-	lines.addLine(entry.getParentUrl().toString());
+	lines.addLine(entry.parentUrl.toString());
 	lines.addLine("");
 
 	/*
@@ -246,19 +251,19 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	lines.addLine("");
 	*/
 
-	for(Opds.Link l: entry.getLinks())
+	for(Opds.Link l: entry.links)
 	{
 	    final StringBuilder b = new StringBuilder();
 	    try {
-	    final URL url = new URL(currentUrl(), l.getUrl());
+	    final URL url = new URL(currentUrl(), l.url);
 	    b.append(url.toString());
 	    }
 	    catch(MalformedURLException e)
 	    {
-		b.append(l.getUrl());
+		b.append(l.url);
 	    }
-if (l.getType() != null)
-    b.append(" " + l.getType());
+if (l.type != null)
+    b.append(" " + l.type);
 lines.addLine(new String(b));
 	}
 	lines.addLine("");
@@ -285,5 +290,129 @@ contentType});
     {
 	return model;
     }
+
+static Link getCatalogLink(Entry entry)
+	{
+	    NullCheck.notNull(entry, "entry");
+	    for(Link link: entry.links)
+		if (isCatalog(link))
+		    return link;
+	    return null;
+	}
+
+static boolean isCatalogOnly(Entry entry)
+	{
+	    NullCheck.notNull(entry, "entry");
+	    for(Link link: entry.links)
+		if (!isCatalog(link))
+		    return false;
+	    return true;
+	}
+
+static boolean hasCatalogLinks(Entry entry)
+	{
+	    NullCheck.notNull(entry, "entry");
+	    for(Link link: entry.links)
+		if (isCatalog(link))
+		    return true;
+	    return false;
+	}
+
+static boolean hasBooks(Entry entry)
+	{
+	    NullCheck.notNull(entry, "entry");
+	    for(Link link: entry.links)
+		if (!isCatalog(link) && !isImage(link))
+		    return true;
+	    return false;
+	}
+
+static boolean isCatalog(Link link)
+	{
+	    NullCheck.notNull(link, "link");
+	    if (getTypeProfile(link).toLowerCase().equals(PROFILE_CATALOG))
+		return true;
+	    return getBaseType(link).equals(BASE_TYPE_CATALOG);
+	}
+
+static boolean isImage(Link link)
+	{
+	    NullCheck.notNull(link, "link");
+	    return getPrimaryType(link).toLowerCase().trim().equals(PRIMARY_TYPE_IMAGE);
+	}
+
+	//Never returns null
+static String getBaseType(Link link)
+	{
+	    NullCheck.notNull(link, "link");
+	    if (link.type == null)
+		return "";
+	    try {
+		final MimeType mime = new MimeType(link.type);
+		final String value = mime.getBaseType();
+		return value != null?value:"";
+	    }
+	    catch(MimeTypeParseException e)
+	    {
+		e.printStackTrace();
+		return "";
+	    }
+	}
+
+	//Never returns null
+static String getPrimaryType(Link link)
+	{
+	    NullCheck.notNull(link, "link");
+	    if (link.type == null)
+		return "";
+	    try {
+		final MimeType mime = new MimeType(link.type);
+		final String value = mime.getPrimaryType();
+		return value != null?value:"";
+	    }
+	    catch(MimeTypeParseException e)
+	    {
+		e.printStackTrace();
+		return "";
+	    }
+	}
+
+	//Never returns null
+static String getSubType(Link link)
+	{
+	    NullCheck.notNull(link, "link");
+	    if (link.type == null)
+		return "";
+	    try {
+		final MimeType mime = new MimeType(link.type);
+		final String value = mime.getSubType();
+		return value != null?value:"";
+	    }
+	    catch(MimeTypeParseException e)
+	    {
+		e.printStackTrace();
+		return "";
+	    }
+	}
+
+	//Never returns null
+static String getTypeProfile(Link link)
+	{
+	    NullCheck.notNull(link, "link");
+	    if (link.type == null)
+		return "";
+	    try {
+		final MimeType mime = new MimeType(link.type);
+		final String value = mime.getParameter("profile");
+		return value != null?value:"";
+	    }
+	    catch(MimeTypeParseException e)
+	    {
+		e.printStackTrace();
+		return "";
+	    }
+	}
+
+
 
 }
