@@ -39,6 +39,7 @@ class Actions
 	catch(MalformedURLException e)
 	{
 	    luwrain.message(strings.badUrl(library.url), Luwrain.MESSAGE_ERROR);
+
 	    return true;
 	}
     }
@@ -62,8 +63,9 @@ try {
 	}
     }
 
-    boolean onListProperties(SimpleArea detailsArea, Object obj)
+    boolean onListProperties(Base base, SimpleArea detailsArea, Object obj)
     {
+	NullCheck.notNull(base, "base");
 	NullCheck.notNull(detailsArea, "detailsArea");
 	if (obj == null || !(obj instanceof Opds.Entry))
 	    return false;
@@ -72,9 +74,14 @@ try {
 	detailsArea.beginLinesTrans();
 	detailsArea.clear();
 	for(Opds.Link l: entry.links)
-	    detailsArea.addLine(l.url + " (" + l.type + ")");
+	{
+	    final URL url = base.prepareUrl(l.url);
+	    if (url != null)
+		detailsArea.addLine(url.toString() + " (" + l.type + ")");
+	}
 	detailsArea.addLine("");
 	detailsArea.endLinesTrans();
+	    luwrain.setActiveArea(detailsArea);
 	return true;
     }
 }

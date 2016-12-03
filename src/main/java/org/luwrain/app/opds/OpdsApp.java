@@ -128,7 +128,7 @@ public class OpdsApp implements Application
 		    switch(event.getCode())
 		    {
 		    case PROPERTIES:
-			    return actions.onListProperties(detailsArea, selected());
+			return actions.onListProperties(base, detailsArea, selected());
 		    case CLOSE:
 			closeApp();
 			return true;

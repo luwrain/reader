@@ -1,18 +1,3 @@
-/*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
-
-   This file is part of the LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
 
 package org.luwrain.app.opds;
 
@@ -41,7 +26,7 @@ class Base
     private RemoteLibrary[] libraries;
     private final FixedListModel librariesModel = new FixedListModel();
     private final FixedListModel model = new FixedListModel();
-    private final LinkedList<URL> history = new LinkedList<URL>();
+    private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
     boolean init(Luwrain luwrain, Strings strings)
     {
@@ -60,11 +45,15 @@ class Base
 	NullCheck.notNull(url, "url");
 	if (task != null && !task.isDone())
 	    return false;
-	task = constructTask(app, url);
+	task = new FutureTask<Opds.Result>(()->{
+		final Opds.Result res = Opds.fetch(url);
+		luwrain.runInMainThread(()->onFetchResult(url, app, res));
+	    }, null);
 	Log.debug("opds", "starting fetching:" + url.toString());
 	executor.execute(task);
-	history.add(url);
+	//	history.add(url);
 	model.clear();
+	app.updateAreas();
 	return true;
     }
 
@@ -81,17 +70,19 @@ class Base
 	    return true ;
 	}
 	history.pollLast();
-	task = constructTask(app, history.getLast());
+	//	task = constructTask(app, history.getLast().url);
 	executor.execute(task);
 	model.clear();
 	return true;
     }
 
-private void onFetchResult(OpdsApp app, Opds.Result res)
+    private void onFetchResult(URL url, OpdsApp app, Opds.Result res)
     {
+	NullCheck.notNull(url, "url");
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(res, "res");
 	Log.debug("opds", "fetching result:" + res.getError().toString());
+	app.updateAreas();
 	switch(res.getError())
 	{
 	case FETCH:
@@ -113,19 +104,9 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	{
 	    Log.debug("opds", "" + res.getEntries().length + " entries");
 		model.setItems(res.getEntries());
+		history.add(new HistoryItem(url));
 	    luwrain.playSound(Sounds.INTRO_REGULAR);
 	}
-	    app.updateAreas();
-    }
-
-    private FutureTask<Opds.Result> constructTask(OpdsApp app, URL url)
-    {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(url, "url");
-	return new FutureTask<Opds.Result>(()->{
-		final Opds.Result res = Opds.fetch(url);
-		luwrain.runInMainThread(()->onFetchResult(app, res));
-	    }, null);
     }
 
     private void loadLibraries()
@@ -150,9 +131,10 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	return task != null && !task.isDone();
     }
 
-    URL currentUrl()
+    URL getCurrentUrl()
     {
-	return !history.isEmpty()?history.getLast():null;
+	Log.debug("opds", "history has " + history.size() + " items");
+	return !history.isEmpty()?history.getLast().url:null;
     }
 
     void onEntry(OpdsApp app, Opds.Entry entry) throws MalformedURLException
@@ -164,7 +146,7 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	    final Opds.Link catalogLink = getCatalogLink(entry);
 	    if (catalogLink == null)
 		return;
-	    start(app, new URL(currentUrl(), catalogLink.url));
+	    start(app, new URL(getCurrentUrl(), catalogLink.url));
 	    return;
 	}
 	//Opening document
@@ -178,14 +160,14 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
 	if (suitable.length == 1)
 	{
-	    openReader(new URL(currentUrl(), suitable[0].url.toString()), suitable[0].type);
+	    openReader(new URL(getCurrentUrl(), suitable[0].url.toString()), suitable[0].type);
 	    return;
 	}
 	for(Opds.Link link: suitable)
 	    if (link.type.equals("application/fb2+zip") ||
 		link.type.equals("application/fb2"))
 	    {
-		openReader(new URL(currentUrl(), link.url.toString()), link.type);
+		openReader(new URL(getCurrentUrl(), link.url.toString()), link.type);
 		return;
 	    }
 	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
@@ -255,7 +237,7 @@ private void onFetchResult(OpdsApp app, Opds.Result res)
 	{
 	    final StringBuilder b = new StringBuilder();
 	    try {
-	    final URL url = new URL(currentUrl(), l.url);
+	    final URL url = new URL(getCurrentUrl(), l.url);
 	    b.append(url.toString());
 	    }
 	    catch(MalformedURLException e)
@@ -285,6 +267,18 @@ contentType});
 	return librariesModel;
     }
 
+    URL prepareUrl(String href)
+    {
+	final URL currentUrl = getCurrentUrl();
+	NullCheck.notNull(currentUrl, "currentUrl");
+	try {
+	    return new URL(currentUrl, href);
+	}
+	catch(MalformedURLException e)
+	{
+	    return null;
+	}
+    }
 
     ListArea.Model getModel()
     {
