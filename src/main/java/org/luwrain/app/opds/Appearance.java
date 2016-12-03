@@ -1,38 +1,24 @@
-/*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
-
-   This file is part of the LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
 
 package org.luwrain.app.opds;
 
 import java.util.*;
 
-import org.luwrain.util.Opds;
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
+import org.luwrain.util.Opds;
+import org.luwrain.util.Opds.Entry;
 
 class Appearance implements ListArea.Appearance
 {
-    private Luwrain luwrain;
-    private Strings strings;
+    private final Luwrain luwrain;
+    private final Strings strings;
 
-Appearance(Luwrain luwrain, Strings strings)
+    Appearance(Luwrain luwrain, Strings strings)
     {
-	this.luwrain = luwrain;
-	this.strings = strings;
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
+	this.luwrain = luwrain;
+	this.strings = strings;
     }
 
     @Override public void announceItem(Object item, Set<Flags> flags)
@@ -44,8 +30,8 @@ Appearance(Luwrain luwrain, Strings strings)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
 	    if (Base.isCatalogOnly(entry) && flags.contains(Flags.BRIEF))
-		luwrain.say(entry.toString() + " " + strings.catalog()); else
-		luwrain.say(entry.toString());
+		luwrain.say(getString(entry) + " " + strings.catalog()); else
+		luwrain.say(getString(entry));
 	    return;
 	}
 		luwrain.say(item.toString());
@@ -59,8 +45,8 @@ Appearance(Luwrain luwrain, Strings strings)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
 	    if (Base.isCatalogOnly(entry))
-		return "[" + entry.toString() + "]";
-		return " " + entry.toString() + " ";
+		return "[" + getString(entry) + "]";
+	    return " " + getString(entry) + " ";
 	}
 	return " " + item.toString() + " ";
     }
@@ -72,6 +58,18 @@ Appearance(Luwrain luwrain, Strings strings)
 
     @Override public int getObservableRightBound(Object item)
     {
-	return item != null?item.toString().length() + 1:0;
+	if (item == null)
+	    return 0;
+	if (item instanceof Entry)
+	    return getString((Entry)item).length() + 1;
+	return item.toString().length() + 1;    
+}
+
+    static private String getString(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	if (entry.authors == null || entry.authors.length == 0)
+	    return entry.title;
+	return entry.authors[0].name + " - " + entry.title;
     }
 }
