@@ -15,9 +15,11 @@ import org.luwrain.util.Opds.Entry;
 
 class Base
 {
-	static final String PROFILE_CATALOG = "opds-catalog";
-	static final String BASE_TYPE_CATALOG = "application/atom+xml";
-	static final String PRIMARY_TYPE_IMAGE = "image";
+    static private final String CONTENT_TYPE_FB2_ZIP = org.luwrain.doctree.loading.UrlLoader.CONTENT_TYPE_FB2_ZIP;
+
+    static final String PROFILE_CATALOG = "opds-catalog";
+    static final String BASE_TYPE_CATALOG = "application/atom+xml";
+    static final String PRIMARY_TYPE_IMAGE = "image";
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Luwrain luwrain;
@@ -92,8 +94,8 @@ class Base
 	if(res.hasEntries())
 	{
 	    Log.debug("opds", "" + res.getEntries().length + " entries");
-		model.setItems(res.getEntries());
-		history.add(new HistoryItem(url));
+	    model.setItems(res.getEntries());
+	    history.add(new HistoryItem(url));
 	    luwrain.playSound(Sounds.INTRO_REGULAR);
 	}
     }
@@ -130,15 +132,27 @@ class Base
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(entry, "entry");
-	if (!hasBooks(entry))
-	{
-	    final Opds.Link catalogLink = getCatalogLink(entry);
-	    if (catalogLink == null)
-		return;
-	    start(app, new URL(getCurrentUrl(), catalogLink.url));
+	if (openBook(entry))
 	    return;
+	final Opds.Link catalogLink = getCatalogLink(entry);
+	if (catalogLink == null)
+	    return;
+	start(app, new URL(getCurrentUrl(), catalogLink.url));
+    }
+
+    private boolean openBook(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	for(Link link:entry.links)
+	{
+	    if (link.type.toLowerCase().equals(CONTENT_TYPE_FB2_ZIP))
+	    {
+		launchReader(prepareUrl(link.url).toString(), link.type);
+		return true;
+	    }
 	}
-	//Opening document
+	return false;
+	/*
 	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
 	for(Opds.Link link: entry.links)
 	{
@@ -160,95 +174,7 @@ class Base
 		return;
 	    }
 	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
-    }
-
-    void fillEntryProperties(Opds.Entry entry, MutableLines lines)
-    {
-	NullCheck.notNull(entry, "entry");
-	NullCheck.notNull(lines, "lines");
-
-	lines.addLine(entry.parentUrl.toString());
-	lines.addLine("");
-
-	/*
-	lines.addLine("Подкаталоги :");
-	for(Opds.Link link: entry.links())
-	{
-	    if (!link.isCatalog())
-		continue;
-	    try {
-		lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
-	    }
-	    catch (Exception e)
-	    {
-		e.printStackTrace();
-	    }
-	}
-	lines.addLine("");
-
-	if (entry.hasBooks())
-	{
-	    lines.addLine("Текстовые ресурсы:");
-	    for(Opds.Link link: entry.links())
-	    {
-		if (link.isCatalog() || 
-		    !link.getPrimaryType().toLowerCase().equals("application"))
-		    continue;
-		try {
-		    lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
-		}
-		catch (Exception e)
-		{
-		    e.printStackTrace();
-		}
-	    }
-	    lines.addLine("");
-	}
-
-	lines.addLine("Изображения:");
-	for(Opds.Link link: entry.links())
-	{
-	    if (link.isCatalog() || 
-		!link.getPrimaryType().toLowerCase().equals("image"))
-		continue;
-	    try {
-		lines.addLine(link.getSubType() + ": " + new URL(currentUrl(), link.url()).toString());
-	    }
-	    catch (Exception e)
-	    {
-		e.printStackTrace();
-	    }
-	}
-	lines.addLine("");
 	*/
-
-	for(Opds.Link l: entry.links)
-	{
-	    final StringBuilder b = new StringBuilder();
-	    try {
-	    final URL url = new URL(getCurrentUrl(), l.url);
-	    b.append(url.toString());
-	    }
-	    catch(MalformedURLException e)
-	    {
-		b.append(l.url);
-	    }
-if (l.type != null)
-    b.append(" " + l.type);
-lines.addLine(new String(b));
-	}
-	lines.addLine("");
-    }
-
-    private void openReader(URL url, String contentType)
-    {
-	NullCheck.notNull(url, "url");
-	NullCheck.notNull(contentType, "contentType");
-	Log.debug("opds", "launching reader for " + url.toString() + " and content type \'" + contentType + "\'");
-		    luwrain.launchApp("reader", new String[]{
-			    "--URL", 
-url.toString(),
-contentType});
     }
 
     void launchReader(String url, String contentType)
@@ -281,128 +207,125 @@ contentType});
 	return model;
     }
 
-static Link getCatalogLink(Entry entry)
-	{
-	    NullCheck.notNull(entry, "entry");
-	    for(Link link: entry.links)
-		if (isCatalog(link))
-		    return link;
-	    return null;
-	}
+    static Link getCatalogLink(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	for(Link link: entry.links)
+	    if (isCatalog(link))
+		return link;
+	return null;
+    }
 
-static boolean isCatalogOnly(Entry entry)
-	{
-	    NullCheck.notNull(entry, "entry");
-	    for(Link link: entry.links)
-		if (!isCatalog(link))
-		    return false;
-	    return true;
-	}
+    static boolean isCatalogOnly(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	for(Link link: entry.links)
+	    if (!isCatalog(link))
+		return false;
+	return true;
+    }
 
-static boolean hasCatalogLinks(Entry entry)
-	{
-	    NullCheck.notNull(entry, "entry");
-	    for(Link link: entry.links)
-		if (isCatalog(link))
-		    return true;
-	    return false;
-	}
-
-static boolean hasBooks(Entry entry)
-	{
-	    NullCheck.notNull(entry, "entry");
-	    for(Link link: entry.links)
-		if (!isCatalog(link) && !isImage(link))
-		    return true;
-	    return false;
-	}
-
-static boolean isCatalog(Link link)
-	{
-	    NullCheck.notNull(link, "link");
-	    if (getTypeProfile(link).toLowerCase().equals(PROFILE_CATALOG))
+    static boolean hasCatalogLinks(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	for(Link link: entry.links)
+	    if (isCatalog(link))
 		return true;
-	    return getBaseType(link).equals(BASE_TYPE_CATALOG);
-	}
+	return false;
+    }
 
-static boolean isImage(Link link)
+    static boolean hasBooks(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	for(Link link: entry.links)
+	    if (!isCatalog(link) && !isImage(link))
+		return true;
+	return false;
+    }
+
+    static boolean isCatalog(Link link)
+    {
+	NullCheck.notNull(link, "link");
+	if (getTypeProfile(link).toLowerCase().equals(PROFILE_CATALOG))
+	    return true;
+	return getBaseType(link).equals(BASE_TYPE_CATALOG);
+    }
+
+    static boolean isImage(Link link)
+    {
+	NullCheck.notNull(link, "link");
+	return getPrimaryType(link).toLowerCase().trim().equals(PRIMARY_TYPE_IMAGE);
+    }
+
+    //Never returns null
+    static String getBaseType(Link link)
+    {
+	NullCheck.notNull(link, "link");
+	if (link.type == null)
+	    return "";
+	try {
+	    final MimeType mime = new MimeType(link.type);
+	    final String value = mime.getBaseType();
+	    return value != null?value:"";
+	}
+	catch(MimeTypeParseException e)
 	{
-	    NullCheck.notNull(link, "link");
-	    return getPrimaryType(link).toLowerCase().trim().equals(PRIMARY_TYPE_IMAGE);
+	    e.printStackTrace();
+	    return "";
 	}
+    }
 
-	//Never returns null
-static String getBaseType(Link link)
+    //Never returns null
+    static String getPrimaryType(Link link)
+    {
+	NullCheck.notNull(link, "link");
+	if (link.type == null)
+	    return "";
+	try {
+	    final MimeType mime = new MimeType(link.type);
+	    final String value = mime.getPrimaryType();
+	    return value != null?value:"";
+	}
+	catch(MimeTypeParseException e)
 	{
-	    NullCheck.notNull(link, "link");
-	    if (link.type == null)
-		return "";
-	    try {
-		final MimeType mime = new MimeType(link.type);
-		final String value = mime.getBaseType();
-		return value != null?value:"";
-	    }
-	    catch(MimeTypeParseException e)
-	    {
-		e.printStackTrace();
-		return "";
-	    }
+	    e.printStackTrace();
+	    return "";
 	}
+    }
 
-	//Never returns null
-static String getPrimaryType(Link link)
+    //Never returns null
+    static String getSubType(Link link)
+    {
+	NullCheck.notNull(link, "link");
+	if (link.type == null)
+	    return "";
+	try {
+	    final MimeType mime = new MimeType(link.type);
+	    final String value = mime.getSubType();
+	    return value != null?value:"";
+	}
+	catch(MimeTypeParseException e)
 	{
-	    NullCheck.notNull(link, "link");
-	    if (link.type == null)
-		return "";
-	    try {
-		final MimeType mime = new MimeType(link.type);
-		final String value = mime.getPrimaryType();
-		return value != null?value:"";
-	    }
-	    catch(MimeTypeParseException e)
-	    {
-		e.printStackTrace();
-		return "";
-	    }
+	    e.printStackTrace();
+	    return "";
 	}
+    }
 
-	//Never returns null
-static String getSubType(Link link)
+    //Never returns null
+    static String getTypeProfile(Link link)
+    {
+	NullCheck.notNull(link, "link");
+	if (link.type == null)
+	    return "";
+	try {
+	    final MimeType mime = new MimeType(link.type);
+	    final String value = mime.getParameter("profile");
+	    return value != null?value:"";
+	}
+	catch(MimeTypeParseException e)
 	{
-	    NullCheck.notNull(link, "link");
-	    if (link.type == null)
-		return "";
-	    try {
-		final MimeType mime = new MimeType(link.type);
-		final String value = mime.getSubType();
-		return value != null?value:"";
-	    }
-	    catch(MimeTypeParseException e)
-	    {
-		e.printStackTrace();
-		return "";
-	    }
+	    e.printStackTrace();
+	    return "";
 	}
-
-	//Never returns null
-static String getTypeProfile(Link link)
-	{
-	    NullCheck.notNull(link, "link");
-	    if (link.type == null)
-		return "";
-	    try {
-		final MimeType mime = new MimeType(link.type);
-		final String value = mime.getParameter("profile");
-		return value != null?value:"";
-	    }
-	    catch(MimeTypeParseException e)
-	    {
-		e.printStackTrace();
-		return "";
-	    }
-	}
-
-
-
+    }
 }

@@ -20,7 +20,6 @@ public class OpdsApp implements Application
     private ListArea librariesArea;
     private ListArea listArea;
     private ListArea detailsArea;
-    private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
 
     @Override public boolean onLaunch(Luwrain luwrain)
@@ -37,7 +36,6 @@ public class OpdsApp implements Application
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, listArea, detailsArea));
-	layouts.add(new AreaLayout(propertiesArea));
 	return true;
     }
 
@@ -74,10 +72,6 @@ public class OpdsApp implements Application
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
-		    case PROPERTIES:
-			if (selected() == null)
-			    return false;
-			return showEntryProperties(selected());
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -206,37 +200,6 @@ detailsParams.name = strings.detailsAreaName();
 	librariesArea.setClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
 	listArea.setClickHandler((area, index, obj)->actions.onListClick(base, listArea, obj));
 detailsArea.setClickHandler((area, index, obj)->actions.onLinkClick(base, obj));
-
-
-	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), "Просмотр информации"){
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			    switch(event.getSpecial())
-			{
-		    case ESCAPE:
-			closePropertiesArea();
-			return true;
-			}
-		    return super.onKeyboardEvent(event);
-		}
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    switch(event.getCode())
-		    {
-		    case CANCEL:
-			closePropertiesArea();
-			return true;
-		    case CLOSE:
-closeApp();
-			return true;
-		    default:
-			return super.onEnvironmentEvent(event);
-		    }
-		}
-	    };
     }
 
     void updateAreas()
@@ -245,24 +208,6 @@ closeApp();
 	listArea.refresh();
 	listArea.resetHotPoint(false);
 	luwrain.onAreaNewBackgroundSound(listArea);
-    }
-
-private boolean showEntryProperties(Object obj)
-    {
-	NullCheck.notNull(obj, "obj");
-	if (!(obj instanceof Opds.Entry))
-	    return false;
-	final Opds.Entry entry = (Opds.Entry)obj;
-	propertiesArea.clear();
-	base.fillEntryProperties(entry, propertiesArea);
-	layouts.show(1);
-	luwrain.announceActiveArea();
-	return true;
-    }
-
- private void closePropertiesArea()
-    {
-	layouts.show(0);
     }
 
     private boolean onReturnBack()
