@@ -63,7 +63,7 @@ try {
 	}
     }
 
-    boolean onListProperties(Base base, SimpleArea detailsArea, Object obj)
+    boolean onListProperties(Base base, ListArea detailsArea, Object obj)
     {
 	NullCheck.notNull(base, "base");
 	NullCheck.notNull(detailsArea, "detailsArea");
@@ -71,17 +71,26 @@ try {
 	    return false;
 	Log.debug("opds", "on list properties");
 	final Opds.Entry entry = (Opds.Entry)obj;
-	detailsArea.beginLinesTrans();
-	detailsArea.clear();
+	final LinkedList<PropertiesItem> items = new LinkedList<PropertiesItem>();
 	for(Opds.Link l: entry.links)
 	{
 	    final URL url = base.prepareUrl(l.url);
 	    if (url != null)
-		detailsArea.addLine(url.toString() + " (" + l.type + ")");
+		items.add(new PropertiesItem(url.toString(), l.type));
 	}
-	detailsArea.addLine("");
-	detailsArea.endLinesTrans();
+	final FixedListModel model = (FixedListModel)detailsArea.model();
+	model.setItems(items.toArray(new PropertiesItem[items.size()]));
 	    luwrain.setActiveArea(detailsArea);
+	return true;
+    }
+
+    boolean onLinkClick(Base base, Object obj)
+    {
+	NullCheck.notNull(base, "base");
+	if (obj == null || !(obj instanceof PropertiesItem))
+	    return false;
+	final PropertiesItem item = (PropertiesItem)obj;
+	base.launchReader(item.url, item.contentType);
 	return true;
     }
 }

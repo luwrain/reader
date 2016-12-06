@@ -82,22 +82,11 @@ class Base
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(res, "res");
 	Log.debug("opds", "fetching result:" + res.getError().toString());
+	task = null;
 	app.updateAreas();
-	switch(res.getError())
+	if (res.getError() == Opds.Result.Errors.FETCHING_PROBLEM)
 	{
-	case FETCH:
-	    luwrain.message("Каталог не может быть доставлен с сервера по причине ошибки соединения", Luwrain.MESSAGE_ERROR);
-	    return;
-	case PARSE:
-	    luwrain.message("Доставленные с сервера данные не являются корректным каталогом OPDS", Luwrain.MESSAGE_ERROR);
-	    return;
-	case NEEDPAY:
-	    luwrain.message("Сервер требует оплату  или особые условия за указанную книгу", Luwrain.MESSAGE_ERROR);
-	    return;
-	case NOERROR:
-	    break;
-	default:
-	    Log.error("opds", "unexpected OPDS fetch result:" + res.getError().toString());
+	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MESSAGE_ERROR);
 	    return;
 	}
 	if(res.hasEntries())
@@ -260,6 +249,13 @@ lines.addLine(new String(b));
 			    "--URL", 
 url.toString(),
 contentType});
+    }
+
+    void launchReader(String url, String contentType)
+    {
+	NullCheck.notEmpty(url, "url");
+	NullCheck.notNull(contentType, "contentType");
+	luwrain.launchApp("reader", new String[]{url, contentType});
     }
 
     ListArea.Model getLibrariesModel()

@@ -19,7 +19,7 @@ public class OpdsApp implements Application
     private Strings strings;
     private ListArea librariesArea;
     private ListArea listArea;
-    private SimpleArea detailsArea;
+    private ListArea detailsArea;
     private SimpleArea propertiesArea;
     private AreaLayoutSwitch layouts;
 
@@ -143,6 +143,7 @@ public class OpdsApp implements Application
 		    switch(query.getQueryCode())
 		    {
 		    case AreaQuery.BACKGROUND_SOUND:
+			Log.debug("opds", "fetching in progress:" + base.isFetchingInProgress());
 			if (base.isFetchingInProgress())
 			{
 			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
@@ -162,11 +163,15 @@ public class OpdsApp implements Application
 		}
 	    };
 
+	final ListArea.Params detailsParams = new ListArea.Params();
+detailsParams.environment = new DefaultControlEnvironment(luwrain);
+detailsParams.model = new FixedListModel();
+detailsParams.appearance = new DefaultListItemAppearance(detailsParams.environment);
+	//	params.clickHandler = (area, index, obj)->onClick(obj);
+detailsParams.name = strings.detailsAreaName();
 
-	librariesArea.setClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
-	listArea.setClickHandler((area, index, obj)->actions.onListClick(base, listArea, obj));
 
-	detailsArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.detailsAreaName()){
+	detailsArea = new ListArea(detailsParams){
 
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
@@ -197,6 +202,11 @@ public class OpdsApp implements Application
 		}
 
 	    };
+
+	librariesArea.setClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
+	listArea.setClickHandler((area, index, obj)->actions.onListClick(base, listArea, obj));
+detailsArea.setClickHandler((area, index, obj)->actions.onLinkClick(base, obj));
+
 
 	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), "Просмотр информации"){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
@@ -231,6 +241,7 @@ closeApp();
 
     void updateAreas()
     {
+	Log.debug("opds", "refreshing areas");
 	listArea.refresh();
 	listArea.resetHotPoint(false);
 	luwrain.onAreaNewBackgroundSound(listArea);
