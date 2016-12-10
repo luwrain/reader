@@ -26,7 +26,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
-import org.luwrain.doctree.control.*;
+import org.luwrain.controls.doctree.*;
 import org.luwrain.doctree.loading.*;
 import org.luwrain.player.*;
 
@@ -188,12 +188,7 @@ class Base
 	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), currentDoc.getUrl().toString());
 	if (savedPosition > 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
-	try {
-	}
-	catch(Exception e)
-	{
-	    luwrain.crash(e);
-	}
+	    currentDoc.commit();
 	return currentDoc;
     }
 

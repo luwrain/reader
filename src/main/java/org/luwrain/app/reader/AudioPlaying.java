@@ -6,7 +6,7 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.player.*;
 import org.luwrain.doctree.*;
-import org.luwrain.doctree.control.*;
+import org.luwrain.controls.doctree.*;
 
 class AudioPlaying  implements Listener
 {

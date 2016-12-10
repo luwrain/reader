@@ -25,7 +25,7 @@ import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
-import org.luwrain.doctree.control.*;
+import org.luwrain.controls.doctree.*;
 import org.luwrain.doctree.loading.*;
 
 public class ReaderApp implements Application
@@ -102,7 +102,7 @@ public class ReaderApp implements Application
 
     private void createAreas()
     {
-	final org.luwrain.doctree.control.Strings announcementStrings = (org.luwrain.doctree.control.Strings)luwrain.i18n().getStrings("luwrain.doctree");
+	final org.luwrain.controls.doctree.Strings announcementStrings = (org.luwrain.controls.doctree.Strings)luwrain.i18n().getStrings("luwrain.doctree");
 	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
 
 
