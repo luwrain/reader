@@ -147,6 +147,7 @@ class Base
 	this.currentDoc = doc;
 	if (newDesiredPos >= 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
+	doc.commit();
 	return doc;
     }
 
