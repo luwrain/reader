@@ -41,7 +41,7 @@ class Base
     private AudioPlaying audioPlaying = null;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
-    private final FixedListModel notesModel = new FixedListModel();
+    private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
 
     private Book book;
     private Document currentDoc = null;

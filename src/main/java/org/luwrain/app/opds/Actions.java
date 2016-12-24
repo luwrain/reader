@@ -78,7 +78,7 @@ try {
 	    if (url != null)
 		items.add(new PropertiesItem(url.toString(), l.type));
 	}
-	final FixedListModel model = (FixedListModel)detailsArea.model();
+	final ListUtils.FixedModel model = (ListUtils.FixedModel)detailsArea.getListModel();
 	model.setItems(items.toArray(new PropertiesItem[items.size()]));
 	    luwrain.setActiveArea(detailsArea);
 	return true;

@@ -33,7 +33,7 @@ class Base
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private Luwrain luwrain;
-    private FixedListModel model;
+    private ListUtils.FixedModel model;
     private Appearance appearance;
     private FutureTask task;
 
@@ -42,7 +42,7 @@ class Base
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
-	this.model = new FixedListModel();
+	this.model = new ListUtils.FixedModel();
 	this.appearance = new Appearance(luwrain, strings);
 	return true;
     }
@@ -65,7 +65,7 @@ class Base
 	return task != null && !task.isDone();
     }
 
-    FixedListModel getModel()
+    ListUtils.FixedModel getModel()
     {
 	return model;
     }

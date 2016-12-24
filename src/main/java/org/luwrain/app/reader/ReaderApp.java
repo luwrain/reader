@@ -244,7 +244,7 @@ if (base.fetchingInProgress())
 	final ListArea.Params listParams = new ListArea.Params();
 	listParams.environment = treeParams.environment;
 	listParams.model = base.getNotesModel();
-	listParams.appearance = new DefaultListItemAppearance(listParams.environment);
+	listParams.appearance = new ListUtils.DefaultAppearance(listParams.environment);
 	listParams.clickHandler = (area, index, obj)->onNotesClick(obj);
 	listParams.name = strings.notesAreaName();
 

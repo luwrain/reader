@@ -26,8 +26,8 @@ class Base
     private Strings strings;
     private FutureTask task;
     private RemoteLibrary[] libraries;
-    private final FixedListModel librariesModel = new FixedListModel();
-    private final FixedListModel model = new FixedListModel();
+    private final ListUtils.FixedModel librariesModel = new ListUtils.FixedModel();
+    private final ListUtils.FixedModel model = new ListUtils.FixedModel();
     private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
     boolean init(Luwrain luwrain, Strings strings)

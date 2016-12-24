@@ -159,8 +159,8 @@ public class OpdsApp implements Application
 
 	final ListArea.Params detailsParams = new ListArea.Params();
 detailsParams.environment = new DefaultControlEnvironment(luwrain);
-detailsParams.model = new FixedListModel();
-detailsParams.appearance = new DefaultListItemAppearance(detailsParams.environment);
+detailsParams.model = new ListUtils.FixedModel();
+detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.environment);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
 detailsParams.name = strings.detailsAreaName();
 
@@ -197,9 +197,9 @@ detailsParams.name = strings.detailsAreaName();
 
 	    };
 
-	librariesArea.setClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
-	listArea.setClickHandler((area, index, obj)->actions.onListClick(base, listArea, obj));
-detailsArea.setClickHandler((area, index, obj)->actions.onLinkClick(base, obj));
+	librariesArea.setListClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
+	listArea.setListClickHandler((area, index, obj)->actions.onListClick(base, listArea, obj));
+detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(base, obj));
     }
 
     void updateAreas()
