@@ -58,7 +58,7 @@ class AudioPlaying  implements Listener
 		    this.book = book;
 		    this.doc = doc;
 		    this.area = area;
-		    this.currentPlaylist = new SingleLocalFilePlaylist(audioFileUrl.toString());
+		    this.currentPlaylist = new DefaultPlaylist(audioFileUrl.toString());
 		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec());
 		    return true;
 		}
