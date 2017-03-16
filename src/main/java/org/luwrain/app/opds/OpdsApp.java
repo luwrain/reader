@@ -160,7 +160,7 @@ public class OpdsApp implements Application
 	final ListArea.Params detailsParams = new ListArea.Params();
 detailsParams.environment = new DefaultControlEnvironment(luwrain);
 detailsParams.model = new ListUtils.FixedModel();
-detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.environment);
+detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.environment, Suggestions.CLICKABLE_LIST_ITEM);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
 detailsParams.name = strings.detailsAreaName();
 
