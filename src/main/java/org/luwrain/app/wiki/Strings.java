@@ -18,6 +18,8 @@ package org.luwrain.app.wiki;
 
 public interface Strings
 {
+    static final String NAME = "luwrain.wiki";
+
     String appName();
     String querySuccess(String count);
     String errorSearching();

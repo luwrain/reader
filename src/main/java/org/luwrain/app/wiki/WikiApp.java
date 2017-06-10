@@ -27,8 +27,6 @@ import org.luwrain.popups.*;
 
 public class WikiApp implements Application, Actions
 {
-    static private final String STRINGS_NAME = "luwrain.wiki";
-
     private final Base base = new Base();
     private Luwrain luwrain;
     private Strings strings;
@@ -49,7 +47,7 @@ public class WikiApp implements Application, Actions
 
     @Override public boolean onLaunch(Luwrain luwrain)
     {
-	final Object o = luwrain.i18n().getStrings(STRINGS_NAME);
+	final Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
 	    return false;
 	strings = (Strings)o;
