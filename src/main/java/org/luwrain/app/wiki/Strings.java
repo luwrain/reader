@@ -19,7 +19,7 @@ package org.luwrain.app.wiki;
 public interface Strings
 {
     String appName();
-    String querySuccess(int count);
+    String querySuccess(String count);
     String errorSearching();
     String nothingFound();
     String searchEn();

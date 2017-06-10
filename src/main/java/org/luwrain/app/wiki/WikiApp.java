@@ -137,7 +137,7 @@ public class WikiApp implements Application, Actions
 	base.getModel().setItems(pages);
 	area.refresh();
 	area.reset(false);
-	luwrain.message(strings.querySuccess(pages.length), Luwrain.MESSAGE_DONE);
+	luwrain.message(strings.querySuccess("" + pages.length), Luwrain.MESSAGE_DONE);
     }
 
     @Override public String getAppName()
