@@ -17,6 +17,7 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.charset.*;
 import java.net.*;
@@ -32,13 +33,24 @@ import org.luwrain.doctree.loading.*;
 class Actions
 {
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
-
 static final LinkedList<String> enteredUrls = new LinkedList<String>();
 
-    static Action[] getReaderAreaActions(Strings strings, boolean hasDocument,
-					 ReaderApp.Modes mode)
+    private final Luwrain luwrain;
+    private final Strings strings;
+    private final Base base;
+
+    Actions(Luwrain luwrain, Base base, Strings strings)
     {
+	NullCheck.notNull(luwrain, "luwrain");
+	NullCheck.notNull(base, "base");
 	NullCheck.notNull(strings, "strings");
+	this.luwrain = luwrain;
+	this.base = base;
+	this.strings = strings;
+    }
+
+Action[] getReaderAreaActions(boolean hasDocument, ReaderApp.Modes mode)
+    {
 	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
 	if (hasDocument)
@@ -201,23 +213,19 @@ luwrain.playSound(Sounds.DONE);
 	}
     }
 
-    static Action[] getTreeAreaActions(Strings strings, boolean hasDocument,
-				       ReaderApp.Modes mode)
+    Action[] getTreeAreaActions(boolean hasDocument, ReaderApp.Modes mode)
     {
-	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(mode, "mode");
-	return getReaderAreaActions(strings, hasDocument, mode);
+	return getReaderAreaActions(hasDocument, mode);
     }
 
-    static Action[] getNotesAreaActions(Strings strings, boolean hasDocument,
-					ReaderApp.Modes mode)
+Action[] getNotesAreaActions(boolean hasDocument, ReaderApp.Modes mode)
     {
-	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
 	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
 	res.add(new Action("delete-note", strings.actionDeleteNote(), new KeyboardEvent(KeyboardEvent.Special.DELETE)));
-	for(Action a: getReaderAreaActions(strings, hasDocument, mode))
+	for(Action a: getReaderAreaActions(hasDocument, mode))
 	    res.add(a);
 	return res.toArray(new Action[res.size()]);
     }
@@ -394,11 +402,12 @@ String currentHref)
 	    base.open(app, url, "");
 	    return true;
 	}
-	final Path path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
+	final File path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
 				      luwrain.getPathProperty("luwrain.dir.userhome"),
-				      (pathToCheck)->{
-					  if (Files.isDirectory(pathToCheck))
+				      (fileToCheck, announce)->{
+					  if (fileToCheck.isDirectory())
 					  {
+					      if (announce)
 					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MESSAGE_ERROR);
 					      return false;
 					  }

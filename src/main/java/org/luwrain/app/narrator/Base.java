@@ -16,6 +16,7 @@
 
 package org.luwrain.app.narrator;
 
+import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
@@ -59,12 +60,12 @@ class Base
 	    return true;
 	}
 	final Path homeDir = luwrain.getPathProperty("luwrain.dir.userhome");
-	final Path path = Popups.path(luwrain, 
+	final File path = Popups.path(luwrain, 
 					    strings.targetDirPopupName(), strings.targetDirPopupPrefix(), homeDir,
-					    (pathArg)->{return true;});
+				      (fileToCheck, announce)->{return true;});
 	if (path == null)
 	    return true;
-	task = new Task(strings, text, path, 
+	task = new Task(strings, text, path.toPath(), 
 			luwrain.getPathProperty("luwrain.dir.scripts").resolve("lwr-audio-compress").toString(), channel){
 		@Override protected void progressLine(String text, boolean doneMessage)
 		{

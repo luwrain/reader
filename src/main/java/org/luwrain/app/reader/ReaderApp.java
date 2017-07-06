@@ -39,8 +39,10 @@ public class ReaderApp implements Application
     static private final int PROPERTIES_LAYOUT_INDEX = 4;
 
     private Luwrain luwrain;
-    private final Base base = new Base();
-    private Strings strings;
+    private Base base = null;
+    private Actions actions = null;
+    private Strings strings = null;
+
     private DoctreeArea readerArea;
     private TreeArea treeArea;
     private ListArea notesArea;
@@ -72,8 +74,8 @@ public class ReaderApp implements Application
 	    return false;
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	if (!base.init(luwrain, strings))
-	    return false;
+	this.base = new Base(luwrain, strings);
+	this.actions = new Actions(luwrain, base, strings);
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(readerArea));
@@ -145,7 +147,7 @@ public class ReaderApp implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getTreeAreaActions(strings, base.hasDocument(), mode);
+		    return actions.getTreeAreaActions(base.hasDocument(), mode);
 		}
 	    };
 
@@ -207,7 +209,7 @@ return true;
 
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getReaderAreaActions(strings, base.hasDocument(), mode);
+		    return actions.getReaderAreaActions(base.hasDocument(), mode);
 		}
 		@Override public String getAreaName()
 		{
@@ -290,7 +292,7 @@ if (base.fetchingInProgress())
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return Actions.getNotesAreaActions(strings, base.hasDocument(), mode);
+		    return actions.getNotesAreaActions(base.hasDocument(), mode);
 		}
 	    };
 

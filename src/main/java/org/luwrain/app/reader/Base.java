@@ -35,9 +35,9 @@ class Base
     static private final String DEFAULT_ENCODING = "UTF-8";
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Luwrain luwrain;
+    private final Strings strings;
     private FutureTask task;
-    private Luwrain luwrain;
-    private Strings strings;
     private AudioPlaying audioPlaying = null;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
@@ -47,7 +47,7 @@ class Base
     private Document currentDoc = null;
     private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
-    boolean init(Luwrain luwrain, Strings strings)
+    Base(Luwrain luwrain, Strings strings)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
@@ -61,7 +61,6 @@ class Base
 	}
 	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Book.Section[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
-	return true;
     }
 
     boolean open(ReaderApp app, URL url, String contentType)
