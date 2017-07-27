@@ -158,7 +158,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
-		    final String word = luwrain.currentAreaWord(true);
+		    final String word = luwrain.getActiveAreaText(Luwrain.AreaTextType.WORD, true);
 		    if (word != null && !word.trim().isEmpty())
 			luwrain.launchApp("wiki", new String[]{word}); else
 			luwrain.launchApp("wiki");
