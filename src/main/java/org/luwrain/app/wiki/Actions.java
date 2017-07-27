@@ -21,7 +21,7 @@ import org.luwrain.core.events.*;
 
 interface Actions
 {
-    boolean closeApp();
+    void closeApp();
     void showQueryRes(Page[] pages);
     boolean openPage(Object obj);
     Action[] getAreaActions();

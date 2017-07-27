@@ -59,14 +59,14 @@ class Base
 	    luwrain.message(strings.noChannelToSynth(), Luwrain.MESSAGE_ERROR);
 	    return true;
 	}
-	final Path homeDir = luwrain.getPathProperty("luwrain.dir.userhome");
-	final File path = Popups.path(luwrain, 
+	final File homeDir = luwrain.getFileProperty("luwrain.dir.userhome");
+	final File res = Popups.path(luwrain, 
 					    strings.targetDirPopupName(), strings.targetDirPopupPrefix(), homeDir,
 				      (fileToCheck, announce)->{return true;});
-	if (path == null)
+	if (res == null)
 	    return true;
-	task = new Task(strings, text, path.toPath(), 
-			luwrain.getPathProperty("luwrain.dir.scripts").resolve("lwr-audio-compress").toString(), channel){
+	task = new Task(strings, text, res.toPath(), 
+			luwrain.getFileProperty("luwrain.dir.scripts").toPath().resolve("lwr-audio-compress").toString(), channel){
 		@Override protected void progressLine(String text, boolean doneMessage)
 		{
 		    luwrain.enqueueEvent(new ProgressLineEvent(destArea, text));

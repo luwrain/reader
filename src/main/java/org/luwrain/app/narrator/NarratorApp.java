@@ -48,18 +48,19 @@ public class NarratorApp implements Application, Actions
 	this.initialText = text;
     }
 
-    @Override public boolean onLaunch(Luwrain luwrain)
+    @Override public InitResult onLaunchApp(Luwrain luwrain)
     {
-	Object o = luwrain.i18n().getStrings(STRINGS_NAME);
+	NullCheck.notNull(luwrain, "luwrain");
+	final Object o = luwrain.i18n().getStrings(STRINGS_NAME);
 	if (o == null || !(o instanceof Strings))
-	    return false;
+	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, STRINGS_NAME);
 	strings = (Strings)o;
 	this.luwrain = luwrain;
 	areaLayoutSwitch = new AreaLayoutSwitch(luwrain);
 	if (!base.init(luwrain, strings))
-	    return false;
+	    return new InitResult(InitResult.Type.FAILURE);
 	createAreas();
-	return true;
+	return new InitResult();
     }
 
     @Override public void start()
@@ -128,14 +129,13 @@ public class NarratorApp implements Application, Actions
 	return strings.appName();
     }
 
-    @Override public AreaLayout getAreasToShow()
+    @Override public AreaLayout getAreaLayout()
     {
 	return areaLayoutSwitch.getCurrentLayout(); 
     }
 
-    @Override public boolean closeApp()
+    @Override public void closeApp()
     {
 	luwrain.closeApp();
-	return true;
     }
 }

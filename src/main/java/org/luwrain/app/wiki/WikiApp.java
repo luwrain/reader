@@ -45,19 +45,20 @@ public class WikiApp implements Application, Actions
 	this.launchArg = launchArg;
     }
 
-    @Override public boolean onLaunch(Luwrain luwrain)
+    @Override public InitResult onLaunchApp(Luwrain luwrain)
     {
+	NullCheck.notNull(luwrain, "luwrain");
 	final Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
-	    return false;
+	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
 	strings = (Strings)o;
 	if (!base.init(luwrain, strings))
-	    return false;
+	    return new InitResult(InitResult.Type.FAILURE);
 	this.luwrain = luwrain;
 	createArea();
 	if (launchArg != null && !launchArg.trim().isEmpty())
 	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, this);
-	return true;
+	return new InitResult();
     }
 
     private void createArea()
@@ -65,7 +66,7 @@ public class WikiApp implements Application, Actions
 	final Actions actions = this;
 
 	final ListArea.Params params = new ListArea.Params();
-	params.environment = new DefaultControlEnvironment(luwrain);
+	params.context = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = base.getAppearance();
 	params.clickHandler = (area, index, obj)->actions.openPage(obj);
@@ -78,7 +79,8 @@ public class WikiApp implements Application, Actions
 		    switch(event.getCode())
 		    {
 		    case CLOSE:
-			return actions.closeApp();
+			actions.closeApp();
+			return true;
 		    case ACTION:
 			return actions.onActionEvent(event);
 		    default:
@@ -161,14 +163,13 @@ public class WikiApp implements Application, Actions
 	return false;
     }
 
-    @Override public AreaLayout getAreasToShow()
+    @Override public AreaLayout getAreaLayout()
     {
 	return new AreaLayout(area);
     }
 
-    @Override public boolean closeApp()
+    @Override public void closeApp()
     {
 	luwrain.closeApp();
-	return true;
     }
 }

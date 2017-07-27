@@ -22,27 +22,27 @@ public class OpdsApp implements Application
     private ListArea detailsArea;
     private AreaLayoutSwitch layouts;
 
-    @Override public boolean onLaunch(Luwrain luwrain)
+    @Override public InitResult onLaunchApp(Luwrain luwrain)
     {
 	NullCheck.notNull(luwrain, "luwrain");
-	Object o = luwrain.i18n().getStrings(Strings.NAME);
+	final Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
-	    return false;
+	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
 	strings = (Strings)o;
 	this.luwrain = luwrain;
 	if (!base.init(luwrain, strings))
-	    return false;
+	    return new InitResult(InitResult.Type.FAILURE);
 	actions = new Actions(luwrain, this, strings);
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, listArea, detailsArea));
-	return true;
+	return new InitResult();
     }
 
     private void createAreas()
     {
 	final ListArea.Params librariesParams = new ListArea.Params();
-	librariesParams.environment = new DefaultControlEnvironment(luwrain);
+	librariesParams.context = new DefaultControlEnvironment(luwrain);
 	librariesParams.model = base.getLibrariesModel();
 	librariesParams.appearance = new Appearance(luwrain, strings);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
@@ -91,7 +91,7 @@ public class OpdsApp implements Application
 	    };
 
 	final ListArea.Params params = new ListArea.Params();
-	params.environment = new DefaultControlEnvironment(luwrain);
+	params.context = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = new Appearance(luwrain, strings);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
@@ -158,9 +158,9 @@ public class OpdsApp implements Application
 	    };
 
 	final ListArea.Params detailsParams = new ListArea.Params();
-detailsParams.environment = new DefaultControlEnvironment(luwrain);
+detailsParams.context = new DefaultControlEnvironment(luwrain);
 detailsParams.model = new ListUtils.FixedModel();
-detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.environment, Suggestions.CLICKABLE_LIST_ITEM);
+detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.context, Suggestions.CLICKABLE_LIST_ITEM);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
 detailsParams.name = strings.detailsAreaName();
 
@@ -226,7 +226,7 @@ detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(base, ob
 	return strings.appName();
     }
 
-    @Override public AreaLayout getAreasToShow()
+    @Override public AreaLayout getAreaLayout()
     {
 	return layouts.getCurrentLayout();
     }
@@ -246,13 +246,12 @@ detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(base, ob
 	luwrain.setActiveArea(detailsArea);
     }
 
-private boolean closeApp()
+@Override public void closeApp()
     {
 	/*
 	if (thread != null && !thread.done())
-	    return false;
+	    return;
 	*/
 	luwrain.closeApp();
-	return true;
     }
 }

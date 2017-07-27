@@ -67,11 +67,12 @@ public class ReaderApp implements Application
 	this.startingContentType = contentType;
     }
 
-    @Override public boolean onLaunch(Luwrain luwrain)
+    @Override public InitResult onLaunchApp(Luwrain luwrain)
     {
+	NullCheck.notNull(luwrain, "luwrain");
 	final Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
-	    return false;
+	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
 	strings = (Strings)o;
 	this.luwrain = luwrain;
 	this.base = new Base(luwrain, strings);
@@ -84,7 +85,7 @@ public class ReaderApp implements Application
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
 	layouts.add(new AreaLayout(propertiesArea));
 	openStartFrom();
-	return true;
+	return new InitResult();
     }
 
     void onNewResult(UrlLoader.Result res)
@@ -244,9 +245,9 @@ if (base.fetchingInProgress())
 	    };
 
 	final ListArea.Params listParams = new ListArea.Params();
-	listParams.environment = treeParams.environment;
+	listParams.context = treeParams.environment;
 	listParams.model = base.getNotesModel();
-	listParams.appearance = new ListUtils.DefaultAppearance(listParams.environment, Suggestions.LIST_ITEM);
+	listParams.appearance = new ListUtils.DefaultAppearance(listParams.context, Suggestions.LIST_ITEM);
 	listParams.clickHandler = (area, index, obj)->onNotesClick(obj);
 	listParams.name = strings.notesAreaName();
 
@@ -587,7 +588,7 @@ void switchMode(Modes newMode)
 	return true;
     }
 
-    private void closeApp()
+    @Override public void closeApp()
     {
 	luwrain.closeApp();
     }
@@ -632,7 +633,7 @@ private void openStartFrom()
 	return readerArea != null?readerArea.getAreaName():strings.appName();
     }
 
-    @Override public AreaLayout getAreasToShow()
+    @Override public AreaLayout getAreaLayout()
     {
 	return layouts.getCurrentLayout();
     }

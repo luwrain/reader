@@ -402,8 +402,8 @@ String currentHref)
 	    base.open(app, url, "");
 	    return true;
 	}
-	final File path = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
-				      luwrain.getPathProperty("luwrain.dir.userhome"),
+	final File res = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
+				      luwrain.getFileProperty("luwrain.dir.userhome"),
 				      (fileToCheck, announce)->{
 					  if (fileToCheck.isDirectory())
 					  {

@@ -18,6 +18,6 @@ package org.luwrain.app.narrator;
 
 interface Actions
 {
-    boolean closeApp();
+    void closeApp();
     void start();
 }
