@@ -33,7 +33,7 @@ public class NarratorApp implements Application, Actions
     private Luwrain luwrain;
     private Strings strings;
     private EditArea editArea;
-    private SimpleArea progressArea;
+    private ProgressArea progressArea;
     private AreaLayoutSwitch areaLayoutSwitch;
 
     private String initialText = null;
@@ -94,15 +94,10 @@ public class NarratorApp implements Application, Actions
 		}
 	    };
 
-	progressArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.appName()){
+	progressArea = new ProgressArea(new DefaultControlEnvironment(luwrain), strings.appName()){
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (event instanceof ProgressLineEvent)
-		    {
-			onProgressLine(((ProgressLineEvent)event).progressLine());
-			return true;
-		    }
 		    switch(event.getCode())
 		    {
 		    case CLOSE:

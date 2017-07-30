@@ -24,6 +24,7 @@ import java.util.concurrent.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.controls.*;
 import org.luwrain.popups.*;
 import org.luwrain.speech.*;
 
@@ -42,7 +43,7 @@ class Base
 	return true;
     }
 
-    boolean start(Area destArea, String text)
+    boolean start(ProgressArea destArea, String text)
     {
 	if (futureTask != null && !futureTask.isDone())
 	    return false;
@@ -69,7 +70,7 @@ class Base
 			luwrain.getFileProperty("luwrain.dir.scripts").toPath().resolve("lwr-audio-compress").toString(), channel){
 		@Override protected void progressLine(String text, boolean doneMessage)
 		{
-		    luwrain.enqueueEvent(new ProgressLineEvent(destArea, text));
+		    luwrain.runInMainThread(()->destArea.addProgressLine(text));
 		    if (doneMessage)
 			luwrain.runInMainThread(()->luwrain.message(text, Luwrain.MESSAGE_DONE));
 		}

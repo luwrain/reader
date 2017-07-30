@@ -7,7 +7,6 @@ import java.util.concurrent.*;
 import javax.activation.*;
 
 import org.luwrain.core.*;
-import org.luwrain.core.events.ThreadSyncEvent;
 import org.luwrain.controls.*;
 import org.luwrain.util.Opds;
 import org.luwrain.util.Opds.Link;
