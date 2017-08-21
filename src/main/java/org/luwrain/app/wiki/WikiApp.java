@@ -22,6 +22,7 @@ import java.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.*;
 
@@ -31,13 +32,12 @@ public class WikiApp implements Application
     private Base base = null;
     private Strings strings = null;
     private ConsoleArea2 area;
-    //    private HashSet<String> values = new HashSet<String>();
 
     private final String launchArg;
 
     public WikiApp()
     {
-	launchArg = null;
+	launchArg = "";
     }
 
     public WikiApp(String launchArg)
@@ -53,12 +53,11 @@ public class WikiApp implements Application
 	if (o == null || !(o instanceof Strings))
 	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
 	strings = (Strings)o;
-
 	this.luwrain = luwrain;
 	this.base = new Base(luwrain, strings);
 	createArea();
-	//	if (launchArg != null && !launchArg.trim().isEmpty())
-	//	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, this);
+	if (!launchArg.trim().isEmpty())
+	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, area);
 	return new InitResult();
     }
 
@@ -69,17 +68,18 @@ public class WikiApp implements Application
 	params.model = base.getModel();
 	params.appearance = base.getAppearance();
 	params.areaName = strings.appName();
+	params.inputPos = ConsoleArea2.InputPos.TOP;
 	area = new ConsoleArea2(params){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
 			switch(event.getSpecial())
-		    {
-		    case ESCAPE:
-			closeApp();
-			return true;
-		    }
+			{
+			case ESCAPE:
+			    closeApp();
+			    return true;
+			}
 		    return super.onKeyboardEvent(event);
 		}
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
@@ -90,39 +90,51 @@ public class WikiApp implements Application
 		    switch(event.getCode())
 		    {
 		    case CLOSE:
-closeApp();
+			closeApp();
 			return true;
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
 		}
+		@Override public boolean onAreaQuery(AreaQuery query)
+		{
+		    NullCheck.notNull(query, "query");
+		    switch(query.getQueryCode())
+		    {
+		    case AreaQuery.BACKGROUND_SOUND:
+			if (base.isBusy())
+			{
+			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
+			    return true;
+			}
+			return false;
+		    default:
+			return super.onAreaQuery(query);
+		    }
+		}
 	    };
 	area.setConsoleClickHandler((area,index,obj)->{
-		//FIXME:
-    /*
-	if (obj == null || !(obj instanceof Page))
-	    return false;
-	final Page page = (Page)obj;
-	try {
-	    final String url = "https://" + URLEncoder.encode(page.lang) + ".wikipedia.org/wiki/" + URLEncoder.encode(page.title, "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
-	    luwrain.launchApp("reader", new String[]{url});
-	}
-	catch (UnsupportedEncodingException e)
-	{
-	    e.printStackTrace();
-	    luwrain.message(e.getMessage(), Luwrain.MESSAGE_ERROR);
-	}
-	return true;
-    */
-		return false;
+		if (obj == null || !(obj instanceof Page))
+		    return false;
+		final Page page = (Page)obj;
+		try {
+		    final String url = "https://" + URLEncoder.encode(page.lang) + ".wikipedia.org/wiki/" + URLEncoder.encode(page.title, "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
+		    luwrain.launchApp("reader", new String[]{url});
+		}
+		catch (UnsupportedEncodingException e)
+		{
+		    luwrain.crash(e);
+		}
+		return true;
 	    });
 	area.setConsoleInputHandler((text)->{
-	    NullCheck.notNull(text, "text");
-	    if (text.trim().isEmpty() || base.isBusy())
-return false;
-	    base.search("ru", text.trim(), area);
-	    return true;
+		NullCheck.notNull(text, "text");
+		if (text.trim().isEmpty() || base.isBusy())
+		    return ConsoleArea2.InputHandler.Result.REJECTED;
+		base.search(luwrain.getProperty("luwrain.lang"), text.trim(), area);
+		return ConsoleArea2.InputHandler.Result.OK;
 	    });
+	area.setEnteringPrefix(strings.appName() + ">");
     }
 
     @Override public String getAppName()

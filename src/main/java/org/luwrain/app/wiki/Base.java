@@ -54,6 +54,7 @@ class Base
 	    return false;
 	task = createTask(area, lang, query);
 	executor.execute(task);
+	luwrain.onAreaNewBackgroundSound(area);
 	return true;
     }
 
@@ -138,7 +139,9 @@ class Base
 		    luwrain.message(e.getMessage(), Luwrain.MessageType.ERROR);
 		}
 		luwrain.runInMainThread(()->{
+			task = null;
 			searchResult = res.toArray(new Page[res.size()]);
+	luwrain.onAreaNewBackgroundSound(area);
 			if (searchResult.length > 0)
 			    luwrain.message(strings.querySuccess("" + searchResult.length), Luwrain.MessageType.DONE); else
 			    luwrain.message(strings.nothingFound(), Luwrain.MessageType.DONE);
