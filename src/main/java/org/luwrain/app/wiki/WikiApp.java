@@ -1,18 +1,3 @@
-/*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
-
-   This file is part of the LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
 
 package org.luwrain.app.wiki;
 
@@ -25,14 +10,15 @@ import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.*;
 
-public class WikiApp implements Application, Actions
+public class WikiApp implements Application
 {
+    private Luwrain luwrain = null;
     private final Base base = new Base();
-    private Luwrain luwrain;
-    private Strings strings;
-    private ListArea area;
-    private HashSet<String> values = new HashSet<String>();
-    private String launchArg;
+    private Strings strings = null;
+    private ConsoleArea2 area;
+    //    private HashSet<String> values = new HashSet<String>();
+
+    private final String launchArg;
 
     public WikiApp()
     {
@@ -63,37 +49,40 @@ public class WikiApp implements Application, Actions
 
     private void createArea()
     {
-	final Actions actions = this;
-
-	final ListArea.Params params = new ListArea.Params();
+	final ConsoleArea2.Params params = new ConsoleArea2.Params();
 	params.context = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = base.getAppearance();
-	params.clickHandler = (area, index, obj)->actions.openPage(obj);
-	params.name = strings.appName();
+	//	params.clickHandler = (area, index, obj)->actions.openPage(obj);
+	params.areaName = strings.appName();
+	params.inputHandler = (text)->{return false;};
 
-	area = new ListArea(params){
+	area = new ConsoleArea2(params){
+		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+		    {
+		    case ESCAPE:
+			closeApp();
+			return true;
+		    }
+		    return super.onKeyboardEvent(event);
+		}
 		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+			return super.onEnvironmentEvent(event);
 		    switch(event.getCode())
 		    {
 		    case CLOSE:
-			actions.closeApp();
+closeApp();
 			return true;
-		    case ACTION:
-			return actions.onActionEvent(event);
 		    default:
 			return super.onEnvironmentEvent(event);
 		    }
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return actions.getAreaActions();
-		}
-		@Override protected String noContentStr()
-		{
-		    return strings.noContent();
 		}
 	    };
     }
@@ -102,21 +91,17 @@ public class WikiApp implements Application, Actions
     {
 	if (base.isBusy())
 	    return false;
-	final String query = Popups.fixedEditList(luwrain, strings.queryPopupName(), strings.queryPopupPrefix(), "", values.toArray(new String[values.size()]));
-	if (query == null || query.trim().isEmpty())
-	    return true;
-	values.add(query);
-	base.search(lang, query, this);
+	//	base.search(lang, query, this);
 	return true;
     }
 
-    @Override public boolean openPage(Object obj)
+private boolean openPage(Object obj)
     {
 	if (obj == null || !(obj instanceof Page))
 	    return false;
 	final Page page = (Page)obj;
 	try {
-	    final String url = "https://" + URLEncoder.encode(page.lang()) + ".wikipedia.org/wiki/" + URLEncoder.encode(page.title(), "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
+	    final String url = "https://" + URLEncoder.encode(page.lang) + ".wikipedia.org/wiki/" + URLEncoder.encode(page.title, "UTF-8").replaceAll("\\+", "%20");//Completely unclear why wikipedia doesn't recognize '+' sign
 	    luwrain.launchApp("reader", new String[]{url});
 	}
 	catch (UnsupportedEncodingException e)
@@ -127,14 +112,14 @@ public class WikiApp implements Application, Actions
 	return true;
     }
 
-    @Override public void showQueryRes(Page[] pages)
+    void showQueryRes(Page[] pages)
     {
 	if (pages == null || pages.length < 1)
 	{
 	    luwrain.message(strings.nothingFound(), Luwrain.MESSAGE_DONE);
 	    return;
 	}
-	base.getModel().setItems(pages);
+	//	base.getModel().setItems(pages);
 	area.refresh();
 	area.reset(false);
 	luwrain.message(strings.querySuccess("" + pages.length), Luwrain.MESSAGE_DONE);
@@ -143,24 +128,6 @@ public class WikiApp implements Application, Actions
     @Override public String getAppName()
     {
 	return strings.appName();
-    }
-
-    @Override public Action[] getAreaActions()
-    {
-	return new Action[]{
-	    new Action("search-ru", strings.searchRu()),
-	    new Action("search-en", strings.searchEn()),
-	};
-    }
-
-    @Override public boolean onActionEvent(EnvironmentEvent event)
-    {
-	NullCheck.notNull(event, "event");
-	if (ActionEvent.isAction(event, "search-en"))
-	    return search("en");
-	if (ActionEvent.isAction(event, "search-ru"))
-	    return search("ru");
-	return false;
     }
 
     @Override public AreaLayout getAreaLayout()
