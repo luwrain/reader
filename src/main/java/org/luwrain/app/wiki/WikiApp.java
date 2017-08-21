@@ -57,7 +57,10 @@ public class WikiApp implements Application
 	this.base = new Base(luwrain, strings);
 	createArea();
 	if (!launchArg.trim().isEmpty())
-	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, area);
+	{
+	    base.search(luwrain.getProperty("luwrain.lang"), launchArg.trim(), area);
+	    area.setInput(launchArg.trim());
+	}
 	return new InitResult();
     }
 
@@ -134,7 +137,7 @@ public class WikiApp implements Application
 		base.search(luwrain.getProperty("luwrain.lang"), text.trim(), area);
 		return ConsoleArea2.InputHandler.Result.OK;
 	    });
-	area.setEnteringPrefix(strings.appName() + ">");
+	area.setInputPrefix(strings.appName() + ">");
     }
 
     @Override public String getAppName()
