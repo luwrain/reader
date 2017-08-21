@@ -1,3 +1,18 @@
+/*
+   Copyright 2012-2017 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.app.wiki;
 
@@ -13,7 +28,7 @@ import org.luwrain.popups.*;
 public class WikiApp implements Application
 {
     private Luwrain luwrain = null;
-    private final Base base = new Base();
+    private Base base = null;
     private Strings strings = null;
     private ConsoleArea2 area;
     //    private HashSet<String> values = new HashSet<String>();
@@ -38,12 +53,12 @@ public class WikiApp implements Application
 	if (o == null || !(o instanceof Strings))
 	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
 	strings = (Strings)o;
-	if (!base.init(luwrain, strings))
-	    return new InitResult(InitResult.Type.FAILURE);
+
 	this.luwrain = luwrain;
+	this.base = new Base(luwrain, strings);
 	createArea();
-	if (launchArg != null && !launchArg.trim().isEmpty())
-	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, this);
+	//	if (launchArg != null && !launchArg.trim().isEmpty())
+	//	    base.search(luwrain.getProperty("luwrain.lang"), launchArg, this);
 	return new InitResult();
     }
 
@@ -53,10 +68,7 @@ public class WikiApp implements Application
 	params.context = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = base.getAppearance();
-	//	params.clickHandler = (area, index, obj)->actions.openPage(obj);
 	params.areaName = strings.appName();
-	params.inputHandler = (text)->{return false;};
-
 	area = new ConsoleArea2(params){
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{
@@ -85,18 +97,9 @@ closeApp();
 		    }
 		}
 	    };
-    }
-
-    public boolean search(String lang)
-    {
-	if (base.isBusy())
-	    return false;
-	//	base.search(lang, query, this);
-	return true;
-    }
-
-private boolean openPage(Object obj)
-    {
+	area.setConsoleClickHandler((area,index,obj)->{
+		//FIXME:
+    /*
 	if (obj == null || !(obj instanceof Page))
 	    return false;
 	final Page page = (Page)obj;
@@ -110,19 +113,16 @@ private boolean openPage(Object obj)
 	    luwrain.message(e.getMessage(), Luwrain.MESSAGE_ERROR);
 	}
 	return true;
-    }
-
-    void showQueryRes(Page[] pages)
-    {
-	if (pages == null || pages.length < 1)
-	{
-	    luwrain.message(strings.nothingFound(), Luwrain.MESSAGE_DONE);
-	    return;
-	}
-	//	base.getModel().setItems(pages);
-	area.refresh();
-	area.reset(false);
-	luwrain.message(strings.querySuccess("" + pages.length), Luwrain.MESSAGE_DONE);
+    */
+		return false;
+	    });
+	area.setConsoleInputHandler((text)->{
+	    NullCheck.notNull(text, "text");
+	    if (text.trim().isEmpty() || base.isBusy())
+return false;
+	    base.search("ru", text.trim(), area);
+	    return true;
+	    });
     }
 
     @Override public String getAppName()
