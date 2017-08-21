@@ -58,8 +58,8 @@ class AudioPlaying  implements Listener
 		    this.book = book;
 		    this.doc = doc;
 		    this.area = area;
-		    this.currentPlaylist = new DefaultPlaylist(audioFileUrl.toString());
-		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec());
+		    this.currentPlaylist = new Playlist(audioFileUrl.toString());
+		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS);
 		    return true;
 		}
 	    }
@@ -75,9 +75,9 @@ class AudioPlaying  implements Listener
 	    return;
 	    if (playlist != currentPlaylist)
 		return;
-	if (playlist.getPlaylistItems() == null || trackNum >= playlist.getPlaylistItems().length)
+	if (playlist.getPlaylistUrls() == null || trackNum >= playlist.getPlaylistUrls().length)
 	    return;
-	final String track = playlist.getPlaylistItems()[trackNum];
+	final String track = playlist.getPlaylistUrls()[trackNum];
 	final String link = book.findTextForAudio(track, msec);
 	if (link == null)
 	    return;
