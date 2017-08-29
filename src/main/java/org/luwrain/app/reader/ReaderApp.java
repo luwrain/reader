@@ -177,6 +177,8 @@ return true;
 			    default:
 			    return false;
 			}
+			case ESCAPE:
+			    return base.stopAudio();
 			case ENTER:
 			    if (Base.hasHref(this))
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));

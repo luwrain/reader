@@ -66,6 +66,11 @@ class AudioPlaying  implements Listener
 	    return false;
     }
 
+    void stop()
+    {
+	player.stop();
+    }
+
     @Override public void onTrackTime(Playlist playlist, int trackNum,  long msec)
     {
 	NullCheck.notNull(playlist, "playlist");

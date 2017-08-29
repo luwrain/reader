@@ -38,7 +38,7 @@ class Base
     private final Luwrain luwrain;
     private final Strings strings;
     private FutureTask task;
-    private AudioPlaying audioPlaying = null;
+    private AudioPlaying audioPlaying;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
@@ -53,7 +53,7 @@ class Base
 	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.strings = strings;
-	audioPlaying = new AudioPlaying();
+	this.audioPlaying = new AudioPlaying();
 	if (!audioPlaying.init(luwrain))
 	{
 	    Log.warning("reader", "unable to initialize audio playing (likely no system player), no audio listening is available");
@@ -270,6 +270,14 @@ class Base
 	if (audioPlaying == null)
 	return false;
 	return audioPlaying.playAudio(book, currentDoc, area, ids);
+    }
+
+    boolean stopAudio()
+    {
+	if (audioPlaying == null)
+	    return false;
+	audioPlaying.stop();
+	return true;
     }
 
     private URL getNotesUrl()
