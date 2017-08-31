@@ -25,7 +25,6 @@ import org.luwrain.app.reader.ReaderApp;
 import org.luwrain.app.reader.Strings;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
-import org.luwrain.app.narrator.NarratorApp;
 
 public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
 {
@@ -165,17 +164,6 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    },
 
-	    new Command(){
-		@Override public String getName()
-		{
-		    return "narrator";
-		}
-		@Override public void onCommand(Luwrain luwrain)
-		{
-		    luwrain.launchApp("narrator");
-		}
-	    },
-
 	};
     }
     
@@ -223,28 +211,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		}
 	    };
 
-	final Shortcut narrator = new Shortcut() {
-		@Override public String getName()
-		{
-		    return "narrator";
-		}
-		@Override public Application[] prepareApp(String[] args)
-		{
-		    if (args == null || args.length != 2)
-			return new Application[]{new NarratorApp()};
-		    if (args[0].equals("--TEXT"))
-			return new Application[]{new NarratorApp(args[1] != null?args[1]:"")};
-		    return new Application[]{new NarratorApp()};
-		}
-	    };
-
-	return new Shortcut[]{reader, wiki, opds, narrator};
-    }
-
-    @Override public Factory[] getControlPanelFactories(Luwrain luwrain)
-    {
-	NullCheck.notNull(luwrain, "luwrain");
-	return new Factory[]{new org.luwrain.app.narrator.ControlPanelFactory(luwrain)};
+	return new Shortcut[]{reader, wiki, opds};
     }
 
     private String constructGoogleUrl(Registry registry, String query)
