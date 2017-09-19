@@ -130,7 +130,7 @@ public class WikiApp implements Application
 		}
 		return true;
 	    });
-	area.setConsoleInputHandler((text)->{
+	area.setConsoleInputHandler((area,text)->{
 		NullCheck.notNull(text, "text");
 		if (text.trim().isEmpty() || base.isBusy())
 		    return ConsoleArea2.InputHandler.Result.REJECTED;

@@ -1,0 +1,11 @@
+
+package org.luwrain.extensions.dthtml;
+
+public class Factory
+{
+
+    public newLoader()
+    {
+
+    }
+}
