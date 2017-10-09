@@ -36,7 +36,7 @@ class NarratorTextVisitor implements Visitor
 
     @Override public void visit(Paragraph para)
     {
-	final String[] lines = RowPartsBuilder.paraToLines(para, 80);
+	final String[] lines = org.luwrain.doctree.view.View.getParagraphLines(para, 80);
 	if (lines.length < 1)
 	    return;
 	for(String s: lines)

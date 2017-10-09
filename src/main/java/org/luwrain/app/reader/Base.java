@@ -146,7 +146,7 @@ class Base
 	this.currentDoc = doc;
 	if (newDesiredPos >= 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
-	doc.commit();
+	//	doc.commit();
 	return doc;
     }
 
@@ -188,7 +188,7 @@ class Base
 	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), currentDoc.getUrl().toString());
 	if (savedPosition > 0)
 	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
-	    currentDoc.commit();
+	currentDoc.commit();
 	return currentDoc;
     }
 
