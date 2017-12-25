@@ -170,7 +170,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
     @Override public Shortcut[] getShortcuts(Luwrain luwrain)
     {
 	final Shortcut reader = new Shortcut() {
-		@Override public String getName()
+		@Override public String getExtObjName()
 		{
 		    return "reader";
 		}
@@ -188,7 +188,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	    };
 
 	final Shortcut wiki = new Shortcut() {
-		@Override public String getName()
+		@Override public String getExtObjName()
 		{
 		    return "wiki";
 		}
@@ -201,7 +201,7 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 	    };
 
 	final Shortcut opds = new Shortcut() {
-		@Override public String getName()
+		@Override public String getExtObjName()
 		{
 		    return "opds";
 		}

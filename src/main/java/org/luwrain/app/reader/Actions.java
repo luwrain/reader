@@ -132,6 +132,7 @@ luwrain.playSound(Sounds.DONE);
     static boolean onChangeFormat(ReaderApp app, Luwrain luwrain,
 				  Strings strings, Base base)
     {
+	/*
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
@@ -180,6 +181,8 @@ luwrain.playSound(Sounds.DONE);
 	    base.open(app, url, chosen);
 	    return true;
 	}
+	*/
+	return false;
     }
 
     static boolean onChangeCharset(ReaderApp app, Luwrain luwrain,

@@ -23,7 +23,7 @@ class AudioPlaying  implements Listener
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	this.luwrain = luwrain;
-	player = (Player)luwrain.getSharedObject(Player.SHARED_OBJECT_NAME);
+	this.player = luwrain.getPlayer();
 	if (player == null)
 	    return false;
 	    player.addListener(this);
