@@ -96,7 +96,7 @@ class Base
 	}
 	catch(MalformedURLException e)
 	{
-	    luwrain.message(strings.badUrl() + href, Luwrain.MESSAGE_ERROR);
+	    luwrain.message(strings.badUrl() + href, Luwrain.MessageType.ERROR);
 	    return true;
 	}
 	if (!open(app, url, ""))
@@ -120,7 +120,7 @@ class Base
 	}
 	catch(MalformedURLException e)
 	{
-	    luwrain.message(strings.badUrl() + item.url, Luwrain.MESSAGE_ERROR);
+	    luwrain.message(strings.badUrl() + item.url, Luwrain.MessageType.ERROR);
 	    return true;
 	}
 	if (!open(app, url, ""))

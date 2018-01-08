@@ -486,7 +486,7 @@ if (base.fetchingInProgress())
 	//	luwrain.silence();
 	//	luwrain.playSound(Sounds.INTRO_REGULAR);
 	layouts.show(PROPERTIES_LAYOUT_INDEX);
-	luwrain.message(strings.errorAnnouncement(), Luwrain.MESSAGE_ERROR);
+	luwrain.message(strings.errorAnnouncement(), Luwrain.MessageType.ERROR);
     }
 
     private void updateMode()

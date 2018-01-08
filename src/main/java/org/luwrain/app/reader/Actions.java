@@ -107,7 +107,7 @@ Action[] getReaderAreaActions(boolean hasDocument, ReaderApp.Modes mode)
 	if (url == null)
 	    return false;
 	Settings.setBookmark(luwrain.getRegistry(), url.toString(), value);
-	luwrain.message(strings.bookmarkSaved(), Luwrain.MESSAGE_OK);
+	luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
 	return true;
     }
 
@@ -122,7 +122,7 @@ Action[] getReaderAreaActions(boolean hasDocument, ReaderApp.Modes mode)
 final int value = Settings.getBookmark(luwrain.getRegistry(), url.toString());
 if (value < 0 || !area.setCurrentRowIndex(value))
 {
-    luwrain.message(strings.noBookmark(), Luwrain.MESSAGE_ERROR);
+    luwrain.message(strings.noBookmark(), Luwrain.MessageType.ERROR);
     return true;
 }
 luwrain.playSound(Sounds.DONE);
@@ -399,7 +399,7 @@ String currentHref)
 	    catch(MalformedURLException e)
 	    {
 		e.printStackTrace(); 
-		luwrain.message(strings.badUrl() + res, Luwrain.MESSAGE_ERROR);
+		luwrain.message(strings.badUrl() + res, Luwrain.MessageType.ERROR);
 		return true;
 	    }
 	    base.open(app, url, "");
@@ -411,7 +411,7 @@ String currentHref)
 					  if (fileToCheck.isDirectory())
 					  {
 					      if (announce)
-					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MESSAGE_ERROR);
+					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MessageType.ERROR);
 					      return false;
 					  }
 					  return true;

@@ -87,7 +87,7 @@ class Base
 	app.updateAreas();
 	if (res.getError() == Opds.Result.Errors.FETCHING_PROBLEM)
 	{
-	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MESSAGE_ERROR);
+	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);
 	    return;
 	}
 	if(res.hasEntries())

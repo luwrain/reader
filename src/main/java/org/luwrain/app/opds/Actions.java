@@ -38,7 +38,7 @@ class Actions
 	}
 	catch(MalformedURLException e)
 	{
-	    luwrain.message(strings.badUrl(library.url), Luwrain.MESSAGE_ERROR);
+	    luwrain.message(strings.badUrl(library.url), Luwrain.MessageType.ERROR);
 
 	    return true;
 	}
@@ -58,7 +58,7 @@ try {
 	}
 	catch (MalformedURLException e)
 	{
-	    luwrain.message(strings.badUrl(e.getMessage()), Luwrain.MESSAGE_ERROR);
+	    luwrain.message(strings.badUrl(e.getMessage()), Luwrain.MessageType.ERROR);
 	    return true;
 	}
     }
