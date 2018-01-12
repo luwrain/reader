@@ -1,7 +1,7 @@
 /*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the LUWRAIN.
+   This file is part of LUWRAIN.
 
    LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -63,7 +63,7 @@ class Base
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
 
-    boolean open(ReaderApp app, URL url, String contentType)
+    boolean open(App app, URL url, String contentType)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
@@ -84,7 +84,7 @@ class Base
 	return true;
     }
 
-    boolean jumpByHrefInNonBook(ReaderApp app, String href)
+    boolean jumpByHrefInNonBook(App app, String href)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notEmpty(href, "href");
@@ -105,7 +105,7 @@ class Base
 	return true;
     }
 
-    boolean onPrevDocInNonBook(ReaderApp app)
+    boolean onPrevDocInNonBook(App app)
     {
 	NullCheck.notNull(app, "app");
 	if (isInBookMode() || fetchingInProgress())
@@ -192,7 +192,7 @@ class Base
 	return currentDoc;
     }
 
-    private FutureTask createTask(ReaderApp app, URL url, String contentType)
+    private FutureTask createTask(App app, URL url, String contentType)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");

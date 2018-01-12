@@ -1,7 +1,7 @@
 /*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the LUWRAIN.
+   This file is part of LUWRAIN.
 
    LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -28,7 +28,7 @@ import org.luwrain.doctree.*;
 import org.luwrain.controls.doctree.*;
 import org.luwrain.doctree.loading.*;
 
-public class ReaderApp implements Application
+class App implements Application
 {
     enum Modes {DOC, DOC_NOTES, BOOK, BOOK_TREE_ONLY, BOOK_NOTES_ONLY, BOOK_TREE_NOTES};
 
@@ -53,13 +53,13 @@ public class ReaderApp implements Application
     private String startingContentType;
     private Modes mode = Modes.DOC;
 
-    public ReaderApp()
+    App()
     {
 	startingUrl = "";
-    startingContentType = "";
+	startingContentType = "";
     }
 
-    public ReaderApp(String url, String contentType)
+    App(String url, String contentType)
     {
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");

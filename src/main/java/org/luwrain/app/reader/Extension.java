@@ -1,7 +1,7 @@
 /*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the LUWRAIN.
+   This file is part of LUWRAIN.
 
    LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -14,19 +14,17 @@
    General Public License for more details.
 */
 
-package org.luwrain.app;
+package org.luwrain.app.reader;
 
 import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
 
-import org.luwrain.app.reader.ReaderApp;
-import org.luwrain.app.reader.Strings;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
 
-public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtension
+public class Extension extends org.luwrain.core.extensions.EmptyExtension
 {
     @Override public Command[] getCommands(Luwrain luwrain)
     {
@@ -177,12 +175,12 @@ public class ReaderSetExtension extends org.luwrain.core.extensions.EmptyExtensi
 		@Override public Application[] prepareApp(String[] args)
 		{
 		    if (args == null || args.length < 1)
-			return new Application[]{new ReaderApp()};
+			return new Application[]{new App()};
 		    if (args.length == 1)
-			return new Application[]{new ReaderApp(args[0], "")};
+			return new Application[]{new App(args[0], "")};
 		    if (args.length == 2)
-			return new Application[]{new ReaderApp(args[0], args[1])};
-		    return new Application[]{new ReaderApp()};
+			return new Application[]{new App(args[0], args[1])};
+		    return new Application[]{new App()};
 
 		}
 	    };

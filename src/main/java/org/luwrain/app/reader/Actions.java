@@ -1,7 +1,7 @@
 /*
-   Copyright 2012-2016 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
 
-   This file is part of the LUWRAIN.
+   This file is part of LUWRAIN.
 
    LUWRAIN is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -49,7 +49,7 @@ static final LinkedList<String> enteredUrls = new LinkedList<String>();
 	this.strings = strings;
     }
 
-Action[] getReaderAreaActions(boolean hasDocument, ReaderApp.Modes mode)
+Action[] getReaderAreaActions(boolean hasDocument, App.Modes mode)
     {
 	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
@@ -129,7 +129,7 @@ luwrain.playSound(Sounds.DONE);
 	return true;
     }
 
-    static boolean onChangeFormat(ReaderApp app, Luwrain luwrain,
+    static boolean onChangeFormat(App app, Luwrain luwrain,
 				  Strings strings, Base base)
     {
 	/*
@@ -185,7 +185,7 @@ luwrain.playSound(Sounds.DONE);
 	return false;
     }
 
-    static boolean onChangeCharset(ReaderApp app, Luwrain luwrain,
+    static boolean onChangeCharset(App app, Luwrain luwrain,
 				   Strings strings, Base base)
     {
 	NullCheck.notNull(app, "app");
@@ -216,13 +216,13 @@ luwrain.playSound(Sounds.DONE);
 	}
     }
 
-    Action[] getTreeAreaActions(boolean hasDocument, ReaderApp.Modes mode)
+    Action[] getTreeAreaActions(boolean hasDocument, App.Modes mode)
     {
 	NullCheck.notNull(mode, "mode");
 	return getReaderAreaActions(hasDocument, mode);
     }
 
-Action[] getNotesAreaActions(boolean hasDocument, ReaderApp.Modes mode)
+Action[] getNotesAreaActions(boolean hasDocument, App.Modes mode)
     {
 	NullCheck.notNull(mode, "mode");
 	final LinkedList<Action> res = new LinkedList<Action>();
@@ -245,12 +245,12 @@ Action[] getNotesAreaActions(boolean hasDocument, ReaderApp.Modes mode)
 	return base.playAudio(area, ids);
     }
 
-static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, ReaderApp app)
+static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, App app)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(app, "app");
-	    final ReaderApp.Modes newMode;
+	    final App.Modes newMode;
 	switch(app.getCurrentMode())
 	{
 	case DOC:
@@ -259,10 +259,10 @@ static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, ReaderApp ap
 	case BOOK_TREE_NOTES:
 	return false;
 	case BOOK:
-	    newMode = ReaderApp.Modes.BOOK_TREE_ONLY;
+	    newMode = App.Modes.BOOK_TREE_ONLY;
 	    break;
 	case BOOK_NOTES_ONLY:
-	    newMode = ReaderApp.Modes.BOOK_TREE_NOTES;
+	    newMode = App.Modes.BOOK_TREE_NOTES;
 	    break;
 	default:
 	    return false;
@@ -272,12 +272,12 @@ static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, ReaderApp ap
 	return true;
     }
 
-    static boolean onHideSectionsTree(Luwrain luwrain, Strings strings, ReaderApp app)
+    static boolean onHideSectionsTree(Luwrain luwrain, Strings strings, App app)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(app, "app");
-	    final ReaderApp.Modes newMode;
+	    final App.Modes newMode;
 	switch(app.getCurrentMode())
 	{
 	case DOC:
@@ -286,10 +286,10 @@ static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, ReaderApp ap
 	case BOOK_NOTES_ONLY:
 	    return false;
 	case BOOK_TREE_ONLY:
-	    newMode = ReaderApp.Modes.BOOK;
+	    newMode = App.Modes.BOOK;
 	    break;
 	case BOOK_TREE_NOTES:
-	    newMode = ReaderApp.Modes.BOOK_NOTES_ONLY;
+	    newMode = App.Modes.BOOK_NOTES_ONLY;
 	    break;
 	default:
 	    return false;
@@ -299,26 +299,26 @@ static boolean onShowSectionsTree(Luwrain luwrain, Strings strings, ReaderApp ap
 	return true;
     }
 
-static boolean onShowNotes(Luwrain luwrain, Strings strings, ReaderApp app)
+static boolean onShowNotes(Luwrain luwrain, Strings strings, App app)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(app, "app");
-	    final ReaderApp.Modes newMode;
+	    final App.Modes newMode;
 	switch(app.getCurrentMode())
 	{
 	case DOC:
-	    newMode = ReaderApp.Modes.DOC_NOTES;
+	    newMode = App.Modes.DOC_NOTES;
 	    break;
 	case DOC_NOTES:
 	    return false;
 	case BOOK:
-	    newMode = ReaderApp.Modes.BOOK_NOTES_ONLY;
+	    newMode = App.Modes.BOOK_NOTES_ONLY;
 	    break;
 	case BOOK_NOTES_ONLY:
 	    return false;
 	case BOOK_TREE_ONLY:
-	    newMode = ReaderApp.Modes.BOOK_TREE_NOTES;
+	    newMode = App.Modes.BOOK_TREE_NOTES;
 	    break;
 	case BOOK_TREE_NOTES:
 	    return false;
@@ -330,28 +330,28 @@ static boolean onShowNotes(Luwrain luwrain, Strings strings, ReaderApp app)
 	return true;
     }
 
-static boolean onHideNotes(Luwrain luwrain, Strings strings, ReaderApp app)
+static boolean onHideNotes(Luwrain luwrain, Strings strings, App app)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(app, "app");
-	    final ReaderApp.Modes newMode;
+	    final App.Modes newMode;
 	switch(app.getCurrentMode())
 	{
 	case DOC:
 	    return false;
 	case DOC_NOTES:
-	    newMode = ReaderApp.Modes.DOC;
+	    newMode = App.Modes.DOC;
 	    break;
 	case BOOK:
 	    return false;
 	case BOOK_NOTES_ONLY:
-	    newMode = ReaderApp.Modes.BOOK;
+	    newMode = App.Modes.BOOK;
 	    break;
 	case BOOK_TREE_ONLY:
 	    return false;
 	case BOOK_TREE_NOTES:
-	    newMode = ReaderApp.Modes.BOOK_TREE_ONLY;
+	    newMode = App.Modes.BOOK_TREE_ONLY;
 	    break;
 	default:
 	    return false;
@@ -378,7 +378,7 @@ static boolean onHideNotes(Luwrain luwrain, Strings strings, ReaderApp app)
 	return res.toArray(new String[res.size()]);
     }
 
-    static boolean openNew(ReaderApp app, boolean openUrl, Base base, 
+    static boolean openNew(App app, boolean openUrl, Base base, 
 			   Luwrain luwrain, Strings strings,
 String currentHref)
     {
