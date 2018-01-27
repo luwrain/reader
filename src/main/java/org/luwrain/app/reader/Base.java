@@ -101,7 +101,7 @@ class Base
 	}
 	if (!open(app, url, ""))
 	    return false;
-	luwrain.message(strings.fetching() + " " + href);
+	luwrain.message(strings.fetching() + " " + href, Luwrain.MessageType.NONE);
 	return true;
     }
 
