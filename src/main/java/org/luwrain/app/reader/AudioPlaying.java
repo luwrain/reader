@@ -28,7 +28,7 @@ class AudioPlaying  implements Listener
     private Luwrain luwrain;
     private Player player;
 
-    private DoctreeArea area;
+    private DocumentArea area;
     private Run prevRun;
     private Book book;
     private Document doc;
@@ -46,7 +46,7 @@ class AudioPlaying  implements Listener
     }
 
     boolean playAudio(Book book, Document doc,
-		      DoctreeArea area, String[] ids)
+		      DocumentArea area, String[] ids)
     {
 	NullCheck.notNull(book, "book");
 	NullCheck.notNull(doc, "doc");

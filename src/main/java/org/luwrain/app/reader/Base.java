@@ -261,7 +261,7 @@ class Base
 	return true;
     }
 
-    boolean playAudio(DoctreeArea area, String[] ids)
+    boolean playAudio(DocumentArea area, String[] ids)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
@@ -364,7 +364,7 @@ ListArea.Model getNotesModel()
 	return notesModel;
     }
 
-    static String getHref(DoctreeArea area)
+    static String getHref(DocumentArea area)
     {
 	NullCheck.notNull(area, "area");
 	final Run run = area.getCurrentRun();
@@ -373,7 +373,7 @@ ListArea.Model getNotesModel()
 	return run.href();//Never returns null
     }
 
-    static boolean hasHref(DoctreeArea area)
+    static boolean hasHref(DocumentArea area)
     {
 	NullCheck.notNull(area, "area");
 	return !getHref(area).isEmpty();

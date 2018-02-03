@@ -43,7 +43,7 @@ class App implements Application
     private Actions actions = null;
     private Strings strings = null;
 
-    private DoctreeArea readerArea;
+    private DocumentArea readerArea;
     private TreeArea treeArea;
     private ListArea notesArea;
     private SimpleArea propertiesArea;
@@ -152,7 +152,7 @@ class App implements Application
 		}
 	    };
 
-	readerArea = new DoctreeArea(new DefaultControlEnvironment(luwrain), announcement){
+	readerArea = new DocumentArea(new DefaultControlEnvironment(luwrain), announcement){
 
 		@Override public boolean onKeyboardEvent(KeyboardEvent event)
 		{

@@ -95,7 +95,7 @@ Action[] getReaderAreaActions(boolean hasDocument, App.Modes mode)
 	return res.toArray(new Action[res.size()]);
     }
 
-    static boolean onSaveBookmark(Luwrain luwrain, Strings strings, DoctreeArea area)
+    static boolean onSaveBookmark(Luwrain luwrain, Strings strings, DocumentArea area)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
@@ -111,7 +111,7 @@ Action[] getReaderAreaActions(boolean hasDocument, App.Modes mode)
 	return true;
     }
 
-    static boolean onRestoreBookmark(Luwrain luwrain, Strings strings, DoctreeArea area)
+    static boolean onRestoreBookmark(Luwrain luwrain, Strings strings, DocumentArea area)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
@@ -233,7 +233,7 @@ Action[] getNotesAreaActions(boolean hasDocument, App.Modes mode)
 	return res.toArray(new Action[res.size()]);
     }
 
-    static boolean onPlayAudio(Base base, DoctreeArea area)
+    static boolean onPlayAudio(Base base, DocumentArea area)
     {
 	NullCheck.notNull(base, "base");
 	NullCheck.notNull(area, "area");
