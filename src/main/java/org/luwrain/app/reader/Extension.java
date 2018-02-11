@@ -110,7 +110,7 @@ public class Extension extends org.luwrain.core.extensions.EmptyExtension
 	    new Command(){
 		@Override public String getName()
 		{
-		    return "reader-open-auto";
+		    return "web-open";
 		}
 		@Override public void onCommand(Luwrain luwrain)
 		{
