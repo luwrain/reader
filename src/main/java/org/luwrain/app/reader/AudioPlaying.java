@@ -138,6 +138,8 @@ class AudioPlaying  implements Listener
     @Override public void onNewState(org.luwrain.player.Playlist playlist, org.luwrain.player.Player.State state)
     {
 	NullCheck.notNull(state, "state");
+	if (playlist != currentPlaylist)
+	    return;
 	if (state == org.luwrain.player.Player.State.STOPPED)
 	    onPlayerStop();
 	    }
@@ -147,14 +149,13 @@ class AudioPlaying  implements Listener
     }
 
     private void onPlayerStop()
-
-	{
+    {
 	currentPlaylist = null;
 	book = null;
 	doc = null;
 	area = null;
 	prevRun = null;
-	}
+    }
     
     static private class  AudioFollowingVisitor implements Visitor
     {
