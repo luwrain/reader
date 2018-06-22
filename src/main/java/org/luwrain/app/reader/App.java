@@ -132,7 +132,7 @@ class App implements Application
 		    return super.onKeyboardEvent(event);
 		}
 
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
@@ -143,7 +143,7 @@ class App implements Application
 			closeApp();
 			return true;
 		    default:
-			return super.onEnvironmentEvent(event);
+			return super.onSystemEvent(event);
 		    }
 		}
 		@Override public Action[] getAreaActions()
@@ -189,7 +189,7 @@ return true;
 		    return super.onKeyboardEvent(event);
 		}
 
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
@@ -206,7 +206,7 @@ return true;
 		    case PROPERTIES:
 			return showDocProperties();
 		    default:
-			return super.onEnvironmentEvent(event);
+			return super.onSystemEvent(event);
 		    }
 		}
 
@@ -279,7 +279,7 @@ if (base.fetchingInProgress())
 			}
 		    return super.onKeyboardEvent(event);
 		}
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
@@ -290,7 +290,7 @@ if (base.fetchingInProgress())
 			closeApp();
 			return true;
 		    default:
-			return super.onEnvironmentEvent(event);
+			return super.onSystemEvent(event);
 		    }
 		}
 		@Override public Action[] getAreaActions()
@@ -311,7 +311,7 @@ if (base.fetchingInProgress())
 			}
 		    return super.onKeyboardEvent(event);
 		}
-		@Override public boolean onEnvironmentEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "evet");
 		    switch(event.getCode())
@@ -320,7 +320,7 @@ if (base.fetchingInProgress())
 			closeApp();
 			return true;
 		    default:
-			return super.onEnvironmentEvent(event);
+			return super.onSystemEvent(event);
 		    }
 		}
 	    };
