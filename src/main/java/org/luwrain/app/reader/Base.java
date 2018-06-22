@@ -205,7 +205,7 @@ class Base
 		if (res != null)
 		{
 		    Log.debug("reader", "UrlLoader result not null, sending back to the application");
-		    luwrain.runInMainThread(()->app.onNewResult(res));
+		    luwrain.runUiSafely(()->app.onNewResult(res));
 		}
 		}
 		catch(Exception e)

@@ -63,7 +63,7 @@ class Base
 	    return false;
 	task = new FutureTask<Opds.Result>(()->{
 		final Opds.Result res = Opds.fetch(url);
-		luwrain.runInMainThread(()->onFetchResult(url, app, res));
+		luwrain.runUiSafely(()->onFetchResult(url, app, res));
 	    }, null);
 	Log.debug("opds", "starting fetching:" + url.toString());
 	executor.execute(task);

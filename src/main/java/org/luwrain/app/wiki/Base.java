@@ -138,7 +138,7 @@ class Base
 		{
 		    luwrain.message(e.getMessage(), Luwrain.MessageType.ERROR);
 		}
-		luwrain.runInMainThread(()->{
+		luwrain.runUiSafely(()->{
 			task = null;
 			searchResult = res.toArray(new Page[res.size()]);
 	luwrain.onAreaNewBackgroundSound(area);

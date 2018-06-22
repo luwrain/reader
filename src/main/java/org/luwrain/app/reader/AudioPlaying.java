@@ -121,7 +121,7 @@ class AudioPlaying  implements Listener
 	final Run resultingRun = visitor.result();
 	if (resultingRun == null || prevRun == resultingRun)
 	    return;
-	luwrain.runInMainThread(()->area.findRun(resultingRun));
+	luwrain.runUiSafely(()->area.findRun(resultingRun));
 	prevRun = resultingRun;
     }
 
