@@ -119,7 +119,7 @@ class App implements Application
 
 	treeArea = new TreeArea(treeParams){
 
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if(event.isSpecial() && !event.isModified())
@@ -129,7 +129,7 @@ class App implements Application
 			    goToReaderArea();
 			    return true;
 			}
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
@@ -154,7 +154,7 @@ class App implements Application
 
 	readerArea = new DocumentArea(new DefaultControlEnvironment(luwrain), announcement){
 
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -186,7 +186,7 @@ return true;
 			case BACKSPACE:
 			    return onBackspace(event);
 			}
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
@@ -254,7 +254,7 @@ if (base.fetchingInProgress())
 	listParams.name = strings.notesAreaName();
 
 	notesArea = new ListArea(listParams){
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -277,7 +277,7 @@ if (base.fetchingInProgress())
 			    return false;
 			    }
 			}
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
@@ -300,7 +300,7 @@ if (base.fetchingInProgress())
 	    };
 
 	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.propertiesAreaName()){
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -309,7 +309,7 @@ if (base.fetchingInProgress())
 			case ESCAPE:
 			    return closePropertiesArea();
 			}
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{

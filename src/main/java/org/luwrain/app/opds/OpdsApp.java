@@ -65,7 +65,7 @@ public class OpdsApp implements Application
 
 	librariesArea = new ListArea(librariesParams){
 
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -79,7 +79,7 @@ public class OpdsApp implements Application
 			return onReturnBack();
 			*/
 		    }
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
@@ -114,7 +114,7 @@ public class OpdsApp implements Application
 
 	listArea = new ListArea(params){
 
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -126,7 +126,7 @@ public class OpdsApp implements Application
 		    case BACKSPACE:
 			return onReturnBack();
 		    }
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
@@ -182,7 +182,7 @@ detailsParams.name = strings.detailsAreaName();
 
 	detailsArea = new ListArea(detailsParams){
 
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -192,7 +192,7 @@ detailsParams.name = strings.detailsAreaName();
 			goToLibraries();
 			return true;		    
 }
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 
 		@Override public boolean onSystemEvent(EnvironmentEvent event)

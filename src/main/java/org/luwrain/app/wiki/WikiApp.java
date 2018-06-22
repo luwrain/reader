@@ -73,7 +73,7 @@ public class WikiApp implements Application
 	params.areaName = strings.appName();
 	params.inputPos = ConsoleArea2.InputPos.TOP;
 	area = new ConsoleArea2(params){
-		@Override public boolean onKeyboardEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -83,7 +83,7 @@ public class WikiApp implements Application
 			    closeApp();
 			    return true;
 			}
-		    return super.onKeyboardEvent(event);
+		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
