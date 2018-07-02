@@ -17,6 +17,8 @@
 package org.luwrain.app.reader;
 
 import java.net.*;
+import java.util.*;
+
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
@@ -24,8 +26,10 @@ import org.luwrain.cpanel.Factory;
 import org.luwrain.app.wiki.WikiApp;
 import org.luwrain.app.opds.OpdsApp;
 
-public class Extension extends org.luwrain.core.extensions.EmptyExtension
+public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 {
+    private final Set<String> queries = new TreeSet();
+    
     @Override public Command[] getCommands(Luwrain luwrain)
     {
 	return new Command[]{
@@ -117,7 +121,7 @@ public class Extension extends org.luwrain.core.extensions.EmptyExtension
 		    final Strings strings = (Strings)luwrain.i18n().getStrings(Strings.NAME);
 		    if (strings == null)
 			return;
-		    final String query = Popups.simple(luwrain, strings.openAutodetectPopupName(), strings.openAutodetectPopupPrefix(), "");
+		    final String query = Popups.editWithHistory(luwrain, strings.openAutodetectPopupName(), strings.openAutodetectPopupPrefix(), "", queries, Popups.DEFAULT_POPUP_FLAGS);
 		    if (query == null || query.trim().isEmpty())
 			return;
 		    if (query.trim().toLowerCase().startsWith("http://") || query.trim().toLowerCase().startsWith("https://"))
