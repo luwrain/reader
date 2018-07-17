@@ -58,7 +58,7 @@ public class WikiApp implements Application
 	createArea();
 	if (!launchArg.trim().isEmpty())
 	{
-	    base.search(luwrain.getProperty("luwrain.lang"), launchArg.trim(), area);
+	    base.search("ru"/*luwrain.getProperty("luwrain.lang")*/, launchArg.trim(), area);
 	    area.setInput(launchArg.trim());
 	}
 	return new InitResult();
@@ -134,7 +134,7 @@ public class WikiApp implements Application
 		NullCheck.notNull(text, "text");
 		if (text.trim().isEmpty() || base.isBusy())
 		    return ConsoleArea2.InputHandler.Result.REJECTED;
-		base.search(luwrain.getProperty("luwrain.lang"), text.trim(), area);
+		base.search("ru"/*luwrain.getProperty("luwrain.lang")*/, text.trim(), area);
 		return ConsoleArea2.InputHandler.Result.OK;
 	    });
 	area.setInputPrefix(strings.appName() + ">");
