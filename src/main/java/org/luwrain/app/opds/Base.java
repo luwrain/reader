@@ -96,10 +96,10 @@ class Base
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(res, "res");
-	Log.debug("opds", "fetching result:" + res.getError().toString());
+	Log.debug("opds", "fetching result:" + res.error.toString());
 	task = null;
 	app.updateAreas();
-	if (res.getError() == Opds.Result.Errors.FETCHING_PROBLEM)
+	if (res.error == Opds.Result.Errors.FETCHING_PROBLEM)
 	{
 	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);
 	    return;

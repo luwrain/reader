@@ -22,12 +22,12 @@ final class Opds
 {
     final static private int BUFFER_SIZE=32*1024;
 
-    static public class Link
+    static final class Link
     {
-	public final String url;
-	public final String rel;
-	public final String type;
-	public final String profile;
+	final String url;
+	final String rel;
+	final String type;
+	final String profile;
 
 	Link(String url, String rel,
 	     String type, String profile)
@@ -45,15 +45,14 @@ final class Opds
 	}
     }
 
-static public class Author
+    static final class Author
     {
-	public final String name;
+	final String name;
 
 	Author(String name)
 	{
 	    NullCheck.notNull(name, "name");
 	    this.name = name;
-	    //	    Log.debug("opds", "name:" + name);
 	}
 
 	@Override public String toString()
@@ -62,17 +61,17 @@ static public class Author
 	}
     }
 
-    static public class Entry 
+    static final class Entry 
     {
-	public final String id;
-	public final URL parentUrl;
-	public final String title;
-	public final Link[] links;
-	public final Author[] authors;
+	final String id;
+	final URL parentUrl;
+	final String title;
+	final Link[] links;
+	final Author[] authors;
 
 	Entry(String id, URL parentUrl,
 	      String title, Link[] links,
-Author[] authors)
+	      Author[] authors)
 	{
 	    NullCheck.notNull(id, "id");
 	    NullCheck.notNull(parentUrl, "parentUrl");
@@ -92,15 +91,12 @@ Author[] authors)
 	}
     }
 
-    static public class Result
+    static final class Result
     {
-	public enum Errors {FETCHING_PROBLEM, OK};
+	enum Errors {FETCHING_PROBLEM, OK};
 
 	private final Entry[] entries;
-	private final Errors error;
-	// file link if result is not a directory entry and mime type of it
-	//	private String filename;
-	//	private String mime;
+	final Errors error;
 
 	Result(Errors error)
 	{
@@ -116,23 +112,21 @@ Author[] authors)
 	    this.entries = entries;
     	}
 
-	public Entry[] getEntries()
+	Entry[] getEntries()
 	{
-	    return entries;
+	    return entries.clone();
 	}
 
-	public Errors getError(){return error;}
-
-	public boolean hasEntries()
+	boolean hasEntries()
 	{
 	    return error == Errors.OK && entries != null;
 	}
     }
 
-    static public Result fetch(URL url)
+    static Result fetch(URL url)
     {
 	NullCheck.notNull(url, "url");
-	final LinkedList<Entry> res = new LinkedList<Entry>();
+	final List<Entry> res = new LinkedList();
 	final org.jsoup.nodes.Document doc;
 	try {
 	    final Connection con=Jsoup.connect(url.toString());
@@ -142,19 +136,15 @@ Author[] authors)
 	}
 	catch(IOException e)
 	{
-	    Log.error("doctree-opds", "unable to fetch " + url.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
-	    e.printStackTrace(); 
 	    return new Result(Result.Errors.FETCHING_PROBLEM);
 	}
 	for(org.jsoup.nodes.Element node:doc.getElementsByTag("entry"))
 	    try {
 		final Entry entry = parseEntry(url, node);
-		    res.add(entry);
+		res.add(entry);
 	    }
 	    catch (Exception e)
 	    {
-		Log.warning("doctree-opds", "reading " + url.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
-		e.printStackTrace();
 	    }
 	return new Result(res.toArray(new Entry[res.size()]));
     }
@@ -164,8 +154,8 @@ Author[] authors)
 	NullCheck.notNull(el, "el");
 	String id = "";
 	String title = "";
-	final LinkedList<Link> links = new LinkedList<Link>();
-	final LinkedList<Author> authors = new LinkedList<Author>();
+	final List<Link> links = new LinkedList();
+	final List<Author> authors = new LinkedList();
 	for(Element node:el.getElementsByTag("title"))
 	    title = node.text();
 	for(Element node:el.getElementsByTag("id"))
@@ -178,15 +168,15 @@ Author[] authors)
 	for(Element node:el.getElementsByTag("author"))
 	{
 	    String name = null;
-	for(Element nameNode:el.getElementsByTag("name"))
-	    name = nameNode.text();
-	if (name != null)
-	    authors.add(new Author(name));
+	    for(Element nameNode:el.getElementsByTag("name"))
+		name = nameNode.text();
+	    if (name != null)
+		authors.add(new Author(name));
 	}
-			if (id == null)
-			    id = "---";
-			if (title == null)
-			    title = "---";
-			return new Entry(id, parentUrl, title, links.toArray(new Link[links.size()]), authors.toArray(new Author[authors.size()]));
+	if (id == null)
+	    id = "---";
+	if (title == null)
+	    title = "---";
+	return new Entry(id, parentUrl, title, links.toArray(new Link[links.size()]), authors.toArray(new Author[authors.size()]));
     }
 }
