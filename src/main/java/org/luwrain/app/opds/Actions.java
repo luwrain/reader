@@ -46,6 +46,7 @@ final class Actions
 	if (obj == null || !(obj instanceof RemoteLibrary))
 	    return false;
 	final RemoteLibrary library = (RemoteLibrary)obj;
+	base.clearHistory();
 	try {
 	    base.openCatalog(app, new URL(library.url));
 	    luwrain.setActiveArea(listArea);

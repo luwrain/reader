@@ -18,7 +18,7 @@ package org.luwrain.app.opds;
 
 import org.luwrain.core.*;
 
-class RemoteLibrary implements Comparable
+final class RemoteLibrary implements Comparable
 {
     final String title;
     final String url;

@@ -61,7 +61,6 @@ final class Base
 		luwrain.runUiSafely(()->onFetchResult(url, app, res));
 	    }, null);
 	luwrain.executeBkg(task);
-	//	history.add(url);
 	model.clear();
 	app.updateAreas();
 	return true;
@@ -96,6 +95,11 @@ final class Base
 	    history.add(new HistoryItem(url, res.getEntries()));
 	    luwrain.playSound(Sounds.CLICK);
 	}
+    }
+
+    void clearHistory()
+    {
+	history.clear();
     }
 
     private RemoteLibrary[] loadLibraries()
