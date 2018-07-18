@@ -23,10 +23,14 @@ import org.luwrain.core.*;
 final class HistoryItem
 {
     final URL url;
+    final Opds.Entry[] entries;
+    Opds.Entry selected = null;
 
-    HistoryItem(URL url)  
+    HistoryItem(URL url, Opds.Entry[] entries)
     {
 	NullCheck.notNull(url, "url");
+	NullCheck.notNullItems(entries, "entries");
 	this.url = url;
+	this.entries = entries;
     }
 }

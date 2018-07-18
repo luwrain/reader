@@ -44,7 +44,7 @@ public final class App implements Application
 	this.strings = (Strings)o;
 	this.luwrain = luwrain;
 	this.base = new Base(luwrain, strings);
-	this.actions = new Actions(luwrain, this, strings);
+	this.actions = new Actions(luwrain, this, base, strings);
 	createAreas();
 	return new InitResult();
     }
@@ -55,7 +55,7 @@ public final class App implements Application
 	librariesParams.context = new DefaultControlEnvironment(luwrain);
 	librariesParams.model = base.getLibrariesModel();
 	librariesParams.appearance = new Appearance(luwrain, strings);
-	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(base, listArea, obj);
+	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(listArea, obj);
 	librariesParams.name = strings.librariesAreaName();
 	this.librariesArea = new ListArea(librariesParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
@@ -90,7 +90,7 @@ public final class App implements Application
 	params.context = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = new Appearance(luwrain, strings);
-	params.clickHandler = (area, index, obj)->actions.onListClick(base, listArea, obj);
+	params.clickHandler = (area, index, obj)->actions.onListClick( listArea, obj);
 	params.name = strings.itemsAreaName();
 	this.listArea = new ListArea(params){
 		@Override public boolean onInputEvent(KeyboardEvent event)
@@ -103,7 +103,15 @@ public final class App implements Application
 			    luwrain.setActiveArea(detailsArea);
 			    return true;
 			case BACKSPACE:
-			    return onReturnBack();
+			    {
+				final Opds.Entry res = base.returnBack();
+				if (res == null)
+				    return false;
+					listArea.refresh();
+					listArea.select(res, false);
+					luwrain.playSound(Sounds.CLICK);
+					return true;
+			    }
 			}
 		    return super.onInputEvent(event);
 		}
@@ -115,7 +123,7 @@ public final class App implements Application
 		    switch(event.getCode())
 		    {
 		    case PROPERTIES:
-			return actions.onListProperties(base, detailsArea, selected());
+			return actions.onListProperties(detailsArea, selected());
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -129,7 +137,7 @@ public final class App implements Application
 		    switch(query.getQueryCode())
 		    {
 		    case AreaQuery.BACKGROUND_SOUND:
-			if (base.isFetchingInProgress())
+			if (base.isBusy())
 			{
 			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
 			    return true;
@@ -141,7 +149,7 @@ public final class App implements Application
 		}
 		@Override protected String noContentStr()
 		{
-		    if (base.isFetchingInProgress())
+		    if (base.isBusy())
 			return "Идёт загрузка. Пожалуйста, подождите.";//FIXME:
 		    return super.noContentStr();
 		}
@@ -162,7 +170,10 @@ this.detailsArea = new ListArea(detailsParams){
 		{
 		case TAB:
 		    luwrain.setActiveArea(librariesArea);
-		    return true;		    
+		    return true;
+		case BACKSPACE:
+		    luwrain.setActiveArea(listArea);
+		    return true;
 		}
 	    return super.onInputEvent(event);
 	}
@@ -182,27 +193,15 @@ this.detailsArea = new ListArea(detailsParams){
 	}
     };
 
-detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(base, obj));
+detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(obj));
     }
 
     void updateAreas()
     {
-	Log.debug("opds", "refreshing areas");
 	listArea.refresh();
 	listArea.resetHotPoint(false);
 	luwrain.onAreaNewBackgroundSound(listArea);
     }
-
-    private boolean onReturnBack()
-    {
-	/*
-	if (!base.returnBack(listArea))
-	    return false;
-	listArea.refresh();
-	*/
-	    return true;
-    }
-
 
     @Override public String getAppName()
     {

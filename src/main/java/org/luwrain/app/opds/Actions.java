@@ -22,30 +22,32 @@ import java.util.*;
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 
-class Actions
+final class Actions
 {
     private final Luwrain luwrain;
     private final App app;
+    private final Base base;
     private final Strings strings;
 
-    Actions(Luwrain luwrain, App app, Strings strings)
+    Actions(Luwrain luwrain, App app, Base base, Strings strings)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(app, "app");
+	NullCheck.notNull(base, "base");
 	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.app = app;
+	this.base = base;
 	this.strings = strings;
     }
 
-    boolean onLibraryClick(Base base, ListArea listArea, Object obj)
+    boolean onLibraryClick(ListArea listArea, Object obj)
     {
-	NullCheck.notNull(base, "base");
 	if (obj == null || !(obj instanceof RemoteLibrary))
 	    return false;
 	final RemoteLibrary library = (RemoteLibrary)obj;
 	try {
-	    base.start(app, new URL(library.url));
+	    base.openCatalog(app, new URL(library.url));
 	    luwrain.setActiveArea(listArea);
 	    luwrain.onAreaNewBackgroundSound(listArea);
 	    return true;
@@ -53,14 +55,12 @@ class Actions
 	catch(MalformedURLException e)
 	{
 	    luwrain.message(strings.badUrl(library.url), Luwrain.MessageType.ERROR);
-
 	    return true;
 	}
     }
 
-    boolean onListClick(Base base, ListArea listArea, Object obj)
+    boolean onListClick(ListArea listArea, Object obj)
     {
-	NullCheck.notNull(base, "base");
 	NullCheck.notNull(listArea, "listArea");
 	if (obj == null || !(obj instanceof Opds.Entry))
 	    return false;
@@ -77,15 +77,13 @@ try {
 	}
     }
 
-    boolean onListProperties(Base base, ListArea detailsArea, Object obj)
+    boolean onListProperties(ListArea detailsArea, Object obj)
     {
-	NullCheck.notNull(base, "base");
 	NullCheck.notNull(detailsArea, "detailsArea");
 	if (obj == null || !(obj instanceof Opds.Entry))
 	    return false;
-	Log.debug("opds", "on list properties");
 	final Opds.Entry entry = (Opds.Entry)obj;
-	final LinkedList<PropertiesItem> items = new LinkedList<PropertiesItem>();
+	final List<PropertiesItem> items = new LinkedList();
 	for(Opds.Link l: entry.links)
 	{
 	    final URL url = base.prepareUrl(l.url);
@@ -98,9 +96,8 @@ try {
 	return true;
     }
 
-    boolean onLinkClick(Base base, Object obj)
+    boolean onLinkClick(Object obj)
     {
-	NullCheck.notNull(base, "base");
 	if (obj == null || !(obj instanceof PropertiesItem))
 	    return false;
 	final PropertiesItem item = (PropertiesItem)obj;

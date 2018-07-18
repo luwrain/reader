@@ -50,17 +50,16 @@ final class Base
 	this.libraries = loadLibraries();
     }
 
-    boolean start(App app, URL url)
+    boolean openCatalog(App app, URL url)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
-	if (task != null && !task.isDone())
+	if (isBusy())
 	    return false;
-	task = new FutureTask<Opds.Result>(()->{
+	this.task = new FutureTask<Opds.Result>(()->{
 		final Opds.Result res = Opds.fetch(url);
 		luwrain.runUiSafely(()->onFetchResult(url, app, res));
 	    }, null);
-	Log.debug("opds", "starting fetching:" + url.toString());
 	luwrain.executeBkg(task);
 	//	history.add(url);
 	model.clear();
@@ -68,22 +67,15 @@ final class Base
 	return true;
     }
 
-    boolean returnBack(App app)
+    Opds.Entry returnBack()
     {
-	NullCheck.notNull(app, "app");
-	if (history.isEmpty() ||
-	    (task != null && !task.isDone()))
-	    return false;
-	if (history.size() == 1)
-	{
-	    history.clear();
-	    model.setItems(libraries);
-	    return true ;
-	}
+	if (isBusy())
+	    return null;
+	if (history.size() <= 1)
+	    return null;
 	history.pollLast();
-	luwrain.executeBkg(task);
-	model.clear();
-	return true;
+	model.setItems(history.getLast().entries);
+	return history.getLast().selected;
     }
 
     private void onFetchResult(URL url, App app, Opds.Result res)
@@ -91,20 +83,18 @@ final class Base
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(res, "res");
-	Log.debug("opds", "fetching result:" + res.error.toString());
-	task = null;
+	this.task = null;
 	app.updateAreas();
 	if (res.error == Opds.Result.Errors.FETCHING_PROBLEM)
 	{
-	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);
+	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);//FIXME:
 	    return;
 	}
 	if(res.hasEntries())
 	{
-	    Log.debug("opds", "" + res.getEntries().length + " entries");
 	    model.setItems(res.getEntries());
-	    history.add(new HistoryItem(url));
-	    luwrain.playSound(Sounds.INTRO_REGULAR);
+	    history.add(new HistoryItem(url, res.getEntries()));
+	    luwrain.playSound(Sounds.CLICK);
 	}
     }
 
@@ -124,14 +114,13 @@ final class Base
 	return libraries;
     }
 
-    boolean isFetchingInProgress()
+    boolean isBusy()
     {
 	return task != null && !task.isDone();
     }
 
     URL getCurrentUrl()
     {
-	Log.debug("opds", "history has " + history.size() + " items");
 	return !history.isEmpty()?history.getLast().url:null;
     }
 
@@ -144,7 +133,9 @@ final class Base
 	final Opds.Link catalogLink = getCatalogLink(entry);
 	if (catalogLink == null)
 	    return;
-	start(app, new URL(getCurrentUrl(), catalogLink.url));
+	if (!history.isEmpty())
+	    history.getLast().selected = entry;
+	openCatalog(app, new URL(getCurrentUrl(), catalogLink.url));
     }
 
     private boolean openBook(Entry entry)
@@ -190,7 +181,6 @@ final class Base
 	NullCheck.notNull(contentType, "contentType");
 	luwrain.launchApp("reader", new String[]{url, contentType});
     }
-
 
     URL prepareUrl(String href)
     {
