@@ -20,7 +20,7 @@ import java.net.*;
 
 import org.luwrain.core.*;
 
-class HistoryItem
+final class HistoryItem
 {
     final URL url;
 

@@ -27,7 +27,7 @@ import org.luwrain.controls.*;
 
 public final class App implements Application
 {
-    private final Base base = new Base();
+    private Base base = null;
     private Actions actions;
     private Luwrain luwrain;
     private Strings strings;
@@ -42,11 +42,10 @@ public final class App implements Application
 	final Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
 	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
-	strings = (Strings)o;
+	this.strings = (Strings)o;
 	this.luwrain = luwrain;
-	if (!base.init(luwrain, strings))
-	    return new InitResult(InitResult.Type.FAILURE);
-	actions = new Actions(luwrain, this, strings);
+	this.base = new Base(luwrain, strings);
+	this.actions = new Actions(luwrain, this, strings);
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, listArea, detailsArea));
