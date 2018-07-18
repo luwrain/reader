@@ -27,14 +27,13 @@ import org.luwrain.controls.*;
 
 public final class App implements Application
 {
+    private Luwrain luwrain = null;
+    private Strings strings= null;
     private Base base = null;
-    private Actions actions;
-    private Luwrain luwrain;
-    private Strings strings;
-    private ListArea librariesArea;
-    private ListArea listArea;
-    private ListArea detailsArea;
-    private AreaLayoutSwitch layouts;
+    private Actions actions = null;
+    private ListArea librariesArea = null;
+    private ListArea listArea = null;
+    private ListArea detailsArea = null;
 
     @Override public InitResult onLaunchApp(Luwrain luwrain)
     {
@@ -47,8 +46,6 @@ public final class App implements Application
 	this.base = new Base(luwrain, strings);
 	this.actions = new Actions(luwrain, this, strings);
 	createAreas();
-	layouts = new AreaLayoutSwitch(luwrain);
-	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, listArea, detailsArea));
 	return new InitResult();
     }
 
@@ -58,31 +55,26 @@ public final class App implements Application
 	librariesParams.context = new DefaultControlEnvironment(luwrain);
 	librariesParams.model = base.getLibrariesModel();
 	librariesParams.appearance = new Appearance(luwrain, strings);
-	//	params.clickHandler = (area, index, obj)->onClick(obj);
+	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(base, listArea, obj);
 	librariesParams.name = strings.librariesAreaName();
-
-	librariesArea = new ListArea(librariesParams){
-
+	this.librariesArea = new ListArea(librariesParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
 			switch(event.getSpecial())
-		    {
-		    case TAB:
-			goToList();
-			return true;
-			/*
-		    case BACKSPACE:
-			return onReturnBack();
-			*/
-		    }
+			{
+			case TAB:
+			    luwrain.setActiveArea(listArea);
+			    return true;
+			}
 		    return super.onInputEvent(event);
 		}
-
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+			return super.onSystemEvent(event);
 		    switch(event.getCode())
 		    {
 		    case CLOSE:
@@ -92,41 +84,29 @@ public final class App implements Application
 			return super.onSystemEvent(event);
 		    }
 		}
-
-		/*
-		@Override protected String noContentStr()
-		{
-		    if (base.isFetchingInProgress())
-			return "Идёт загрузка. Пожалуйста, подождите.";
-		    return super.noContentStr();
-		}
-		*/
 	    };
 
 	final ListArea.Params params = new ListArea.Params();
 	params.context = new DefaultControlEnvironment(luwrain);
 	params.model = base.getModel();
 	params.appearance = new Appearance(luwrain, strings);
-	//	params.clickHandler = (area, index, obj)->onClick(obj);
+	params.clickHandler = (area, index, obj)->actions.onListClick(base, listArea, obj);
 	params.name = strings.itemsAreaName();
-
-	listArea = new ListArea(params){
-
+	this.listArea = new ListArea(params){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
 			switch(event.getSpecial())
-		    {
-		    case TAB:
-			goToDetails();
-			return true;
-		    case BACKSPACE:
-			return onReturnBack();
-		    }
+			{
+			case TAB:
+			    luwrain.setActiveArea(detailsArea);
+			    return true;
+			case BACKSPACE:
+			    return onReturnBack();
+			}
 		    return super.onInputEvent(event);
 		}
-
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -143,14 +123,12 @@ public final class App implements Application
 			return super.onSystemEvent(event);
 		    }
 		}
-
 		@Override public boolean onAreaQuery(AreaQuery query)
 		{
 		    NullCheck.notNull(query, "query");
 		    switch(query.getQueryCode())
 		    {
 		    case AreaQuery.BACKGROUND_SOUND:
-			Log.debug("opds", "fetching in progress:" + base.isFetchingInProgress());
 			if (base.isFetchingInProgress())
 			{
 			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
@@ -161,57 +139,49 @@ public final class App implements Application
 			return super.onAreaQuery(query);
 		    }
 		}
-
 		@Override protected String noContentStr()
 		{
 		    if (base.isFetchingInProgress())
-			return "Идёт загрузка. Пожалуйста, подождите.";
+			return "Идёт загрузка. Пожалуйста, подождите.";//FIXME:
 		    return super.noContentStr();
 		}
 	    };
 
 	final ListArea.Params detailsParams = new ListArea.Params();
-detailsParams.context = new DefaultControlEnvironment(luwrain);
-detailsParams.model = new ListUtils.FixedModel();
-detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.context, Suggestions.CLICKABLE_LIST_ITEM);
+	detailsParams.context = new DefaultControlEnvironment(luwrain);
+	detailsParams.model = new ListUtils.FixedModel();
+	detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.context, Suggestions.CLICKABLE_LIST_ITEM);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
 detailsParams.name = strings.detailsAreaName();
-
-
-	detailsArea = new ListArea(detailsParams){
-
-		@Override public boolean onInputEvent(KeyboardEvent event)
+this.detailsArea = new ListArea(detailsParams){
+	@Override public boolean onInputEvent(KeyboardEvent event)
+	{
+	    NullCheck.notNull(event, "event");
+	    if (event.isSpecial() && !event.isModified())
+		switch(event.getSpecial())
 		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-		    {
-		    case TAB:
-			goToLibraries();
-			return true;		    
-}
-		    return super.onInputEvent(event);
+		case TAB:
+		    luwrain.setActiveArea(librariesArea);
+		    return true;		    
 		}
+	    return super.onInputEvent(event);
+	}
+	@Override public boolean onSystemEvent(EnvironmentEvent event)
+	{
+	    NullCheck.notNull(event, "event");
+	    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+		return super.onSystemEvent(event);
+	    switch(event.getCode())
+	    {
+	    case CLOSE:
+		closeApp();
+		return true;
+	    default:
+		return super.onSystemEvent(event);
+	    }
+	}
+    };
 
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
-			return super.onSystemEvent(event);
-		    switch(event.getCode())
-		    {
-		    case CLOSE:
-			closeApp();
-			return true;
-		    default:
-			return super.onSystemEvent(event);
-		    }
-		}
-
-	    };
-
-	librariesArea.setListClickHandler((area, index, obj)->actions.onLibraryClick(base, listArea, obj));
-	listArea.setListClickHandler((area, index, obj)->actions.onListClick(base, listArea, obj));
 detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(base, obj));
     }
 
@@ -241,30 +211,11 @@ detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(base, ob
 
     @Override public AreaLayout getAreaLayout()
     {
-	return layouts.getCurrentLayout();
+	return new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, listArea, detailsArea);
     }
 
-    private void goToLibraries()
+    @Override public void closeApp()
     {
-	luwrain.setActiveArea(librariesArea);
-    }
-
-    private void goToList()
-    {
-	luwrain.setActiveArea(listArea);
-    }
-
-    private void goToDetails()
-    {
-	luwrain.setActiveArea(detailsArea);
-    }
-
-@Override public void closeApp()
-    {
-	/*
-	if (thread != null && !thread.done())
-	    return;
-	*/
 	luwrain.closeApp();
     }
 }
