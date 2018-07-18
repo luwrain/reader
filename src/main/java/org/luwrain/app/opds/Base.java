@@ -26,7 +26,7 @@ import org.luwrain.controls.*;
 import org.luwrain.app.opds.Opds.Link;
 import org.luwrain.app.opds.Opds.Entry;
 
-class Base
+final class Base
 {
     static private final String CONTENT_TYPE_FB2_ZIP = org.luwrain.doctree.loading.UrlLoader.CONTENT_TYPE_FB2_ZIP;
 
@@ -34,24 +34,20 @@ class Base
     static final String BASE_TYPE_CATALOG = "application/atom+xml";
     static final String PRIMARY_TYPE_IMAGE = "image";
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private Luwrain luwrain;
-    private Strings strings;
-    private FutureTask task;
-    private RemoteLibrary[] libraries;
-    private final ListUtils.FixedModel librariesModel = new ListUtils.FixedModel();
+    private final Luwrain luwrain;
+    private final Strings strings;
+    private FutureTask task = null;
+    private final RemoteLibrary[] libraries;
     private final ListUtils.FixedModel model = new ListUtils.FixedModel();
     private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
-    boolean init(Luwrain luwrain, Strings strings)
+    Base(Luwrain luwrain, Strings strings)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	this.luwrain = luwrain;
 	this.strings = strings;
-	loadLibraries();
-	model.setItems(libraries);
-	return true;
+	this.libraries = loadLibraries();
     }
 
     boolean start(App app, URL url)
@@ -65,7 +61,7 @@ class Base
 		luwrain.runUiSafely(()->onFetchResult(url, app, res));
 	    }, null);
 	Log.debug("opds", "starting fetching:" + url.toString());
-	executor.execute(task);
+	luwrain.executeBkg(task);
 	//	history.add(url);
 	model.clear();
 	app.updateAreas();
@@ -85,8 +81,7 @@ class Base
 	    return true ;
 	}
 	history.pollLast();
-	//	task = constructTask(app, history.getLast().url);
-	executor.execute(task);
+	luwrain.executeBkg(task);
 	model.clear();
 	return true;
     }
@@ -113,21 +108,20 @@ class Base
 	}
     }
 
-    private void loadLibraries()
+    private RemoteLibrary[] loadLibraries()
     {
-	libraries = new RemoteLibrary[0];
 	final Registry registry = luwrain.getRegistry();
 	registry.addDirectory(Settings.LIBRARIES_PATH);
-	final LinkedList<RemoteLibrary> res = new LinkedList<RemoteLibrary>();
+	final List<RemoteLibrary> res = new LinkedList();
 	for(String s: registry.getDirectories(Settings.LIBRARIES_PATH))
 	{
 	    final RemoteLibrary l = new RemoteLibrary(registry, Registry.join(Settings.LIBRARIES_PATH, s));
 	    if (!l.url.isEmpty())
 		res.add(l);
 	}
-	libraries = res.toArray(new RemoteLibrary[res.size()]);
+	final RemoteLibrary[] libraries = res.toArray(new RemoteLibrary[res.size()]);
 	Arrays.sort(libraries);
-	librariesModel.setItems(libraries);
+	return libraries;
     }
 
     boolean isFetchingInProgress()
@@ -197,10 +191,6 @@ class Base
 	luwrain.launchApp("reader", new String[]{url, contentType});
     }
 
-    ListArea.Model getLibrariesModel()
-    {
-	return librariesModel;
-    }
 
     URL prepareUrl(String href)
     {
@@ -340,5 +330,24 @@ class Base
 	    e.printStackTrace();
 	    return "";
 	}
+    }
+
+    private final class LibrariesModel implements ListArea.Model
+    {
+	@Override public int getItemCount()
+	{
+	    return libraries.length;
+	}
+	@Override public Object getItem(int index)
+	{
+	    return libraries[index];
+	}
+	@Override public void refresh()
+	{
+	}
+    }
+    ListArea.Model getLibrariesModel()
+    {
+	return new LibrariesModel();
     }
 }
