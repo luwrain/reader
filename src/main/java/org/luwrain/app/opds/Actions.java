@@ -21,15 +21,14 @@ import java.util.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.util.Opds;
 
 class Actions
 {
     private final Luwrain luwrain;
-    private final OpdsApp app;
+    private final App app;
     private final Strings strings;
 
-    Actions(Luwrain luwrain, OpdsApp app, Strings strings)
+    Actions(Luwrain luwrain, App app, Strings strings)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(app, "app");

@@ -20,8 +20,7 @@ import java.util.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.util.Opds;
-import org.luwrain.util.Opds.Entry;
+import org.luwrain.app.opds.Opds.Entry;
 
 class Appearance implements ListArea.Appearance
 {

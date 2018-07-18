@@ -24,9 +24,8 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
-import org.luwrain.util.Opds;
 
-public class OpdsApp implements Application
+public final class App implements Application
 {
     private final Base base = new Base();
     private Actions actions;

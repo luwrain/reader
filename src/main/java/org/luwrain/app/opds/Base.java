@@ -23,9 +23,8 @@ import javax.activation.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.util.Opds;
-import org.luwrain.util.Opds.Link;
-import org.luwrain.util.Opds.Entry;
+import org.luwrain.app.opds.Opds.Link;
+import org.luwrain.app.opds.Opds.Entry;
 
 class Base
 {
@@ -55,7 +54,7 @@ class Base
 	return true;
     }
 
-    boolean start(OpdsApp app, URL url)
+    boolean start(App app, URL url)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
@@ -73,7 +72,7 @@ class Base
 	return true;
     }
 
-    boolean returnBack(OpdsApp app)
+    boolean returnBack(App app)
     {
 	NullCheck.notNull(app, "app");
 	if (history.isEmpty() ||
@@ -92,7 +91,7 @@ class Base
 	return true;
     }
 
-    private void onFetchResult(URL url, OpdsApp app, Opds.Result res)
+    private void onFetchResult(URL url, App app, Opds.Result res)
     {
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(app, "app");
@@ -142,7 +141,7 @@ class Base
 	return !history.isEmpty()?history.getLast().url:null;
     }
 
-    void onEntry(OpdsApp app, Opds.Entry entry) throws MalformedURLException
+    void onEntry(App app, Opds.Entry entry) throws MalformedURLException
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(entry, "entry");

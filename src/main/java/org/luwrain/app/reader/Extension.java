@@ -24,7 +24,6 @@ import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
 
 import org.luwrain.app.wiki.WikiApp;
-import org.luwrain.app.opds.OpdsApp;
 
 public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 {
@@ -209,7 +208,7 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
-		    return new Application[]{new OpdsApp()};
+		    return new Application[]{new org.luwrain.app.opds.App()};
 		}
 	    };
 
