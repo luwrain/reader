@@ -24,6 +24,8 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
+import org.luwrain.app.opds.Opds.Link;
+import org.luwrain.app.opds.Opds.Entry;
 
 public final class App implements Application
 {
@@ -143,6 +145,19 @@ public final class App implements Application
 			    return true;
 			}
 			return false;
+						case AreaQuery.UNIREF_HOT_POINT:
+			    {
+				final Object obj = selected();
+				if (obj == null || !(obj instanceof Entry))
+				    return false;
+				final Entry entry = (Entry)obj;
+				final Link link = base.getSuitableBookLink(entry);
+				if (link == null)
+				    return false;
+				final UniRefHotPointQuery unirefQuery = (UniRefHotPointQuery)query;
+				unirefQuery.answer("url:" + base.prepareUrl(link.url).toString());
+				return true;
+			    }
 		    default:
 			return super.onAreaQuery(query);
 		    }

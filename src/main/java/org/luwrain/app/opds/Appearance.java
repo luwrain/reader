@@ -22,7 +22,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.app.opds.Opds.Entry;
 
-class Appearance implements ListArea.Appearance
+final class Appearance implements ListArea.Appearance
 {
     private final Luwrain luwrain;
     private final Strings strings;
@@ -39,16 +39,13 @@ class Appearance implements ListArea.Appearance
     {
 	NullCheck.notNull(item, "item");
 	NullCheck.notNull(flags, "flags");
-	luwrain.playSound(Sounds.LIST_ITEM);
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
-	    if (Base.isCatalogOnly(entry) && flags.contains(Flags.BRIEF))
-		luwrain.say(getString(entry) + " " + strings.catalog()); else
-		luwrain.say(getString(entry));
+	    luwrain.setEventResponse(DefaultEventResponse.listItem(getString(entry), Suggestions.CLICKABLE_LIST_ITEM));
 	    return;
 	}
-		luwrain.say(item.toString());
+	luwrain.setEventResponse(DefaultEventResponse.listItem(item.toString(), Suggestions.CLICKABLE_LIST_ITEM));
     }
 
     @Override public String getScreenAppearance(Object item, Set<Flags> flags)

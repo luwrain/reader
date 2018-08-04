@@ -142,19 +142,13 @@ final class Base
 	openCatalog(app, new URL(getCurrentUrl(), catalogLink.url));
     }
 
-    private boolean openBook(Entry entry)
+    Link getSuitableBookLink(Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
 	for(Link link:entry.links)
-	{
 	    if (link.type.toLowerCase().equals(CONTENT_TYPE_FB2_ZIP))
-	    {
-		launchReader(prepareUrl(link.url).toString(), link.type);
-		return true;
-	    }
-	}
-	return false;
-	/*
+		return link;
+		/*
 	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
 	for(Opds.Link link: entry.links)
 	{
@@ -177,6 +171,17 @@ final class Base
 	    }
 	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
 	*/
+	return null;
+    }
+
+    private boolean openBook(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	final Link link = getSuitableBookLink(entry );
+	if (link == null)
+	    return false;
+		launchReader(prepareUrl(link.url).toString(), link.type);
+		return true;
     }
 
     void launchReader(String url, String contentType)
