@@ -21,7 +21,7 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.player.*;
 import org.luwrain.doctree.*;
-import org.luwrain.controls.doctree.*;
+import org.luwrain.controls.doc.*;
 
 class AudioPlaying  implements Listener
 {

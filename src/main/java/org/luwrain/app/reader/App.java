@@ -25,7 +25,7 @@ import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
-import org.luwrain.controls.doctree.*;
+import org.luwrain.controls.doc.*;
 import org.luwrain.doctree.loading.*;
 
 class App implements Application
@@ -105,7 +105,7 @@ class App implements Application
 
     private void createAreas()
     {
-	final org.luwrain.controls.doctree.Strings announcementStrings = (org.luwrain.controls.doctree.Strings)luwrain.i18n().getStrings("luwrain.doctree");
+	final org.luwrain.controls.doc.Strings announcementStrings = (org.luwrain.controls.doc.Strings)luwrain.i18n().getStrings("luwrain.doctree");
 	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
 
 
