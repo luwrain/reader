@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.net.*;
 import java.io.*;
-import java.nio.file.*;
 
 import org.jsoup.*;
 import org.jsoup.nodes.*;
@@ -14,26 +13,49 @@ import org.jsoup.parser.*;
 
 import org.luwrain.core.*;
 
-public class Smil
+public final class Smil
 {
     static public class Entry
     {
 	public enum Type {SEQ, PAR, AUDIO, TEXT, FILE};
 
-	private Type type;
-	private String src = "";
+	private final Type type;
+	private String src = null;
 	private String id = "";
-	private AudioFragment audioInfo = null;
-	Entry[] entries;
+	private final AudioFragment audioInfo;
+	final Entry[] entries;
 
 	Entry(Type type)
 	{
 	    NullCheck.notNull(type, "type");
 	    this.type = type;
+	    this.audioInfo = null;
+	    this.entries = new Entry[0];
 	}
 
-	Entry (Type type,
-	       String id, String src)
+	Entry(Type type, Entry[] entries)
+	{
+	    NullCheck.notNull(type, "type");
+	    NullCheck.notNullItems(entries, "entries");
+	    this.type = type;
+	    this.audioInfo = null;
+	    this.entries = entries;
+	}
+
+	Entry(Type type, String id, Entry[] entries)
+	{
+	    NullCheck.notNull(type, "type");
+	    NullCheck.notNull(id, "id");
+	    NullCheck.notNullItems(entries, "entries");
+	    this.type = type;
+	    this.id = id;
+	    this.audioInfo = null;
+	    this.entries = entries;
+	}
+
+
+
+	Entry (Type type, String src)
 	{
 	    NullCheck.notNull(type, "type");
 	    NullCheck.notNull(id, "id");
@@ -41,7 +63,23 @@ public class Smil
 	    this.type = type;
 	    this.id = id;
 	    this.src = src;
+	    this.audioInfo = null;
+	    this.entries = new Entry[0];
 	}
+
+	Entry (Type type, String id, String src)
+	{
+	    NullCheck.notNull(type, "type");
+	    NullCheck.notNull(id, "id");
+	    NullCheck.notNull(src, "src");
+	    //	    NullCheck.notNull(audioInfo, "audioInfo");
+	    this.type = type;
+	    this.id = id;
+	    this.src = src;
+	    this.audioInfo = null;
+	    this.entries = new Entry[0];
+	}
+
 
 	Entry (String id, String src, AudioFragment audioInfo)
 	{
@@ -52,6 +90,7 @@ public class Smil
 	    this.id = id;
 	    this.src = src;
 	    this.audioInfo = audioInfo;
+	    this.entries = new Entry[0];
 	}
 
 	public void saveTextSrc(List<String> res)
@@ -113,58 +152,45 @@ src = new URL(base, src).toString();
     static public Entry fromUrl(URL url)
     {
 	NullCheck.notNull(url, "url");
-	try {
-	if (url.getProtocol().equals("file"))
-	{
-	    final Path tmpFile = Files.createTempFile("lwr-smil", "");
-	    try {
-		Files.copy(url.openStream(), tmpFile, StandardCopyOption.REPLACE_EXISTING);
-	    return fromPath(tmpFile);
-	    }
-	    finally {
-		Files.delete(tmpFile);
-	    }
-	}
-	}
-	catch(IOException e)
-	{
-	    Log.error("docree-smil", "unable to read SMIL from file: URL:" + e.getClass().getName() + ":" + e.getMessage());
-	    e.printStackTrace();
-	    return null;
-	}
 	final org.jsoup.nodes.Document doc;
 	try {
+	    if (url.getProtocol().equals("file"))
+	    {
 	    final Connection con=Jsoup.connect(url.toString());
 	    con.userAgent(org.luwrain.app.reader.loading.UrlLoader.USER_AGENT);
 	    con.timeout(30000);
 	    doc = con.get();
-	}
+	} else
+	  {
+	      doc = Jsoup.parse(url.openStream(), "utf-8", "", Parser.xmlParser());
+	  }
+	}	
 	catch(Exception e)
 	{
 	    Log.error("doctree-smil", "unable to fetch SMIL from URL " + url.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
 	    e.printStackTrace(); 
 	    return null;
 	}
-	final Entry res = new Entry(Entry.Type.FILE);
-	    res.entries = onNode(doc.body());
+	final Entry res = new Entry(Entry.Type.FILE, onNode(doc.body()));
+	//	    res.entries = ;
 	return res;
     }
 
-    static public Entry fromPath(Path path)
+    static public Entry fromFile(java.io.File file)
     {
-	NullCheck.notNull(path, "path");
+	NullCheck.notNull(file, "file");
 	final org.jsoup.nodes.Document doc;
 	try {
-	    doc = Jsoup.parse(Files.newInputStream(path), "utf-8", "", Parser.xmlParser());
+	    doc = Jsoup.parse(new FileInputStream(file), "utf-8", "", Parser.xmlParser());
 	}
 	catch(Exception e)
 	{
-	    Log.error("doctree-smil", "unable to parse " + path.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
+	    Log.error("doctree-smil", "unable to parse " + file.getAbsolutePath() + ":" + e.getClass().getName() + ":" + e.getMessage());
 	    e.printStackTrace(); 
 	    return null;
 	}
-	final Entry res = new Entry(Entry.Type.FILE);
-	    res.entries = onNode(doc.body());
+	final Entry res = new Entry(Entry.Type.FILE, onNode(doc.body()));
+	//	    res.entries = ;
 	return res;
     }
 
@@ -191,14 +217,14 @@ src = new URL(base, src).toString();
 		switch(name.trim().toLowerCase())
 		{
 		case "seq":
-		    res.add(new Entry(Entry.Type.SEQ));
-		    res.getLast().id = el.attr("id");
-		    res.getLast().entries = onNode(el);
+		    res.add(new Entry(Entry.Type.SEQ, el.attr("id"), onNode(el)));
+		    //		    res.getLast().id = el.attr("id");
+		    //		    res.getLast().entries = onNode(el);
 		    break;
 		case "par":
-		    res.add(new Entry(Entry.Type.PAR));
-		    res.getLast().id = el.attr("id");
-		    res.getLast().entries = onNode(el);
+		    res.add(new Entry(Entry.Type.PAR, el.attr("id"), onNode(el)));
+		    //	    res.getLast().id = el.attr("id");
+		    //		    res.getLast().entries = onNode(el);
 		    break;
 		case "audio":
 		    res.add(onAudio(el));
