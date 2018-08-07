@@ -13,11 +13,10 @@ import org.luwrain.app.reader.loading.*;
 
 public class BookFactory
 {
-    static public Book initDaisy2(Document nccDoc, UrlLoaderFactory urlLoaderFactory)
+    static public Book initDaisy2(Document nccDoc)
     {
 	NullCheck.notNull(nccDoc, "nccDoc");
-	NullCheck.notNull(urlLoaderFactory, "urlLoaderFactory");
-	final Daisy2 book = new Daisy2(urlLoaderFactory);
+	final Daisy2 book = new Daisy2();
 	book.init(nccDoc);
 	return book;
     }

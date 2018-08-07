@@ -14,18 +14,11 @@ import org.luwrain.util.*;
 
 class Daisy2 implements Book
 {
-    protected final UrlLoaderFactory urlLoaderFactory;
     protected final HashMap<URL, Document> docs = new HashMap<URL, Document>();
     protected final HashMap<URL, Smil.Entry> smils = new HashMap<URL, Smil.Entry>();
     protected Document nccDoc;
     protected URL nccDocUrl;
     protected Book.Section[] bookSections = new Book.Section[0];
-
-    Daisy2(UrlLoaderFactory urlLoaderFactory)
-    {
-	NullCheck.notNull(urlLoaderFactory, "urlLoaderFactory");
-	this.urlLoaderFactory = urlLoaderFactory;
-    }
 
     @Override public Document[] getDocuments()
     {
@@ -440,7 +433,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 
     private UrlLoader.Result loadDoc(URL url) throws MalformedURLException, IOException
     {
-final UrlLoader loader = urlLoaderFactory.newUrlLoader(url);
+final UrlLoader loader = new UrlLoader(url);
 return loader.load();
     }
 }

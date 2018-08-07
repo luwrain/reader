@@ -16,7 +16,7 @@ import org.luwrain.doctree.*;
 import org.luwrain.app.reader.formats.*;
 import org.luwrain.app.reader.books.*;
 
-public class UrlLoader implements UrlLoaderFactory
+public class UrlLoader
 {
     static public final String CONTENT_TYPE_DATA = "application/octet-stream";
     static public final String CONTENT_TYPE_PDF = "application/pdf";
@@ -66,7 +66,7 @@ public class UrlLoader implements UrlLoaderFactory
 	requestedContentType = "";
     }
 
-    @Override public UrlLoader newUrlLoader(URL url) throws MalformedURLException
+    public UrlLoader newUrlLoader(URL url) throws MalformedURLException
     {
 	NullCheck.notNull(url, "url");
 	return new UrlLoader(url);
