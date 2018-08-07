@@ -9,7 +9,7 @@ import java.nio.file.*;
 import org.luwrain.core.NullCheck;
 import org.luwrain.core.Log;
 import org.luwrain.doctree.*;
-import org.luwrain.doctree.loading.*;
+import org.luwrain.app.reader.loading.*;
 import org.luwrain.util.*;
 
 class Daisy2 implements Book
@@ -142,7 +142,7 @@ class Daisy2 implements Book
 	return null;
     }
 
-    @Override public AudioInfo findAudioForId(String id)
+    @Override public AudioFragment findAudioForId(String id)
     {
 	NullCheck.notNull(id, "id");
 	Log.debug("doctree-daisy", "searching audio for " + id);
@@ -151,7 +151,7 @@ class Daisy2 implements Book
 	    final Smil.Entry entry = findSmilEntryWithText(e.getValue(), id);
 	    if (entry != null)
 	    {
-		final LinkedList<AudioInfo> infos = new LinkedList<AudioInfo>();
+		final LinkedList<AudioFragment> infos = new LinkedList();
 		collectAudioStartingAtEntry(entry, infos);
 		if (infos.size() > 0)
 		    return infos.getFirst();
@@ -349,7 +349,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	switch(entry.type() )
 	{
 	case AUDIO:
-	    return entry.getAudioInfo().covers(audioFileUrl, msec, nccDocUrl)?entry:null;
+	    return entry.getAudioFragment().covers(audioFileUrl, msec, nccDocUrl)?entry:null;
 	case TEXT:
 	    return null;
 	case FILE:
@@ -384,14 +384,14 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	}
     }
 
-    static private void collectAudioStartingAtEntry(Smil.Entry entry, LinkedList<AudioInfo> audioInfos)
+    static private void collectAudioStartingAtEntry(Smil.Entry entry, LinkedList<AudioFragment> audioInfos)
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(audioInfos, "audioInfos");
 	switch(entry.type())
 	{
 	case AUDIO:
-	    audioInfos.add(entry.getAudioInfo());
+	    audioInfos.add(entry.getAudioFragment());
 	    return;
 	case TEXT:
 	    return;

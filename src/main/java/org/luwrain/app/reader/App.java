@@ -26,7 +26,8 @@ import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
-import org.luwrain.doctree.loading.*;
+import org.luwrain.app.reader.loading.*;
+import org.luwrain.app.reader.books.*;
 
 class App implements Application
 {

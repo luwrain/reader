@@ -22,6 +22,7 @@ import org.luwrain.core.*;
 import org.luwrain.player.*;
 import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
+import org.luwrain.app.reader.books.*;
 
 class AudioPlaying  implements Listener
 {
@@ -57,17 +58,17 @@ class AudioPlaying  implements Listener
     final URL url = doc.getUrl();
 	    for(String id: ids)
 	    {
-		final AudioInfo audioInfo = book.findAudioForId(url.toString() + "#" + id);
+		final AudioFragment audioInfo = book.findAudioForId(url.toString() + "#" + id);
 		if (audioInfo != null)
 		{
-		    Log.debug("reader", "audio info found:" + audioInfo.src() + " from " + audioInfo.beginPosMsec());
+		    //Log.debug("reader", "audio info found:" + audioInfo.src() + " from " + audioInfo.beginPosMsec());
 		    URL audioFileUrl = null;
 		    try {
-			audioFileUrl = new URL(url, audioInfo.src());
+			audioFileUrl = new URL(url, audioInfo.src);
 		    }
 		    catch(MalformedURLException e)
 		    {
-			Log.error("reader", "unable to prepare the URL for player:" + audioInfo.src() + ":" + e.getMessage());
+			//Log.error("reader", "unable to prepare the URL for player:" + audioInfo.src() + ":" + e.getMessage());
 			continue;
 		    }
 		    this.book = book;

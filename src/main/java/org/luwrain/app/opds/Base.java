@@ -28,7 +28,7 @@ import org.luwrain.app.opds.Opds.Entry;
 
 final class Base
 {
-    static private final String CONTENT_TYPE_FB2_ZIP = org.luwrain.doctree.loading.UrlLoader.CONTENT_TYPE_FB2_ZIP;
+    static private final String CONTENT_TYPE_FB2_ZIP = org.luwrain.app.reader.loading.UrlLoader.CONTENT_TYPE_FB2_ZIP;
 
     static final String PROFILE_CATALOG = "opds-catalog";
     static final String BASE_TYPE_CATALOG = "application/atom+xml";

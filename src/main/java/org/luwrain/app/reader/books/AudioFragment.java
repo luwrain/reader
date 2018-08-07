@@ -1,5 +1,5 @@
 
-package org.luwrain.app.reader;
+package org.luwrain.app.reader.books;
 
 import java.util.regex.*;
 import java.net.*;
@@ -8,9 +8,9 @@ import org.luwrain.core.NullCheck;
 
 public final class AudioFragment
 {
-    private String src;
-private long beginPos;
-private long endPos;
+    public final String src;
+public final long beginPos;
+public final long endPos;
 
     public AudioFragment(String src, long beginPos)
     {
