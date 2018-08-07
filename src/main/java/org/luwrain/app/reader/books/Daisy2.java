@@ -95,8 +95,8 @@ class Daisy2 implements Book
 	    final Smil.Entry requested = entry.findById(url.getRef());
 	    if (requested != null)
 	    {
-		Log.debug("doctree", "requested entry type is " + requested.type());
-		if (requested.type() == Smil.Entry.Type.PAR || requested.type() == Smil.Entry.Type.SEQ)
+		Log.debug("doctree", "requested entry type is " + requested.type);
+		if (requested.type == Smil.Entry.Type.PAR || requested.type == Smil.Entry.Type.SEQ)
 		{
 		    final LinkedList<String> links = new LinkedList<String>();
 		    collectTextStartingAtEntry(requested, links);
@@ -110,10 +110,10 @@ class Daisy2 implements Book
 		    Log.debug("doctree", "nothing found in SMILs");
 		    return null;
 		} else
-		if (requested.type() == Smil.Entry.Type.TEXT)
+		if (requested.type == Smil.Entry.Type.TEXT)
 		    return getDocument(requested.src()); else
 		{
-		    Log.warning("doctree-daisy", "URL " + href + " points to a SMIL entry, but its type is " + requested.type());
+		    Log.warning("doctree-daisy", "URL " + href + " points to a SMIL entry, but its type is " + requested.type);
 		    return null;
 		}
 	    }
@@ -304,7 +304,7 @@ res = loadDoc(url);
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(src, "src");
-	switch(entry.type() )
+	switch(entry.type )
 	{
 	case TEXT:
 	    return (entry.src() != null && entry.src().equals(src))?entry:null;
@@ -312,24 +312,20 @@ res = loadDoc(url);
 	    return null;
 	case FILE:
 	case SEQ:
-	    if (entry.entries() == null)
-		return null;
-	    for (int i = 0;i < entry.entries().length;++i)
+	    for (int i = 0;i < entry.entries.length;++i)
 	    {
-		final Smil.Entry res = findSmilEntryWithText(entry.entries()[i], src);
+		final Smil.Entry res = findSmilEntryWithText(entry.entries[i], src);
 		if (res == null)
 		    continue;
-		if (res != entry.entries()[i])
+		if (res != entry.entries[i])
 		    return res;
 		if (i == 0)
 		    return entry;
-		return entry.entries()[i];
+		return entry.entries[i];
 	    }
 	    return null;
 	case PAR:
-	    if (entry.entries() == null)
-		return null;
-	    for(Smil.Entry e: entry.entries())
+	    for(Smil.Entry e: entry.entries)
 	    {
 		final Smil.Entry res = findSmilEntryWithText(e, src);
 		if (res != null)
@@ -337,7 +333,7 @@ res = loadDoc(url);
 	    }
 	    return null;
 	default:
-	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type());
+	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type);
 	    return null;
 	}
     }
@@ -346,7 +342,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(audioFileUrl, "audioFileUrl");
-	switch(entry.type() )
+	switch(entry.type )
 	{
 	case AUDIO:
 	    return entry.getAudioFragment().covers(audioFileUrl, msec, nccDocUrl)?entry:null;
@@ -354,24 +350,20 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	    return null;
 	case FILE:
 	case SEQ:
-	    if (entry.entries() == null)
-		return null;
-	    for (int i = 0;i < entry.entries().length;++i)
+	    for (int i = 0;i < entry.entries.length;++i)
 	    {
-		final Smil.Entry res = findSmilEntryWithAudio(entry.entries()[i], audioFileUrl, msec);
+		final Smil.Entry res = findSmilEntryWithAudio(entry.entries[i], audioFileUrl, msec);
 		if (res == null)
 		    continue;
-		if (res != entry.entries()[i])
+		if (res != entry.entries[i])
 		    return res;
 		if (i == 0)
 		    return entry;
-		return entry.entries()[i];
+		return entry.entries[i];
 	    }
 	    return null;
 	case PAR:
-	    if (entry.entries() == null)
-		return null;
-	    for(Smil.Entry e: entry.entries())
+	    for(Smil.Entry e: entry.entries)
 	    {
 		final Smil.Entry res = findSmilEntryWithAudio(e, audioFileUrl, msec);
 		if (res != null)
@@ -379,7 +371,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	    }
 	    return null;
 	default:
-	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type());
+	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type);
 	    return null;
 	}
     }
@@ -388,7 +380,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(audioInfos, "audioInfos");
-	switch(entry.type())
+	switch(entry.type)
 	{
 	case AUDIO:
 	    audioInfos.add(entry.getAudioFragment());
@@ -396,18 +388,16 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	case TEXT:
 	    return;
 	case PAR:
-	    if (entry.entries() != null)
-		for(Smil.Entry e: entry.entries())
+		for(Smil.Entry e: entry.entries)
 		    collectAudioStartingAtEntry(e, audioInfos);
 	    return;
 	case FILE:
 	case SEQ:
-	    if (entry.entries() != null &&
-		 entry.entries().length >= 1)
-		collectAudioStartingAtEntry(entry.entries()[0], audioInfos);
+	    if (entry.entries.length >= 1)
+		collectAudioStartingAtEntry(entry.entries[0], audioInfos);
 	    return;
 	default:
-	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type());
+	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type);
 	}
     }
 
@@ -415,7 +405,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(links, "links");
-	switch(entry.type())
+	switch(entry.type)
 	{
 	case AUDIO:
 	    return;
@@ -423,18 +413,16 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	    links.add(entry.src());
 	    return;
 	case PAR:
-	    if (entry.entries() != null)
-		for(Smil.Entry e: entry.entries())
+		for(Smil.Entry e: entry.entries)
 		    collectTextStartingAtEntry(e, links);
 	    return;
 	case FILE:
 	case SEQ:
-	    if (entry.entries() != null &&
-		 entry.entries().length >= 1)
-		collectTextStartingAtEntry(entry.entries()[0], links);
+	    if (entry.entries.length >= 1)
+		collectTextStartingAtEntry(entry.entries[0], links);
 	    return;
 	default:
-	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type());
+	    Log.warning("doctree-daisy", "unknown SMIL entry type:" + entry.type);
 	}
     }
 

@@ -17,18 +17,24 @@ public final class Smil
 {
     static public class Entry
     {
-	public enum Type {SEQ, PAR, AUDIO, TEXT, FILE};
+	public enum Type {
+	    SEQ,
+	    PAR,
+	    AUDIO,
+	    TEXT,
+	    FILE};
 
-	private final Type type;
+	public final Type type;
+		public final String id;
+		public final Entry[] entries;
 	private String src = null;
-	private String id = "";
 	private final AudioFragment audioInfo;
-	final Entry[] entries;
 
 	Entry(Type type)
 	{
 	    NullCheck.notNull(type, "type");
 	    this.type = type;
+	    this.id = "";
 	    this.audioInfo = null;
 	    this.entries = new Entry[0];
 	}
@@ -38,6 +44,7 @@ public final class Smil
 	    NullCheck.notNull(type, "type");
 	    NullCheck.notNullItems(entries, "entries");
 	    this.type = type;
+	    this.id = "";
 	    this.audioInfo = null;
 	    this.entries = entries;
 	}
@@ -54,18 +61,6 @@ public final class Smil
 	}
 
 
-
-	Entry (Type type, String src)
-	{
-	    NullCheck.notNull(type, "type");
-	    NullCheck.notNull(id, "id");
-	    NullCheck.notNull(src, "src");
-	    this.type = type;
-	    this.id = id;
-	    this.src = src;
-	    this.audioInfo = null;
-	    this.entries = new Entry[0];
-	}
 
 	Entry (Type type, String id, String src)
 	{
@@ -135,10 +130,8 @@ src = new URL(base, src).toString();
 	    return audioInfo;
 	}
 
-	public Type type(){return type;}
-	public Entry[] entries(){return entries;}
 	public String src() {return src;}
-	public String id() {return id;}
+	//	public String id() {return id;}
     }
 
     static public class File extends Entry
