@@ -25,8 +25,8 @@ public final class Smil
 	    FILE};
 
 	public final Type type;
-		public final String id;
-		public final Entry[] entries;
+	public final String id;
+	public final Entry[] entries;
 	private String src = null;
 	private final AudioFragment audioInfo;
 
@@ -60,21 +60,17 @@ public final class Smil
 	    this.entries = entries;
 	}
 
-
-
 	Entry (Type type, String id, String src)
 	{
 	    NullCheck.notNull(type, "type");
 	    NullCheck.notNull(id, "id");
 	    NullCheck.notNull(src, "src");
-	    //	    NullCheck.notNull(audioInfo, "audioInfo");
 	    this.type = type;
 	    this.id = id;
 	    this.src = src;
 	    this.audioInfo = null;
 	    this.entries = new Entry[0];
 	}
-
 
 	Entry (String id, String src, AudioFragment audioInfo)
 	{
@@ -94,20 +90,19 @@ public final class Smil
 		src != null && !src.isEmpty())
 		res.add(src);
 	    if (entries != null)
-	    for(Entry e: entries)
-		e.saveTextSrc(res);
+		for(Entry e: entries)
+		    e.saveTextSrc(res);
 	}
 
 	public void allSrcToUrls(URL base) throws MalformedURLException
 	{
 	    NullCheck.notNull(base, "base");
 	    if (src != null && !src.isEmpty())
-src = new URL(base, src).toString();
+		src = new URL(base, src).toString();
 	    if (entries != null)
-	    for(Entry e: entries)
-		e.allSrcToUrls(base);
+		for(Entry e: entries)
+		    e.allSrcToUrls(base);
 	}
-
 
 	public Entry findById(String id)
 	{
@@ -130,11 +125,13 @@ src = new URL(base, src).toString();
 	    return audioInfo;
 	}
 
-	public String src() {return src;}
-	//	public String id() {return id;}
+	public String src()
+	{
+	    return src;
+	}
     }
 
-    static public class File extends Entry
+    static public final class File extends Entry
     {
 	File()
 	{
@@ -149,14 +146,14 @@ src = new URL(base, src).toString();
 	try {
 	    if (url.getProtocol().equals("file"))
 	    {
-	    final Connection con=Jsoup.connect(url.toString());
-	    con.userAgent(org.luwrain.app.reader.loading.UrlLoader.USER_AGENT);
-	    con.timeout(30000);
-	    doc = con.get();
-	} else
-	  {
-	      doc = Jsoup.parse(url.openStream(), "utf-8", "", Parser.xmlParser());
-	  }
+		final Connection con=Jsoup.connect(url.toString());
+		con.userAgent(org.luwrain.app.reader.loading.UrlLoader.USER_AGENT);
+		con.timeout(30000);
+		doc = con.get();
+	    } else
+	    {
+		doc = Jsoup.parse(url.openStream(), "utf-8", "", Parser.xmlParser());
+	    }
 	}	
 	catch(Exception e)
 	{
@@ -164,9 +161,7 @@ src = new URL(base, src).toString();
 	    e.printStackTrace(); 
 	    return null;
 	}
-	final Entry res = new Entry(Entry.Type.FILE, onNode(doc.body()));
-	//	    res.entries = ;
-	return res;
+	return new Entry(Entry.Type.FILE, onNode(doc.body()));
     }
 
     static public Entry fromFile(java.io.File file)
@@ -182,9 +177,7 @@ src = new URL(base, src).toString();
 	    e.printStackTrace(); 
 	    return null;
 	}
-	final Entry res = new Entry(Entry.Type.FILE, onNode(doc.body()));
-	//	    res.entries = ;
-	return res;
+	return new Entry(Entry.Type.FILE, onNode(doc.body()));
     }
 
     static private Entry[] onNode(Node node)
@@ -211,13 +204,9 @@ src = new URL(base, src).toString();
 		{
 		case "seq":
 		    res.add(new Entry(Entry.Type.SEQ, el.attr("id"), onNode(el)));
-		    //		    res.getLast().id = el.attr("id");
-		    //		    res.getLast().entries = onNode(el);
 		    break;
 		case "par":
 		    res.add(new Entry(Entry.Type.PAR, el.attr("id"), onNode(el)));
-		    //	    res.getLast().id = el.attr("id");
-		    //		    res.getLast().entries = onNode(el);
 		    break;
 		case "audio":
 		    res.add(onAudio(el));
@@ -239,14 +228,14 @@ src = new URL(base, src).toString();
 	NullCheck.notNull(el, "el");
 	final String id = el.attr("id");
 	final String src = el.attr("src");
-final String beginValue = el.attr("clip-begin");
-final String endValue = el.attr("clip-end");
-long beginPos = -1, endPos = -1;
-if (beginValue != null)
-beginPos = parseTime(beginValue);
-if (endValue != null)
-endPos = parseTime(endValue);
-return new Entry(id, src, new AudioFragment(src, beginPos, endPos));
+	final String beginValue = el.attr("clip-begin");
+	final String endValue = el.attr("clip-end");
+	long beginPos = -1, endPos = -1;
+	if (beginValue != null)
+	    beginPos = parseTime(beginValue);
+	if (endValue != null)
+	    endPos = parseTime(endValue);
+	return new Entry(id, src, new AudioFragment(src, beginPos, endPos));
     }
 
     static private Entry onText(Element el)
@@ -257,7 +246,7 @@ return new Entry(id, src, new AudioFragment(src, beginPos, endPos));
 	return new Entry(Entry.Type.TEXT, id, src);
     }
 
-	static private final Pattern TIME_PATTERN = Pattern.compile("^npt=(?<sec>\\d+.\\d+)s$");
+    static private final Pattern TIME_PATTERN = Pattern.compile("^npt=(?<sec>\\d+.\\d+)s$");
     static private long parseTime(String value)
     {
 	final Matcher m = TIME_PATTERN.matcher(value);
@@ -265,14 +254,14 @@ return new Entry(id, src, new AudioFragment(src, beginPos, endPos));
 	{
 	    try {
 		float f = Float.parseFloat(m.group("sec"));
-					   f *= 1000;
-					   return new Float(f).longValue();
+		f *= 1000;
+		return new Float(f).longValue();
 	    }
 	    catch(NumberFormatException e)
 	    {
 		e.printStackTrace();
 	    }
 	}
-	    return -1;
+	return -1;
     }
 }
