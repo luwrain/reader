@@ -56,7 +56,7 @@ Action[] getReaderAreaActions(boolean hasDocument, App.Modes mode)
 	if (hasDocument)
 	{
 	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
-	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
+	    //	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
 
 	    res.add(new Action("save-bookmark", strings.actionSaveBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2)));
 	    res.add(new Action("restore-bookmark", strings.actionRestoreBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));

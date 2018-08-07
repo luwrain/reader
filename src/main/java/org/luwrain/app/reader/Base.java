@@ -30,22 +30,21 @@ import org.luwrain.controls.doc.*;
 import org.luwrain.doctree.loading.*;
 import org.luwrain.player.*;
 
-class Base
+final class Base
 {
     static private final String DEFAULT_ENCODING = "UTF-8";
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Luwrain luwrain;
     private final Strings strings;
-    private FutureTask task;
-    private AudioPlaying audioPlaying;
+    private FutureTask task = null;
+    private AudioPlaying audioPlaying = null;
     private BookTreeModelSource bookTreeModelSource;
     private CachedTreeModel bookTreeModel;
     private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
 
     private Book book;
     private Document currentDoc = null;
-    private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
+    private final LinkedList<HistoryItem> history = new LinkedList();
 
     Base(Luwrain luwrain, Strings strings)
     {
@@ -55,10 +54,7 @@ class Base
 	this.strings = strings;
 	this.audioPlaying = new AudioPlaying();
 	if (!audioPlaying.init(luwrain))
-	{
-	    Log.warning("reader", "unable to initialize audio playing (likely no system player), no audio listening is available");
 	    audioPlaying = null;
-	}
 	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Book.Section[0]);
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
@@ -79,8 +75,7 @@ class Base
 	if (!history .isEmpty() && currentRowIndex >= 0)
 	    history.getLast().startingRowIndex = currentRowIndex;
 	task = createTask(app, url, contentType);
-	Log.debug("reader", "executing new task for fetching " + url);
-	executor.execute(task);
+	luwrain.executeBkg(task);
 	return true;
     }
 

@@ -10,7 +10,10 @@ import org.luwrain.util.*;
 
 final class TextFiles
 {
-    enum ParaStyle {EMPTY_LINES, EACH_LINE, INDENT};
+    enum ParaStyle {
+	EMPTY_LINES,
+	EACH_LINE,
+	INDENT};
 
     private final File file;
     private final String charset;
@@ -88,7 +91,7 @@ final class TextFiles
 	    {
 		final Node para = createPara(paraLines);
 		if (para != null)
-		    nodes.add(para);
+		    builder.addSubnode(para);
 		continue;
 	    }
 	    int indent = 0;
@@ -98,7 +101,7 @@ final class TextFiles
 	    {
 		final Node para = createPara(paraLines);
 		if (para != null)
-		    nodes.add(para);
+		    builder.addSubnode(para);
 		paraLines.add(line.trim());
 		continue;
 	    }
@@ -106,10 +109,8 @@ final class TextFiles
 	}
 	final Node para = createPara(paraLines);
 	if (para != null)
-	    nodes.add(para);
-	final Node root = NodeFactory.newNode(Node.Type.ROOT); 
-	root.setSubnodes(nodes.toArray(new Node[nodes.size()]));
-	return new Document(root);
+	    builder.addSubnode(para);
+	return new Document(builder.newRoot());
     }
 
     private Paragraph createPara(List<String> lines)
