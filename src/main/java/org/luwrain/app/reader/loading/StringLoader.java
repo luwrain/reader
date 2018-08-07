@@ -15,8 +15,9 @@ import org.luwrain.core.*;
 import org.luwrain.doctree.*;
 import org.luwrain.app.reader.formats.*;
 import org.luwrain.app.reader.books.*;
+import org.luwrain.app.reader.*;
 
-public class StringLoader
+class StringLoader
 {
     static public final String CONTENT_TYPE_HTML = UrlLoader.CONTENT_TYPE_HTML;
 
@@ -73,7 +74,7 @@ res.setProperty("charset", charset);
     {
 	NullCheck.notNull(format, "format");
 	NullCheck.notEmpty(contentType, "contentType");
-charset = UrlLoader.extractCharset(contentType);
+	charset = "";//UrlLoader.extractCharset(contentType);
 	if (charset == null || charset.isEmpty())
 charset = DEFAULT_CHARSET;
     }

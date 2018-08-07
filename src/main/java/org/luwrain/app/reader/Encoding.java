@@ -1,5 +1,5 @@
 
-package org.luwrain.app.reader.loading;
+package org.luwrain.app.reader;
 
 import java.util.*;
 import java.util.regex.*;

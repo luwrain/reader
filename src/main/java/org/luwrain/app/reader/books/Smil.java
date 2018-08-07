@@ -147,7 +147,7 @@ public final class Smil
 	    if (url.getProtocol().equals("file"))
 	    {
 		final Connection con=Jsoup.connect(url.toString());
-		con.userAgent(org.luwrain.app.reader.loading.UrlLoader.USER_AGENT);
+		con.userAgent(org.luwrain.app.reader.UrlLoader.USER_AGENT);
 		con.timeout(30000);
 		doc = con.get();
 	    } else

@@ -1,5 +1,5 @@
 
-package org.luwrain.app.reader.loading;
+package org.luwrain.app.reader;
 
 import java.net.*;
 import java.io.*;
@@ -41,7 +41,7 @@ public class UrlLoader
     static private final String DEFAULT_CHARSET = "UTF-8";
     static private final Txt.ParaStyle DEFAULT_PARA_STYLE = Txt.ParaStyle.EMPTY_LINES;
 
-    enum Format {
+    public enum Format {
 	TXT, HTML, XML, DOC, DOCX,
 	FB2, FB2_ZIP, EPUB, SMIL,
     };
@@ -334,7 +334,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	return null;
     }
 
-    static Format chooseFilterByContentType(String contentType)
+    static public Format chooseFilterByContentType(String contentType)
     {
 	NullCheck.notEmpty(contentType, "contentType");
 	switch(contentType.toLowerCase().trim())
@@ -375,7 +375,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	}
     }
 
-    static private String extractCharset(Path path) throws IOException
+    static public String extractCharset(Path path) throws IOException
     {
 	NullCheck.notNull(path, "path");
 		Log.debug("doctree", "trying to get charset information from HTML header in " + path);
@@ -386,7 +386,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	return res;
     }
 
-    static String extractBaseContentType(String value)
+    static public String extractBaseContentType(String value)
     {
 	NullCheck.notEmpty(value, "value");
 	try {
