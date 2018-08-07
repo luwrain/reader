@@ -12,7 +12,7 @@ import org.luwrain.doctree.*;
 import org.luwrain.doctree.loading.*;
 import org.luwrain.util.*;
 
-class Daisy2 extends Base
+class Daisy2 implements Book
 {
     protected final UrlLoaderFactory urlLoaderFactory;
     protected final HashMap<URL, Document> docs = new HashMap<URL, Document>();
