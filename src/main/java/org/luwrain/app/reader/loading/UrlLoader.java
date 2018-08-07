@@ -244,7 +244,7 @@ res.setProperty("charset", selectedCharset);
 	switch(format)
 	{
 	case XML:
-	    selectedCharset = XmlEncoding.getEncoding(tmpFile);
+	    selectedCharset = Encoding.getXmlEncoding(tmpFile);
 	    break;
 	case HTML:
 	    selectedCharset = extractCharset(tmpFile);
@@ -379,7 +379,7 @@ return new Fb2(is, selectedCharset).createDoc();
     {
 	NullCheck.notNull(path, "path");
 		Log.debug("doctree", "trying to get charset information from HTML header in " + path);
-	final String res = HtmlEncoding.getEncoding(path);
+	final String res = Encoding.getHtmlEncoding(path);
 	if (res == null)
 	    return "";
 	Log.debug("doctree", "determined charset is \'" + res + "\'");

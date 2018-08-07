@@ -2,6 +2,7 @@
 package org.luwrain.app.reader.loading;
 
 import java.util.*;
+import java.util.regex.*;
 import java.io.*;
 import java.nio.file.*;
 import javax.activation.*;
@@ -12,9 +13,13 @@ import org.jsoup.select.*;
 
 import org.luwrain.core.*;
 
-class HtmlEncoding
+class Encoding
 {
-    static String getEncoding(Path path) throws IOException
+    static private final Pattern pattern1 = Pattern.compile("<?xml.*encoding\\s*=\\s*\"([^\"]*)\".*?>", Pattern.CASE_INSENSITIVE);
+    static private final Pattern pattern2 = Pattern.compile("<?xml.*encoding\\s*=\\s*\'([^\']*)\'.*?>", Pattern.CASE_INSENSITIVE);
+
+    
+    static String getHtmlEncoding(Path path) throws IOException
     {
 	NullCheck.notNull(path, "path");
 	//  html5 <meta charset="UTF-8">
@@ -51,5 +56,40 @@ class HtmlEncoding
 		return res.trim();
 	}
 	return "";
-    }	
+    }
+
+        static String getXmlEncoding(InputStream s) throws IOException
+    {
+	NullCheck.notNull(s, "s");
+	final BufferedReader r = new BufferedReader(new InputStreamReader(s));
+	String line;
+	while ( (line = r.readLine()) != null)
+	{
+	Matcher matcher = pattern1.matcher(line);
+	if (matcher.find())
+	    return matcher.group(1);
+	matcher = pattern2.matcher(line);
+	if (matcher.find())
+	    return matcher.group(1);
+	}
+	return null;
+    }
+
+    static String getXmlEncoding(Path path) throws IOException
+    {
+	NullCheck.notNull(path, "path");
+	InputStream is = null;
+	try {
+	    is = Files.newInputStream(path);
+	    return getXmlEncoding(is);
+	}
+	finally
+	{
+	    if (is != null)
+		is.close();
+	}
+    }
+
+
+    
 }
