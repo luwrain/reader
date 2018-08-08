@@ -28,7 +28,6 @@ import org.luwrain.core.events.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
-import org.luwrain.app.reader.loading.*;
 
 class Actions
 {
