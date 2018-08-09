@@ -9,15 +9,16 @@ import java.util.*;
 import java.util.zip.*;
 import javax.activation.*;
 
-import org.apache.poi.util.IOUtils;
-
 import org.luwrain.core.*;
+import org.luwrain.util.*;
 import org.luwrain.doctree.*;
 import org.luwrain.app.reader.formats.*;
 import org.luwrain.app.reader.books.*;
 
-public class UrlLoader
+public final class UrlLoader
 {
+    static private final String LOG_COMPONENT = "reader";
+    
     static public final String CONTENT_TYPE_DATA = "application/octet-stream";
     static public final String CONTENT_TYPE_PDF = "application/pdf";
     static public final String CONTENT_TYPE_POSTSCRIPT = "application/postscript";
@@ -33,65 +34,59 @@ public class UrlLoader
 
     static private final String DOCTYPE_FB2 = "fictionbook";
 
-    static public final String PARA_STYLE_EMPTY_LINES = "empty-lines";
-    static public final String PARA_STYLE_INDENT = "indent";
-    static public final String PARA_STYLE_EACH_LINE = "each-line";
+    static final String PARA_STYLE_EMPTY_LINES = "empty-lines";
+    static final String PARA_STYLE_INDENT = "indent";
+    static final String PARA_STYLE_EACH_LINE = "each-line";
 
     static public final String USER_AGENT = "Mozilla/5.0";
     static private final String DEFAULT_CHARSET = "UTF-8";
     static private final Txt.ParaStyle DEFAULT_PARA_STYLE = Txt.ParaStyle.EMPTY_LINES;
 
-    public enum Format {
+    enum Format {
 	TXT, HTML, XML, DOC, DOCX,
 	FB2, FB2_ZIP, EPUB, SMIL,
     };
 
-    private URL requestedUrl;
-    private String requestedContentType;
+    private final URL requestedUrl;
+    private final String requestedContentType;
     private String requestedTagRef;
-    private URL responseUrl;
-    private String responseContentType;
-    private String responseContentEncoding;
-    private int httpCode;
+    private URL responseUrl = null;
+    private String responseContentType = "";
+    private String responseContentEncoding = "";
     private Path tmpFile;
-    private String selectedContentType;
-    private String selectedCharset;
+    private String selectedContentType = "";
+    private String selectedCharset = "";
 
     public UrlLoader(URL url) throws MalformedURLException
     {
 	NullCheck.notNull(url, "url");
-	requestedTagRef = url.getRef();
-	requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
+	this.requestedTagRef = url.getRef();
+	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
 			       url.getPort(), url.getFile());
 	requestedContentType = "";
-    }
-
-    public UrlLoader newUrlLoader(URL url) throws MalformedURLException
-    {
-	NullCheck.notNull(url, "url");
-	return new UrlLoader(url);
     }
 
     public UrlLoader(URL url, String contentType) throws MalformedURLException
     {
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
-	requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
+	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
 			       url.getPort(), url.getFile());
-	requestedContentType = contentType;
+	this.requestedContentType = contentType;
     }
 
     public Result load() throws IOException
     {
 	try {
 	    try {
-		if (!fetch())
-		{
-		final Result res = new Result(Result.Type.HTTP_ERROR);
+				fetch();
+	    }
+	    catch(Connections.InvalidHttpResponseCodeException e)
+	    {
+				final Result res = new Result(Result.Type.HTTP_ERROR);
 		res.setProperty("url", requestedUrl.toString());
-		res.setProperty("httpcode", "" + httpCode);
+		res.setProperty("httpcode", "" + e.getHttpCode());
 		return res;
-		}
 	    }
 	    catch (UnknownHostException  e)
 	    {
@@ -102,7 +97,6 @@ public class UrlLoader
 	    }
 	    catch (IOException e)
 	    {
-		e.printStackTrace();
 		final Result res = new Result(Result.Type.FETCHING_ERROR);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("descr", e.getClass().getName() + ":" + e.getMessage());
@@ -169,60 +163,26 @@ res.setProperty("charset", selectedCharset);
 	}
     }
 
-    // Returns false only on HTTP errors, see httpCode for details.
-    // ALl other errors are reported through IOException
-    private boolean fetch() throws IOException
+    private void fetch() throws IOException
     {
-	InputStream responseStream = null;
+	final URLConnection con = Connections.connect(requestedUrl, 0);
+	final InputStream responseStream = con.getInputStream();
 	try {
-	    URLConnection con;
-	    Log.debug("doctree", "opening connection for " + requestedUrl.toString());
-	    con = requestedUrl.openConnection();
-	    while(true)
-	    {
-		con.setRequestProperty("User-Agent", USER_AGENT);
-		con.connect();
-		if (!(con instanceof HttpURLConnection))
-		    break;//Considering everything is OK, but lines below are pointless
-		final HttpURLConnection httpCon = (HttpURLConnection)con;
-		httpCode = httpCon.getResponseCode();
-		Log.debug("doctree", "response code is " + httpCode);
-		if (httpCode >= 400 || httpCode < 200)
-		    return false;
-		if (httpCode >= 200 && httpCode <= 299)
-		    break;
-		final String location = httpCon.getHeaderField("location");
-		if (location == null || location.isEmpty())
-		{
-		    Log.warning("doctree", "HTTP response code is " + httpCode + " but \'location\' field is empty");
-		    return false;
-		}
-		Log.debug("doctree", "redirected to " + location);
-		final URL locationUrl = new URL(location);
-		con = locationUrl.openConnection();
-	    }
-	    responseStream = con.getInputStream();
-	    responseUrl = con.getURL();
+	    this.responseUrl = con.getURL();
 	    if (responseUrl == null)
-		responseUrl = requestedUrl;
-	    responseContentType = con.getContentType();
+		this.responseUrl = requestedUrl;
+	    this.responseContentType = con.getContentType();
 	    if (responseContentType == null)
 		responseContentType = "";
-	    responseContentEncoding = con.getContentEncoding();
+	    this.responseContentEncoding = con.getContentEncoding();
 	    if (responseContentEncoding == null)
 		responseContentEncoding = "";
-	    //						 InputStream is = null;
 	    if (responseContentEncoding.toLowerCase().trim().equals("gzip"))
-	    {
-		Log.debug("doctree", "enabling gzip decompressing");
-		downloadToTmpFile(new GZIPInputStream(responseStream));
-	    } else
+		downloadToTmpFile(new GZIPInputStream(responseStream)); else
 		downloadToTmpFile(responseStream);
-	    return true;
 	}
 	finally {
-	    if (responseStream != null)
-		responseStream.close();
+	    responseStream.close();
 	}
     }
 
