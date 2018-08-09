@@ -17,7 +17,7 @@ import org.luwrain.app.reader.books.*;
 public final class UrlLoader
 {
     static private final String LOG_COMPONENT = "reader";
-    
+
     static public final String CONTENT_TYPE_DATA = "application/octet-stream";
     static public final String CONTENT_TYPE_PDF = "application/pdf";
     static public final String CONTENT_TYPE_POSTSCRIPT = "application/postscript";
@@ -46,6 +46,7 @@ public final class UrlLoader
 	FB2, FB2_ZIP, EPUB, SMIL,
     };
 
+    private final Luwrain luwrain;
     private final URL requestedUrl;
     private final String requestedContentType;
     private String requestedTagRef;
@@ -56,19 +57,23 @@ public final class UrlLoader
     private String selectedContentType = "";
     private String selectedCharset = "";
 
-    public UrlLoader(URL url) throws MalformedURLException
+    public UrlLoader(Luwrain luwrain, URL url) throws MalformedURLException
     {
+	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(url, "url");
+	this.luwrain = luwrain;
 	this.requestedTagRef = url.getRef();
 	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
 			       url.getPort(), url.getFile());
 	requestedContentType = "";
     }
 
-    public UrlLoader(URL url, String contentType) throws MalformedURLException
+    public UrlLoader(Luwrain luwrain, URL url, String contentType) throws MalformedURLException
     {
+	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
+	this.luwrain = luwrain;
 	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
 			       url.getPort(), url.getFile());
 	this.requestedContentType = contentType;
@@ -78,10 +83,12 @@ public final class UrlLoader
     {
 	try {
 	    try {
+		Log.debug(LOG_COMPONENT, "fetching " + requestedUrl.toString());
 				fetch();
 	    }
 	    catch(Connections.InvalidHttpResponseCodeException e)
 	    {
+		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
 				final Result res = new Result(Result.Type.HTTP_ERROR);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("httpcode", "" + e.getHttpCode());
@@ -89,6 +96,7 @@ public final class UrlLoader
 	    }
 	    catch (UnknownHostException  e)
 	    {
+				Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
 		final Result res = new Result(Result.Type.UNKNOWN_HOST);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("host", e.getMessage());
@@ -96,34 +104,28 @@ public final class UrlLoader
 	    }
 	    catch (IOException e)
 	    {
+				Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
 		final Result res = new Result(Result.Type.FETCHING_ERROR);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("descr", e.getClass().getName() + ":" + e.getMessage());
 		return res;
 	    }
-	    selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
+	    this.selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
+
+	    	    if (selectedContentType.isEmpty())
+			this.selectedContentType = luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
 	    if (selectedContentType.isEmpty())
 		return new Result(Result.Type.UNDETERMINED_CONTENT_TYPE);
-	    if (!requestedContentType.isEmpty())
-	    {
-		Log.debug("doctree", "requested content type is " + requestedContentType);
-		Log.debug("doctree", "response content type is " + responseContentType);
-		Log.debug("doctree", "selected content type is " + selectedContentType);
-	    } else
-		Log.debug("doctree", "response content type is " + responseContentType);
-	    Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
-	    if (format == null)
-		format = chooseFilterByFileName(responseUrl);
+	    final Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
 	    if (format == null)
 	    {
-		Log.error("doctree", "unable to choose suitable filter depending on selected content type:" + requestedUrl.toString());
+		Log.error(LOG_COMPONENT, "unable to choose the suitable filter for " + requestedUrl.toString());
 		final Result res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
 res.setProperty("contenttype", selectedContentType);
 res.setProperty("url", responseUrl.toString());
 return res;
 	    }
 	    selectCharset(format);
-	    Log.debug("doctree", "selected charset is " + selectedCharset);
 	    final Result res = parse(format);
 	    if (res.doc == null)
 	    {
@@ -311,25 +313,6 @@ return new Fb2(is, selectedCharset).createDoc();
 	}
     }
 
-    static private Format chooseFilterByFileName(URL url)
-    {
-	NullCheck.notNull(url, "url");
-	final String ext = org.luwrain.core.FileTypes.getExtension(url).toLowerCase();
-	if (ext.isEmpty())
-	    return null;
-	switch(ext)
-	{
-	case "docx":
-	    return Format.DOCX;
-	case "doc":
-	    return Format.DOC;
-	case "fb2":
-	    return Format.FB2;
-	default:
-	    return null;
-	}
-    }
-
     static public String extractCharset(Path path) throws IOException
     {
 	NullCheck.notNull(path, "path");
@@ -338,10 +321,6 @@ return new Fb2(is, selectedCharset).createDoc();
 	    return "";
 	return res;
     }
-
-
-
-
 
     static public final class Result
     {
@@ -354,39 +333,30 @@ return new Fb2(is, selectedCharset).createDoc();
 	    UNRECOGNIZED_FORMAT, //See "contenttype" property
 	};
 
-	private Type type = Type.OK;
+	public final Type type;
 		public Book book = null;
 	public Document doc = null;
-	//	int startingRowIndex;
-	private final Properties props = new Properties();
-
-	public Result()
+	public final Properties props = new Properties();
+	Result()
 	{
-	    type = Type.OK;
+	    this.type = Type.OK;
 	}
-
 	Result(Type type)
 	{
 	    NullCheck.notNull(type, "type");
 	    this.type = type;
 	}
-
 	public String getProperty(String propName)
 	{
 	    NullCheck.notNull(propName, "propName");
 	    final String res = props.getProperty(propName);
 	    return res != null?res:"";
 	}
-
 	void setProperty(String propName, String value)
 	{
 	    NullCheck.notEmpty(propName, "propName");
 	    NullCheck.notNull(value, "value");
 	    props.setProperty(propName, value);
 	}
-
-	public Type type() { return type; }
-	public Document doc() { return doc; }
-		public Book book() {return book;}
     }
 }

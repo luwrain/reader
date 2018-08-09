@@ -13,11 +13,18 @@ import org.luwrain.util.*;
 
 class Daisy2 implements Book
 {
-    protected final HashMap<URL, Document> docs = new HashMap<URL, Document>();
-    protected final HashMap<URL, Smil.Entry> smils = new HashMap<URL, Smil.Entry>();
-    protected Document nccDoc;
-    protected URL nccDocUrl;
+    protected final Luwrain luwrain;
+    protected final Map<URL, Document> docs = new HashMap();
+    protected final Map<URL, Smil.Entry> smils = new HashMap();
+    protected Document nccDoc = null;
+    protected URL nccDocUrl = null;
     protected Book.Section[] bookSections = new Book.Section[0];
+
+    Daisy2(Luwrain luwrain)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	this.luwrain = luwrain;
+    }
 
     @Override public Document[] getDocuments()
     {
@@ -278,18 +285,18 @@ res = loadDoc(url);
 	    e.printStackTrace();
 	    return;
 	}
-	if (res.type() != UrlLoader.Result.Type.OK)
+	if (res.type != UrlLoader.Result.Type.OK)
 	{
 	    Log.warning("doctree-daisy", "unable to load a document by URL " + url + ":" + res.toString());
 	    return;
 	}
-	if (res.book() != null)
+	if (res.book != null)
 	{
 	    Log.debug("doctree-daisy", "the URL " + url + "references a book, not including to current one");
 	    return;
 	}
-	res.doc().setProperty("daisy.localpath", localPath);
-	docs.put(url, res.doc());
+	res.doc.setProperty("daisy.localpath", localPath);
+	docs.put(url, res.doc);
     }
 
     static private Smil.Entry findSmilEntryWithText(Smil.Entry entry, String src)
@@ -432,7 +439,7 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 
     private UrlLoader.Result loadDoc(URL url) throws MalformedURLException, IOException
     {
-final UrlLoader loader = new UrlLoader(url);
+	final UrlLoader loader = new UrlLoader(luwrain, url);
 return loader.load();
     }
 }

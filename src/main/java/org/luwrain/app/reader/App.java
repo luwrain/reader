@@ -91,11 +91,11 @@ class App implements Application
     void onNewResult(UrlLoader.Result res)
     {
 	NullCheck.notNull(res, "res");
-	Log.debug("reader", "new result, type is " + res.type().toString());
+	Log.debug("reader", "new result, type is " + res.type.toString());
 	luwrain.onAreaNewBackgroundSound(readerArea);
-	if (res.type() != UrlLoader.Result.Type.OK)
+	if (res.type != UrlLoader.Result.Type.OK)
 	    showErrorPage(res); else
-	    onNewDocument(res.book(), res.doc());
+	    onNewDocument(res.book, res.doc);
     }
 
     int getCurrentRowIndex()
