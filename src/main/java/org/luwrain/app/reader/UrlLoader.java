@@ -7,7 +7,6 @@ import java.nio.file.*;
 import java.nio.charset.*;
 import java.util.*;
 import java.util.zip.*;
-import javax.activation.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;
@@ -112,7 +111,7 @@ public final class UrlLoader
 		Log.debug("doctree", "selected content type is " + selectedContentType);
 	    } else
 		Log.debug("doctree", "response content type is " + responseContentType);
-	    Format format = chooseFilterByContentType(extractBaseContentType(selectedContentType));
+	    Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
 	    if (format == null)
 		format = chooseFilterByFileName(responseUrl);
 	    if (format == null)
@@ -198,16 +197,16 @@ res.setProperty("charset", selectedCharset);
     {
 	NullCheck.notNull(format, "format");
 	NullCheck.notEmpty(selectedContentType, "selectedContentType");
-	selectedCharset = extractCharset(selectedContentType);
+	this.selectedCharset = Utils.extractCharset(selectedContentType);
 	if (!selectedCharset.isEmpty())
 	    return;
 	switch(format)
 	{
 	case XML:
-	    selectedCharset = Encoding.getXmlEncoding(tmpFile);
+	    this.selectedCharset = Encoding.getXmlEncoding(tmpFile);
 	    break;
 	case HTML:
-	    selectedCharset = extractCharset(tmpFile);
+	    this.selectedCharset = extractCharset(tmpFile);
 	    break;
 	}
 	if (selectedCharset == null || selectedCharset.isEmpty())
@@ -217,11 +216,9 @@ res.setProperty("charset", selectedCharset);
     private Result parse(Format format) throws IOException
     {
 	NullCheck.notNull(format, "format");
-	Log.debug("doctree", "parsing the document as " + format.toString());
-	InputStream stream = null;
+	final Result res = new Result(Result.Type.OK);
+	final InputStream 	    stream = Files.newInputStream(tmpFile);
 	try {
-	    stream = Files.newInputStream(tmpFile);
-	    final Result res = new Result(Result.Type.OK);
 	    switch(format)
 	    {
 	    case HTML:
@@ -252,7 +249,7 @@ return new Fb2(is, selectedCharset).createDoc();
 }).createDoc();
 		return res;
 	    case TXT:
-		switch(extractParaStyle(selectedContentType))
+		switch(Utils.extractParaStyle(selectedContentType))
 		{
 		case PARA_STYLE_EMPTY_LINES:
 		    res.doc = new Txt(Txt.ParaStyle.EMPTY_LINES, tmpFile, selectedCharset).constructDocument();
@@ -272,20 +269,19 @@ return new Fb2(is, selectedCharset).createDoc();
 	    }
 	}
 	finally {
-	    if (stream != null)
 		stream.close();
 	}
     }
 
     private Document readXml() throws IOException
     {
-	final String doctype = getDoctypeName(Files.newInputStream(tmpFile));
+	final String doctype = Utils.getDoctypeName(Files.newInputStream(tmpFile));
 	if (doctype == null || doctype.trim().isEmpty())
 	{
-	    Log.debug("doctree", "unable to determine doctype");
+	    Log.debug(LOG_COMPONENT, "unable to determine doctype");
 	    return null;
 	}
-	Log.debug("doctree", "determined doctype is \'" + doctype + "\'");
+	Log.debug(LOG_COMPONENT, "determined doctype is \'" + doctype + "\'");
 	switch(doctype.trim().toLowerCase())
 	{
 	case DOCTYPE_FB2:
@@ -299,7 +295,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	NullCheck.notEmpty(contentType, "contentType");
 	switch(contentType.toLowerCase().trim())
 	{
-	case CONTENT_TYPE_HTML:
+	case ContentTypes.TEXT_HTML_DEFAULT:
 	    return Format.HTML;
 	case CONTENT_TYPE_XML:
 	    return Format.XML;
@@ -321,7 +317,6 @@ return new Fb2(is, selectedCharset).createDoc();
 	final String ext = org.luwrain.core.FileTypes.getExtension(url).toLowerCase();
 	if (ext.isEmpty())
 	    return null;
-	Log.debug("doctree", "extracted extension is \'" + ext + "\'");
 	switch(ext)
 	{
 	case "docx":
@@ -338,84 +333,17 @@ return new Fb2(is, selectedCharset).createDoc();
     static public String extractCharset(Path path) throws IOException
     {
 	NullCheck.notNull(path, "path");
-		Log.debug("doctree", "trying to get charset information from HTML header in " + path);
 	final String res = Encoding.getHtmlEncoding(path);
 	if (res == null)
 	    return "";
-	Log.debug("doctree", "determined charset is \'" + res + "\'");
 	return res;
     }
 
-    static public String extractBaseContentType(String value)
-    {
-	NullCheck.notEmpty(value, "value");
-	try {
-	    final MimeType mime = new MimeType(value);
-	    final String res = mime.getBaseType();
-	    return res != null?res:"";
-	}
-	catch(MimeTypeParseException e)
-	{
-	    e.printStackTrace();
-	    return "";
-	}
-    }
-
-    static String extractCharset(String value)
-    {
-	NullCheck.notEmpty(value, "value");
-	try {
-	    final MimeType mime = new MimeType(value);
-	    final String res = mime.getParameter("charset");
-	    return res != null?res:"";
-	}
-	catch(MimeTypeParseException e)
-	{
-	    e.printStackTrace();
-	    return "";
-	}
-    }
-
-    static private String extractParaStyle(String value)
-    {
-	NullCheck.notEmpty(value, "value");
-	try {
-	    final MimeType mime = new MimeType(value);
-	    final String res = mime.getParameter("parastyle");
-	    return res != null?res:"";
-	}
-	catch(MimeTypeParseException e)
-	{
-	    e.printStackTrace();
-	    return "";
-	}
-    }
 
 
-    static private String getDoctypeName(InputStream s) throws IOException
-    {
-	final org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(s, "us-ascii", "", org.jsoup.parser.Parser.xmlParser());
-	List<org.jsoup.nodes.Node>nods = doc.childNodes();
-	for (org.jsoup.nodes.Node node : nods)
-	    if (node instanceof org.jsoup.nodes.DocumentType)
-	    {
-		org.jsoup.nodes.DocumentType documentType = (org.jsoup.nodes.DocumentType)node;                  
-		final String res = documentType.attr("name");
-		if (res != null)
-		    return res;
-	    }
-	for (org.jsoup.nodes.Node node : nods)
-	    if (node instanceof org.jsoup.nodes.Element)
-	    {
-		org.jsoup.nodes.Element el = (org.jsoup.nodes.Element)node;                  
-		final String res = el.tagName();
-		if (res != null)
-		    return res;
-	    }
-	return "";
-    }
 
-    static public class Result
+
+    static public final class Result
     {
 	public enum Type {
 	    OK,
