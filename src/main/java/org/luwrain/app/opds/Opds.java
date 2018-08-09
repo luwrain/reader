@@ -130,7 +130,7 @@ final class Opds
 	final org.jsoup.nodes.Document doc;
 	try {
 	    final Connection con=Jsoup.connect(url.toString());
-	    con.userAgent(org.luwrain.app.reader.UrlLoader.USER_AGENT);
+	    con.userAgent(org.luwrain.util.Connections.DEFAULT_USER_AGENT);
 	    con.timeout(30000);
 	    doc = con.get();
 	}

@@ -33,13 +33,7 @@ public final class UrlLoader
 
     static private final String DOCTYPE_FB2 = "fictionbook";
 
-    static final String PARA_STYLE_EMPTY_LINES = "empty-lines";
-    static final String PARA_STYLE_INDENT = "indent";
-    static final String PARA_STYLE_EACH_LINE = "each-line";
-
-    static public final String USER_AGENT = "Mozilla/5.0";
     static private final String DEFAULT_CHARSET = "UTF-8";
-    static private final Txt.ParaStyle DEFAULT_PARA_STYLE = Txt.ParaStyle.EMPTY_LINES;
 
     enum Format {
 	TXT, HTML, XML, DOC, DOCX,
@@ -48,14 +42,19 @@ public final class UrlLoader
 
     private final Luwrain luwrain;
     private final URL requestedUrl;
-    private final String requestedContentType;
-    private String requestedTagRef;
+    private String requestedContentType = "";
+    private String requestedTagRef = "";
+    private String requestedCharset = "";
+    private TextFiles.ParaStyle requestedTxtParaStyle = TextFiles.ParaStyle.EMPTY_LINES;
+
     private URL responseUrl = null;
     private String responseContentType = "";
     private String responseContentEncoding = "";
-    private Path tmpFile;
+
     private String selectedContentType = "";
     private String selectedCharset = "";
+
+        private Path tmpFile;
 
     public UrlLoader(Luwrain luwrain, URL url) throws MalformedURLException
     {
@@ -65,18 +64,24 @@ public final class UrlLoader
 	this.requestedTagRef = url.getRef();
 	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
 			       url.getPort(), url.getFile());
-	requestedContentType = "";
     }
 
-    public UrlLoader(Luwrain luwrain, URL url, String contentType) throws MalformedURLException
+    public void setContentType(String contentType)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(url, "url");
-	NullCheck.notNull(contentType, "contentType");
-	this.luwrain = luwrain;
-	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
-			       url.getPort(), url.getFile());
+	NullCheck.notEmpty(contentType, "contentType");
 	this.requestedContentType = contentType;
+    }
+
+    public void setChrset(String charset)
+    {
+	NullCheck.notEmpty(charset, "charset");
+	this.requestedCharset = charset;
+    }
+
+    void setTxtParaStyle(TextFiles.ParaStyle paraStyle)
+    {
+	NullCheck.notNull(paraStyle, "paraStyle");
+	this.requestedTxtParaStyle = paraStyle;
     }
 
     public Result load() throws IOException
@@ -199,6 +204,11 @@ res.setProperty("charset", selectedCharset);
     {
 	NullCheck.notNull(format, "format");
 	NullCheck.notEmpty(selectedContentType, "selectedContentType");
+	if (!requestedCharset.isEmpty())
+	{
+	    this.selectedCharset = requestedCharset;
+	    return;
+	}
 	this.selectedCharset = Utils.extractCharset(selectedContentType);
 	if (!selectedCharset.isEmpty())
 	    return;
@@ -251,21 +261,8 @@ return new Fb2(is, selectedCharset).createDoc();
 }).createDoc();
 		return res;
 	    case TXT:
-		switch(Utils.extractParaStyle(selectedContentType))
-		{
-		case PARA_STYLE_EMPTY_LINES:
-		    res.doc = new Txt(Txt.ParaStyle.EMPTY_LINES, tmpFile, selectedCharset).constructDocument();
+		res.doc = new TextFiles(tmpFile.toFile(), selectedCharset, requestedTxtParaStyle).makeDoc();
 		    return res;
-		case PARA_STYLE_INDENT:
-		    		    res.doc = new Txt(Txt.ParaStyle.INDENT, tmpFile, selectedCharset).constructDocument();
-		    return res;
-		case PARA_STYLE_EACH_LINE:
-		    res.doc = new Txt(Txt.ParaStyle.EACH_LINE, tmpFile, selectedCharset).constructDocument();
-		    return res;
-		default:
-		    res.doc = new Txt(DEFAULT_PARA_STYLE, tmpFile, selectedCharset).constructDocument();
-		    return res;
-		}
 	    default:
 		return new Result(Result.Type.UNRECOGNIZED_FORMAT);
 	    }

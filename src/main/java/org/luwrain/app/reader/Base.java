@@ -194,7 +194,8 @@ final class Base
     NullCheck.notNull(contentType, "contentType");
 	return new FutureTask(()->{
 		try {
-		    final UrlLoader urlLoader = new UrlLoader(luwrain, url, contentType);
+		    final UrlLoader urlLoader = new UrlLoader(luwrain, url);
+		    urlLoader.setContentType(contentType);
 		    final UrlLoader.Result res = urlLoader.load();
 		    Log.debug("reader", "UrlLoader finished");
 		if (res != null)

@@ -75,19 +75,4 @@ final class Utils
 	    return "";
 	}
     }
-
-    static String extractParaStyle(String value)
-    {
-	NullCheck.notEmpty(value, "value");
-	try {
-	    final MimeType mime = new MimeType(value);
-	    final String res = mime.getParameter("parastyle");
-	    return res != null?res:"";
-	}
-	catch(MimeTypeParseException e)
-	{
-	    e.printStackTrace();
-	    return "";
-	}
-    }
 }
