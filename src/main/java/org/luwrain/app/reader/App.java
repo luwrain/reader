@@ -75,7 +75,9 @@ class App implements Application
 	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
 	strings = (Strings)o;
 	this.luwrain = luwrain;
-	this.base = new Base(luwrain, strings);
+	this.base = new Base(luwrain, strings,
+			     ()->onNewDocument(),
+			     ()->showErrorPage());
 	this.actions = new Actions(luwrain, base, strings);
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
@@ -88,15 +90,16 @@ class App implements Application
 	return new InitResult();
     }
 
+    /*
     void onNewResult(UrlLoader.Result res)
     {
 	NullCheck.notNull(res, "res");
-	Log.debug("reader", "new result, type is " + res.type.toString());
 	luwrain.onAreaNewBackgroundSound(readerArea);
 	if (res.type != UrlLoader.Result.Type.OK)
-	    showErrorPage(res); else
-	    onNewDocument(res.book, res.doc);
+	    showErrorPage(); else
+	    onNewDocument();
     }
+    */
 
     int getCurrentRowIndex()
     {
@@ -107,10 +110,6 @@ class App implements Application
     {
 	final org.luwrain.controls.doc.Strings announcementStrings = (org.luwrain.controls.doc.Strings)luwrain.i18n().getStrings("luwrain.doctree");
 	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
-
-
-	//	final Actions actions = this;
-
 	final TreeArea.Params treeParams = new TreeArea.Params();
 	treeParams.environment = new DefaultControlEnvironment(luwrain);
 	treeParams.model = base.getTreeModel();
@@ -405,8 +404,10 @@ if (base.fetchingInProgress())
 	return true;
     }
 
-    private void onNewDocument(Book book, Document doc)
+    private void onNewDocument()
     {
+	final Book book = base.getResult().book;
+	final Document doc = base.getResult().doc;
 	if (book == null && doc == null)
 	    return;
 	final Document newDoc = base.acceptNewSuccessfulResult(book, doc);
@@ -478,9 +479,9 @@ if (base.fetchingInProgress())
 	return true;
     }
 
-    private void showErrorPage(UrlLoader.Result res)
+    private void showErrorPage()
     {
-	NullCheck.notNull(res, "res");
+	final UrlLoader.Result res = base.getErrorRes();
 	propertiesArea.clear();
 	base.prepareErrorText(res, propertiesArea);
 	//	luwrain.silence();

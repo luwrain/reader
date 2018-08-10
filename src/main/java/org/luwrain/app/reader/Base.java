@@ -42,16 +42,25 @@ final class Base
     private CachedTreeModel bookTreeModel;
     private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
 
+    private final Runnable successNotification;
+    private final Runnable errorNotification;
+    private UrlLoader.Result res = null;
+    private UrlLoader.Result errorRes = null;
     private Book book;
     private Document currentDoc = null;
     private final LinkedList<HistoryItem> history = new LinkedList();
 
-    Base(Luwrain luwrain, Strings strings)
+    Base(Luwrain luwrain, Strings strings,
+	 Runnable successNotification, Runnable errorNotification)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
+	NullCheck.notNull(successNotification, "successNotification");
+	NullCheck.notNull(errorNotification, "errorNotification");
 	this.luwrain = luwrain;
 	this.strings = strings;
+	this.successNotification = successNotification;
+	this.errorNotification = errorNotification;
 	this.audioPlaying = new AudioPlaying();
 	if (!audioPlaying.init(luwrain))
 	    audioPlaying = null;
@@ -195,14 +204,21 @@ final class Base
 	return new FutureTask(()->{
 		try {
 		    final UrlLoader urlLoader = new UrlLoader(luwrain, url);
+		    if (!contentType.isEmpty())
 		    urlLoader.setContentType(contentType);
 		    final UrlLoader.Result res = urlLoader.load();
-		    Log.debug("reader", "UrlLoader finished");
 		if (res != null)
-		{
-		    Log.debug("reader", "UrlLoader result not null, sending back to the application");
-		    luwrain.runUiSafely(()->app.onNewResult(res));
-		}
+		    luwrain.runUiSafely(()->{
+			    if (res.type == UrlLoader.Result.Type.OK)
+			    {
+				Base.this.res = res;
+				successNotification.run();
+			    }else
+			    {
+				Base.this.errorRes = res;
+				errorNotification.run();
+			    }
+			    });
 		}
 		catch(Exception e)
 		{
@@ -358,6 +374,16 @@ final class Base
 ListArea.Model getNotesModel()
     {
 	return notesModel;
+    }
+
+    UrlLoader.Result getResult()
+    {
+	return res;
+    }
+
+    UrlLoader.Result getErrorRes()
+    {
+	return errorRes;
     }
 
     static String getHref(DocumentArea area)

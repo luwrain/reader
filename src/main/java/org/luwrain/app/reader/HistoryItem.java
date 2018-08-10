@@ -19,8 +19,9 @@ package org.luwrain.app.reader;
 import org.luwrain.core.*;
 import org.luwrain.doctree.*;
 
-class HistoryItem
+final class HistoryItem
 {
+    final Document doc;
     final String url;
     final String contentType;
     final String format;
@@ -31,6 +32,7 @@ class HistoryItem
     HistoryItem(Document doc)
     {
 	NullCheck.notNull(doc, "doc");
+	this.doc = doc;
 	url = doc.getProperty("url");
 	contentType = doc.getProperty("contenttype");
 	charset = doc.getProperty("charset");
