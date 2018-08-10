@@ -184,6 +184,7 @@ luwrain.playSound(Sounds.DONE);
 	return false;
     }
 
+    /*
     static boolean onChangeCharset(App app, Luwrain luwrain,
 				   Strings strings, Base base)
     {
@@ -214,6 +215,7 @@ luwrain.playSound(Sounds.DONE);
 	    return true;
 	}
     }
+    */
 
     Action[] getTreeAreaActions(boolean hasDocument, App.Modes mode)
     {
@@ -377,6 +379,7 @@ static boolean onHideNotes(Luwrain luwrain, Strings strings, App app)
 	return res.toArray(new String[res.size()]);
     }
 
+    /*
     static boolean openNew(App app, boolean openUrl, Base base, 
 			   Luwrain luwrain, Strings strings,
 String currentHref)
@@ -417,4 +420,5 @@ String currentHref)
 				      });
 	return false;
     }
+    */
 }

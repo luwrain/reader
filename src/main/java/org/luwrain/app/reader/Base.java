@@ -66,9 +66,8 @@ final class Base
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
 
-    boolean open(App app, URL url, String contentType)
+    boolean open(URL url, String contentType, int currentRowIndex)
     {
-	NullCheck.notNull(app, "app");
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
 	if (isInBookMode())
@@ -78,7 +77,6 @@ final class Base
 	}
 	if (task != null && !task.isDone())
 	    return false;
-	final int currentRowIndex = app.getCurrentRowIndex();
 	if (!history .isEmpty() && currentRowIndex >= 0)
 	    history.getLast().startingRowIndex = currentRowIndex;
 	final UrlLoader urlLoader;
@@ -97,9 +95,9 @@ final class Base
 	return true;
     }
 
-    boolean jumpByHrefInNonBook(App app, String href)
+    boolean jumpByHrefInNonBook(String href, int currentRowIndex)
     {
-	NullCheck.notNull(app, "app");
+	//	NullCheck.notNull(app, "app");
 	NullCheck.notEmpty(href, "href");
 	if (isInBookMode() || fetchingInProgress())
 	    return false;
@@ -112,15 +110,14 @@ final class Base
 	    luwrain.message(strings.badUrl() + href, Luwrain.MessageType.ERROR);
 	    return true;
 	}
-	if (!open(app, url, ""))
+	if (!open(/*app,*/ url, "", currentRowIndex))
 	    return false;
 	luwrain.message(strings.fetching() + " " + href, Luwrain.MessageType.NONE);
 	return true;
     }
 
-    boolean onPrevDocInNonBook(App app)
+    boolean onPrevDocInNonBook(int currentRowIndex)
     {
-	NullCheck.notNull(app, "app");
 	if (isInBookMode() || fetchingInProgress())
 	    return false;
 	if (history.size() < 2)
@@ -136,7 +133,7 @@ final class Base
 	    luwrain.message(strings.badUrl() + item.url, Luwrain.MessageType.ERROR);
 	    return true;
 	}
-	if (!open(app, url, ""))
+	if (!open(/*app,*/ url, "", currentRowIndex))
 	    return false;
 	luwrain.message(strings.fetching() + " " + item.url);
 	return true;
@@ -179,26 +176,6 @@ final class Base
 	return doc;
     }
 
-    private void onNewLoadingRes(UrlLoader.Result newRes)
-    {
-	NullCheck.notNull(newRes, "newRes");
-	this.res = newRes;
-	if (res.book != null)
-	{
-	    //Opening new book
-	    bookTreeModelSource.setSections(res.book.getBookSections());
-	    res.doc = res.book.getStartingDocument();
-	    history.clear();
-	}
-	NullCheck.notNull(res.doc, "res.doc");
-	history.add(new HistoryItem(res.doc));
-	if (res.doc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
-	    Visitor.walk(res.doc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
-	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), res.doc.getUrl().toString());
-	if (savedPosition > 0)
-	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
-	res.doc.commit();
-    }
 
     private FutureTask createTask(UrlLoader urlLoader)
     {
@@ -226,6 +203,27 @@ final class Base
 			luwrain.crash((Exception)e);
 		}
 	}, null);
+    }
+
+        private void onNewLoadingRes(UrlLoader.Result newRes)
+    {
+	NullCheck.notNull(newRes, "newRes");
+	this.res = newRes;
+	if (res.book != null)
+	{
+	    //Opening new book
+	    bookTreeModelSource.setSections(res.book.getBookSections());
+	    res.doc = res.book.getStartingDocument();
+	    history.clear();
+	}
+	NullCheck.notNull(res.doc, "res.doc");
+	history.add(new HistoryItem(res.doc));
+	if (res.doc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
+	    Visitor.walk(res.doc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
+	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), res.doc.getUrl().toString());
+	if (savedPosition > 0)
+	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
+	res.doc.commit();
     }
 
     void prepareErrorText(UrlLoader.Result res, MutableLines lines)

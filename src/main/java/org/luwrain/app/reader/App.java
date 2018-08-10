@@ -317,10 +317,14 @@ if (base.fetchingInProgress())
     private boolean onAction(EnvironmentEvent event)
     {
 	NullCheck.notNull(event, "event");
+	/*
 	if (ActionEvent.isAction(event, "open-url"))
 	    Actions.openNew(this, true, base, luwrain, strings, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
+	*/
+	/*
 	if (ActionEvent.isAction(event, "open-file"))
 	    return Actions.openNew(this, false, base, luwrain, strings, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
+	*/
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 
@@ -349,8 +353,10 @@ if (base.fetchingInProgress())
 
 	if (ActionEvent.isAction(event, "change-format"))
 	    return Actions.onChangeFormat(this, luwrain, strings, base);
+	/*
 	if (ActionEvent.isAction(event, "change-charset"))
 	    return Actions.onChangeCharset(this, luwrain, strings, base);
+	*/
 	if (ActionEvent.isAction(event, "play-audio"))
 	    return Actions.onPlayAudio(base, readerArea);
 	if (ActionEvent.isAction(event, "add-note"))
@@ -421,7 +427,7 @@ if (base.fetchingInProgress())
 	    announceNewDoc(doc);
 	    return true;
 	}
-	if (base.onPrevDocInNonBook(this))
+	if (base.onPrevDocInNonBook(getCurrentRowIndex()))
 	{
 	    luwrain.onAreaNewBackgroundSound(readerArea);
 	    updateMode();
@@ -446,7 +452,7 @@ if (base.fetchingInProgress())
 	    announceNewDoc(doc);
 	    return true;
 	}
-	if (base.jumpByHrefInNonBook(this, href))
+	if (base.jumpByHrefInNonBook(href, getCurrentRowIndex()))
 	{
 	    luwrain.onAreaNewBackgroundSound(readerArea);
 	    updateMode();
@@ -595,7 +601,7 @@ private void openStartFrom()
 {
     try {
 	if (!startingUrl.isEmpty())
-	    base.open(this, new  URL(startingUrl), startingContentType);
+	    base.open(/*this,*/ new  URL(startingUrl), startingContentType, getCurrentRowIndex());
     }
     catch(MalformedURLException e)
     {
