@@ -179,14 +179,15 @@ final class Base
 	return doc;
     }
 
-    //Returns the document to be shown in readerArea
-    Document acceptNewSuccessfulResult(Book book, Document doc)
+    private void onNewLoadingRes(UrlLoader.Result newRes)
     {
+	NullCheck.notNull(newRes, "newRes");
+	this.res = newRes;
 	if (res.book != null)
 	{
 	    //Opening new book
 	    bookTreeModelSource.setSections(res.book.getBookSections());
-	    res.doc = book.getStartingDocument();
+	    res.doc = res.book.getStartingDocument();
 	    history.clear();
 	}
 	NullCheck.notNull(res.doc, "res.doc");
@@ -197,7 +198,6 @@ final class Base
 	if (savedPosition > 0)
 	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
 	res.doc.commit();
-	return res.doc;
     }
 
     private FutureTask createTask(UrlLoader urlLoader)
@@ -205,16 +205,16 @@ final class Base
 	NullCheck.notNull(urlLoader, "urlLoader");
 	return new FutureTask(()->{
 		try {
-		    final UrlLoader.Result res = urlLoader.load();
-		if (res != null)
+		    final UrlLoader.Result r = urlLoader.load();
+		if (r != null)
 		    luwrain.runUiSafely(()->{
-			    if (res.type == UrlLoader.Result.Type.OK)
+			    if (r.type == UrlLoader.Result.Type.OK)
 			    {
-				Base.this.res = res;
+				onNewLoadingRes(r);
 				successNotification.run();
 			    }else
 			    {
-				Base.this.errorRes = res;
+				Base.this.errorRes = r;
 				errorNotification.run();
 			    }
 			    });
@@ -330,7 +330,7 @@ final class Base
 	return res.doc!= null;
     }
 
-    Document currentDoc()
+    Document getDocument()
     {
 	return res.doc;
     }

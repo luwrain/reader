@@ -396,19 +396,15 @@ if (base.fetchingInProgress())
     //Handles the success notification
     private void onNewDocument()
     {
-	final Book book = base.getResult().book;
-	final Document doc = base.getResult().doc;
-	if (book == null && doc == null)
-	    return;
-	final Document newDoc = base.acceptNewSuccessfulResult(book, doc);
+	final Document doc = base.getDocument();
 	if (base.isInBookMode())
 	    treeArea.refresh();
 	base.updateNotesModel();
 	notesArea.refresh();
 	updateMode();
-	readerArea.setDocument(newDoc, luwrain.getAreaVisibleWidth(readerArea));
-	goToReaderArea();
-	announceNewDoc(newDoc);
+	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
+	luwrain.setActiveArea(readerArea);
+	announceNewDoc(doc);
     }
 
     private boolean onBackspace(KeyboardEvent event)
@@ -421,7 +417,7 @@ if (base.fetchingInProgress())
 		return false;
 	    updateMode();
 	    readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
-	    goToReaderArea();
+	    luwrain.setActiveArea(readerArea);
 	    announceNewDoc(doc);
 	    return true;
 	}
