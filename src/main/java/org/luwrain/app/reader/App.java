@@ -90,17 +90,6 @@ class App implements Application
 	return new InitResult();
     }
 
-    /*
-    void onNewResult(UrlLoader.Result res)
-    {
-	NullCheck.notNull(res, "res");
-	luwrain.onAreaNewBackgroundSound(readerArea);
-	if (res.type != UrlLoader.Result.Type.OK)
-	    showErrorPage(); else
-	    onNewDocument();
-    }
-    */
-
     int getCurrentRowIndex()
     {
 	return 10;//FIXME:
@@ -404,6 +393,7 @@ if (base.fetchingInProgress())
 	return true;
     }
 
+    //Handles the success notification
     private void onNewDocument()
     {
 	final Book book = base.getResult().book;
@@ -479,6 +469,7 @@ if (base.fetchingInProgress())
 	return true;
     }
 
+    //Handles the error notification
     private void showErrorPage()
     {
 	final UrlLoader.Result res = base.getErrorRes();

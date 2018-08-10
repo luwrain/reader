@@ -46,8 +46,6 @@ final class Base
     private final Runnable errorNotification;
     private UrlLoader.Result res = null;
     private UrlLoader.Result errorRes = null;
-    private Book book;
-    private Document currentDoc = null;
     private final LinkedList<HistoryItem> history = new LinkedList();
 
     Base(Luwrain luwrain, Strings strings,
@@ -83,7 +81,18 @@ final class Base
 	final int currentRowIndex = app.getCurrentRowIndex();
 	if (!history .isEmpty() && currentRowIndex >= 0)
 	    history.getLast().startingRowIndex = currentRowIndex;
-	task = createTask(app, url, contentType);
+	final UrlLoader urlLoader;
+	try {
+	    urlLoader = new UrlLoader(luwrain, url);
+	}
+	catch(MalformedURLException e)
+	{
+	    luwrain.crash(e);
+	    return false;
+	}
+	if (!contentType.isEmpty())
+	    urlLoader.setContentType(contentType);
+	task = createTask(urlLoader);
 	luwrain.executeBkg(task);
 	return true;
     }
@@ -138,19 +147,18 @@ final class Base
 	NullCheck.notEmpty(href, "href");
 	if (!isInBookMode() || fetchingInProgress())
 	    return null;
-	final Document doc = book.getDocument(href);
+	final Document doc = res.book.getDocument(href);
 	if (doc == null)
 	    return null;
-	if (doc != currentDoc)
+	if (doc != res.doc)
 	{
 	    if (lastPos >= 0 && !history.isEmpty())
 		history.getLast().lastRowIndex = lastPos;
 	    history.add(new HistoryItem(doc));
 	}
-	this.currentDoc = doc;
+	res.doc = doc;
 	if (newDesiredPos >= 0)
-	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
-	//	doc.commit();
+	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
 	return doc;
     }
 
@@ -162,50 +170,41 @@ final class Base
 	    return null;
 	history.pollLast();
 	final HistoryItem item = history.getLast();
-	final Document doc = book.getDocument(item.url);
+	final Document doc = res.book.getDocument(item.url);
 	if (doc == null)
 	    return null;
-	this.currentDoc = doc;
+	res.doc = doc;
 	if (item.lastRowIndex >= 0)
-	    this.currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + item.lastRowIndex);
+	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + item.lastRowIndex);
 	return doc;
     }
 
     //Returns the document to be shown in readerArea
     Document acceptNewSuccessfulResult(Book book, Document doc)
     {
-	if (book != null && this.book != book)
+	if (res.book != null)
 	{
 	    //Opening new book
-	    Log.debug("reader", "new book detected, opening");
-	    this.book = book;
-	    bookTreeModelSource.setSections(book.getBookSections());
-	    Log.debug("doctree", "" + book.getBookSections().length + " book section provided");
-	    this.currentDoc = book.getStartingDocument();
+	    bookTreeModelSource.setSections(res.book.getBookSections());
+	    res.doc = book.getStartingDocument();
 	    history.clear();
-	} else
-	    this.currentDoc = doc;
-	NullCheck.notNull(currentDoc, "currentDoc");
-	history.add(new HistoryItem(currentDoc));
-	if (currentDoc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
-	    Visitor.walk(currentDoc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
-	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), currentDoc.getUrl().toString());
+	}
+	NullCheck.notNull(res.doc, "res.doc");
+	history.add(new HistoryItem(res.doc));
+	if (res.doc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
+	    Visitor.walk(res.doc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
+	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), res.doc.getUrl().toString());
 	if (savedPosition > 0)
-	    currentDoc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
-	currentDoc.commit();
-	return currentDoc;
+	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
+	res.doc.commit();
+	return res.doc;
     }
 
-    private FutureTask createTask(App app, URL url, String contentType)
+    private FutureTask createTask(UrlLoader urlLoader)
     {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(url, "url");
-    NullCheck.notNull(contentType, "contentType");
+	NullCheck.notNull(urlLoader, "urlLoader");
 	return new FutureTask(()->{
 		try {
-		    final UrlLoader urlLoader = new UrlLoader(luwrain, url);
-		    if (!contentType.isEmpty())
-		    urlLoader.setContentType(contentType);
 		    final UrlLoader.Result res = urlLoader.load();
 		if (res != null)
 		    luwrain.runUiSafely(()->{
@@ -220,10 +219,11 @@ final class Base
 			    }
 			    });
 		}
-		catch(Exception e)
+		catch(Throwable e)
 		{
-		    Log.error("reader", "unable to fetch " + url + ":" + e.getClass().getName() + ":" + e.getMessage());
-		    luwrain.crash(e);
+		    Log.error("reader", "unable to fetch:" + e.getClass().getName() + ":" + e.getMessage());
+		    if (e instanceof Exception)//FIXME:
+			luwrain.crash((Exception)e);
 		}
 	}, null);
     }
@@ -281,7 +281,7 @@ final class Base
 	    return false;
 	if (audioPlaying == null)
 	return false;
-	return audioPlaying.playAudio(book, currentDoc, area, ids);
+	return audioPlaying.playAudio(res.book, res.doc, area, ids);
     }
 
     boolean stopAudio()
@@ -295,13 +295,13 @@ final class Base
     private URL getNotesUrl()
     {
 	if (isInBookMode())
-	    return book.getStartingDocument().getUrl();
-	return currentDoc.getUrl();
+	    return res.book.getStartingDocument().getUrl();
+	return res.doc.getUrl();
     }
 
     void updateNotesModel()
     {
-	if (currentDoc == null && book == null)
+	if (res.doc == null && res.book == null)
 	    return;
 	final URL url = getNotesUrl();
 	notesModel.setItems(Settings.getNotes(luwrain.getRegistry(), url.toString()));
@@ -309,11 +309,11 @@ final class Base
 
     boolean addNote(int pos)
     {
-	NullCheck.notNull(currentDoc, "currentDoc");
+	NullCheck.notNull(res.doc, "res.doc");
 	final String text = Popups.simple(luwrain, strings.addNotePopupName(), strings.addNotePopupPrefix(), "");
 	if (text == null)
 	    return false;
-	Settings.addNote(luwrain.getRegistry(), getNotesUrl().toString(), currentDoc.getUrl().toString(), pos, text, "");
+	Settings.addNote(luwrain.getRegistry(), getNotesUrl().toString(), res.doc.getUrl().toString(), pos, text, "");
 	updateNotesModel();
 	return true;
     }
@@ -327,12 +327,12 @@ final class Base
 
     boolean hasDocument()
     {
-	return currentDoc != null;
+	return res.doc!= null;
     }
 
     Document currentDoc()
     {
-	return currentDoc;
+	return res.doc;
     }
 
     boolean fetchingInProgress()
@@ -342,26 +342,26 @@ final class Base
 
     boolean isInBookMode()
     {
-	return book != null;
+	return res != null && res.book != null;
     }
 
     String getCurrentContentType()
     {
-	if (currentDoc == null)
+	if (res.doc == null)
 	    return "";
-	final String res = currentDoc.getProperty("contenttype");
-	return res != null?res:"";
+	final String resStr = res.doc.getProperty("contenttype");
+	return resStr != null?resStr:"";
     }
 
     URL getCurrentUrl()
     {
-	return currentDoc != null?currentDoc.getUrl():null;
+	return res.doc != null?res.doc.getUrl():null;
     }
 
     boolean openInNarrator()
     {
 	final NarratorTextVisitor visitor = new NarratorTextVisitor();
-	Visitor.walk(currentDoc.getRoot(), visitor);
+	Visitor.walk(res.doc.getRoot(), visitor);
 	luwrain.launchApp("narrator", new String[]{"--TEXT", visitor.toString()});
 	return true;
     }
