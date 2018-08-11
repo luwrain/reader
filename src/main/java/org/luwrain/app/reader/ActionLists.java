@@ -50,7 +50,7 @@ final class ActionLists
 	    {
 		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
 		res.add(new Action("change-text-para-style", strings.actionChangeTextParaStyle()));
-					}
+	    }
 	    if (base.isInBookMode())
 	    {
 		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));

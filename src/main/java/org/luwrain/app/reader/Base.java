@@ -66,7 +66,7 @@ final class Base
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
 
-    boolean open(URL url, String contentType, int currentRowIndex)
+    boolean open(URL url, String contentType/*, int currentRowIndex*/)
     {
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
@@ -115,7 +115,7 @@ final class Base
 	    return true;
 	}
 	history.add(new HistoryItem(res.doc));
-	if (!open(url, "", currentRowIndex))
+	if (!open(url, ""/*, currentRowIndex*/))
 	    return false;
 	luwrain.message(strings.fetching() + " " + href, Luwrain.MessageType.NONE);
 	return true;

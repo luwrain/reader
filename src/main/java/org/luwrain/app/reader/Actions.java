@@ -48,6 +48,50 @@ static final LinkedList<String> enteredUrls = new LinkedList<String>();
 	this.strings = strings;
     }
 
+boolean onOpenUrl(String currentHref)
+    {
+	NullCheck.notNull(currentHref, "currentHref");
+	if (base.isBusy())
+	    return false;
+	    final String res = Popups.fixedEditList(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), currentHref.isEmpty()?"http://":currentHref, 
+						    enteredUrls.toArray(new String[enteredUrls.size()]));
+	    if (res == null)
+		return true;
+	    enteredUrls.add(res);
+	    final URL url;
+	    try {
+		url = new URL(res);
+	    }
+	    catch(MalformedURLException e)
+	    {
+		e.printStackTrace(); 
+		luwrain.message(strings.badUrl() + res, Luwrain.MessageType.ERROR);
+		return true;
+	    }
+	    base.open(url, "");
+	    return true;
+    }
+
+    boolean onOpenFile()
+    {
+	if (base.isBusy())
+	    return false;
+	final File res = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
+				      luwrain.getFileProperty("luwrain.dir.userhome"),
+				      (fileToCheck, announce)->{
+					  if (fileToCheck.isDirectory())
+					  {
+					      if (announce)
+					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MessageType.ERROR);
+					      return false;
+					  }
+					  return true;
+				      });
+	return false;
+    }
+
+
+
 
     static boolean onSaveBookmark(Luwrain luwrain, Strings strings, DocumentArea area)
     {
@@ -83,61 +127,6 @@ luwrain.playSound(Sounds.DONE);
 	return true;
     }
 
-    static boolean onChangeFormat(App app, Luwrain luwrain,
-				  Strings strings, Base base)
-    {
-	/*
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
-	NullCheck.notNull(base, "base");
-	if (base.fetchingInProgress())
-	    return false;
-	final String[] formats;
-	try {
-	    formats = (String[])luwrain.getSharedObject(org.luwrain.doctree.Extension.FORMATS_OBJECT_NAME);
-	}
-	catch(Exception e)
-	{
-	    Log.error("reader", "no formats shared object:" + e.getClass().getName() + ":" + e.getMessage());
-	    e.printStackTrace();
-	    return false;
-	}
-	final URL url = base.getCurrentUrl();
-	if (url == null)
-	    return false;
-	final String contentType = base.getCurrentContentType();
-	final String chosen = (String)Popups.fixedList(luwrain, strings.changeFormatPopupName(), formats);
-	if (chosen == null || chosen.isEmpty())
-	    return true;
-	if (contentType.isEmpty())
-	{
-	    base.open(app, url, chosen);
-	    return true;
-	}
-	try {
-	    final MimeType mime = new MimeType(contentType);
-	    final String charset = mime.getParameter("charset");
-	    if (charset == null || charset.isEmpty())
-	    {
-		base.open(app, url, chosen);
-		return true;
-	    }
-	    final MimeType newMime = new MimeType(chosen);
-	    newMime.setParameter("charset", charset);
-	    base.open(app, url, newMime.toString());
-	    return true;
-	}
-	catch(MimeTypeParseException e)
-	{
-	    Log.warning("reader", "unable to parse current content type \'" + contentType + "\':" + e.getMessage());
-	    e.printStackTrace();
-	    base.open(app, url, chosen);
-	    return true;
-	}
-	*/
-	return false;
-    }
 
     /*
     static boolean onChangeCharset(App app, Luwrain luwrain,
@@ -332,46 +321,4 @@ static boolean onHideNotes(Luwrain luwrain, Strings strings, App app)
 	return res.toArray(new String[res.size()]);
     }
 
-    /*
-    static boolean openNew(App app, boolean openUrl, Base base, 
-			   Luwrain luwrain, Strings strings,
-String currentHref)
-    {
-	NullCheck.notNull(app, "app");
-	if (base.fetchingInProgress())
-	    return false;
-	if (openUrl)
-	{
-	    final String res = Popups.fixedEditList(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), currentHref.isEmpty()?"http://":currentHref, 
-						    enteredUrls.toArray(new String[enteredUrls.size()]));
-	    if (res == null)
-		return true;
-	    enteredUrls.add(res);
-	    final URL url;
-	    try {
-		url = new URL(res);
-	    }
-	    catch(MalformedURLException e)
-	    {
-		e.printStackTrace(); 
-		luwrain.message(strings.badUrl() + res, Luwrain.MessageType.ERROR);
-		return true;
-	    }
-	    base.open(app, url, "");
-	    return true;
-	}
-	final File res = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
-				      luwrain.getFileProperty("luwrain.dir.userhome"),
-				      (fileToCheck, announce)->{
-					  if (fileToCheck.isDirectory())
-					  {
-					      if (announce)
-					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MessageType.ERROR);
-					      return false;
-					  }
-					  return true;
-				      });
-	return false;
-    }
-    */
 }

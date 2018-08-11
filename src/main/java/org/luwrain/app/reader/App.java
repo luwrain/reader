@@ -352,8 +352,10 @@ if (base.isBusy())
 
 
 
+	/*
 	if (ActionEvent.isAction(event, "change-format"))
 	    return Actions.onChangeFormat(this, luwrain, strings, base);
+	*/
 	/*
 	if (ActionEvent.isAction(event, "change-charset"))
 	    return Actions.onChangeCharset(this, luwrain, strings, base);
@@ -579,7 +581,7 @@ private void openStartFrom()
 {
     try {
 	if (!startingUrl.isEmpty())
-	    base.open(/*this,*/ new  URL(startingUrl), startingContentType, getCurrentRowIndex());
+	    base.open(/*this,*/ new  URL(startingUrl), startingContentType/*, getCurrentRowIndex()*/);
     }
     catch(MalformedURLException e)
     {
