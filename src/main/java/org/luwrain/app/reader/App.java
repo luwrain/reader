@@ -141,7 +141,6 @@ class App implements Application
 	    };
 
 	readerArea = new DocumentArea(new DefaultControlEnvironment(luwrain), announcement){
-
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -172,7 +171,7 @@ return true;
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
 			    return Actions.onPlayAudio(base, readerArea);
 			case BACKSPACE:
-			    return onBackspace(event);
+		    return base.onPrevDoc();
 			}
 		    return super.onInputEvent(event);
 		}
@@ -218,7 +217,7 @@ return true;
 		    switch(query.getQueryCode())
 		    {
 		    case AreaQuery.BACKGROUND_SOUND:
-if (base.fetchingInProgress())
+if (base.isBusy())
 			{
 			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
 			return true;
@@ -230,7 +229,7 @@ if (base.fetchingInProgress())
 		}
 		@Override protected String noContentStr()
 		{
-		    return base.fetchingInProgress()?strings.noContentFetching():strings.noContent();
+		    return base.isBusy()?strings.noContentFetching():strings.noContent();
 		}
 	    };
 
@@ -411,29 +410,6 @@ if (base.fetchingInProgress())
 	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	luwrain.setActiveArea(readerArea);
 	announceNewDoc(doc);
-    }
-
-    private boolean onBackspace(KeyboardEvent event)
-    {
-	NullCheck.notNull(event, "event");
-	if (base.isInBookMode())
-	{
-	    final Document doc = base.onPrevDocInBook();
-	    if (doc == null)
-		return false;
-	    updateMode();
-	    readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
-	    luwrain.setActiveArea(readerArea);
-	    announceNewDoc(doc);
-	    return true;
-	}
-	if (base.onPrevDocInNonBook(getCurrentRowIndex()))
-	{
-	    luwrain.onAreaNewBackgroundSound(readerArea);
-	    updateMode();
-	    return true;
-	}
-	return false;
     }
 
     private boolean jumpByHref(String href, int width)

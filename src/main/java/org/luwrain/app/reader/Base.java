@@ -77,8 +77,10 @@ final class Base
 	}
 	if (task != null && !task.isDone())
 	    return false;
+	/*
 	if (!history .isEmpty() && currentRowIndex >= 0)
 	    history.getLast().startingRowIndex = currentRowIndex;
+	*/
 	final UrlLoader urlLoader;
 	try {
 	    urlLoader = new UrlLoader(luwrain, url);
@@ -97,11 +99,13 @@ final class Base
 
     boolean jumpByHrefInNonBook(String href, int currentRowIndex)
     {
-	//	NullCheck.notNull(app, "app");
 	NullCheck.notEmpty(href, "href");
-	if (isInBookMode() || fetchingInProgress())
+	if (isInBookMode())
+	    throw new RuntimeException("May not be in book mode");
+	NullCheck.notNull(res.doc, "res.doc");
+	    if (isBusy())
 	    return false;
-	final URL url;
+		final URL url;
 	try {
 	    url = new URL(href);
 	}
@@ -110,39 +114,29 @@ final class Base
 	    luwrain.message(strings.badUrl() + href, Luwrain.MessageType.ERROR);
 	    return true;
 	}
-	if (!open(/*app,*/ url, "", currentRowIndex))
+	history.add(new HistoryItem(res.doc));
+	if (!open(url, "", currentRowIndex))
 	    return false;
 	luwrain.message(strings.fetching() + " " + href, Luwrain.MessageType.NONE);
 	return true;
     }
 
-    boolean onPrevDocInNonBook(int currentRowIndex)
+    boolean onPrevDoc()
     {
-	if (isInBookMode() || fetchingInProgress())
+	if (isBusy())
 	    return false;
-	if (history.size() < 2)
+	if (history.isEmpty())
 	    return false;
-	history.pollLast();
 	final HistoryItem item = history.pollLast();
-	final URL url;
-	try {
-	    url = new URL(item.url);
-	}
-	catch(MalformedURLException e)
-	{
-	    luwrain.message(strings.badUrl() + item.url, Luwrain.MessageType.ERROR);
-	    return true;
-	}
-	if (!open(/*app,*/ url, "", currentRowIndex))
-	    return false;
-	luwrain.message(strings.fetching() + " " + item.url);
+	    res.doc = item.doc;
+successNotification.run();
 	return true;
     }
 
     Document jumpByHrefInBook(String href, int lastPos, int newDesiredPos)
     {
 	NullCheck.notEmpty(href, "href");
-	if (!isInBookMode() || fetchingInProgress())
+	if (!isInBookMode() || isBusy())
 	    return null;
 	final Document doc = res.book.getDocument(href);
 	if (doc == null)
@@ -158,24 +152,6 @@ final class Base
 	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
 	return doc;
     }
-
-    Document onPrevDocInBook()
-    {
-	if (!isInBookMode() || fetchingInProgress())
-	    return null;
-	if (history.size() < 2)
-	    return null;
-	history.pollLast();
-	final HistoryItem item = history.getLast();
-	final Document doc = res.book.getDocument(item.url);
-	if (doc == null)
-	    return null;
-	res.doc = doc;
-	if (item.lastRowIndex >= 0)
-	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + item.lastRowIndex);
-	return doc;
-    }
-
 
     private FutureTask createTask(UrlLoader urlLoader)
     {
@@ -333,7 +309,7 @@ final class Base
 	return res.doc;
     }
 
-    boolean fetchingInProgress()
+    boolean isBusy()
     {
 	return task != null && !task.isDone();
     }
