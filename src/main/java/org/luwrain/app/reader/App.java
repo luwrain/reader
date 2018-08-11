@@ -38,15 +38,16 @@ class App implements Application
     static private final int READER_TREE_NOTES_LAYOUT_INDEX = 3;
     static private final int PROPERTIES_LAYOUT_INDEX = 4;
 
-    private Luwrain luwrain;
+    private Luwrain luwrain = null;
     private Base base = null;
     private Actions actions = null;
+    private ActionLists actionLists = null;
     private Strings strings = null;
 
-    private DocumentArea readerArea;
-    private TreeArea treeArea;
-    private ListArea notesArea;
-    private SimpleArea propertiesArea;
+    private DocumentArea readerArea = null;
+    private TreeArea treeArea = null;
+    private ListArea notesArea = null;
+    private SimpleArea propertiesArea = null;
     private AreaLayoutSwitch layouts;
 
     private String startingUrl;
@@ -73,12 +74,13 @@ class App implements Application
 	final Object o = luwrain.i18n().getStrings(Strings.NAME);
 	if (o == null || !(o instanceof Strings))
 	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
-	strings = (Strings)o;
+	this.strings = (Strings)o;
 	this.luwrain = luwrain;
 	this.base = new Base(luwrain, strings,
 			     ()->onNewDocument(),
 			     ()->showErrorPage());
 	this.actions = new Actions(luwrain, base, strings);
+	this.actionLists = new ActionLists(luwrain, base, strings);
 	createAreas();
 	layouts = new AreaLayoutSwitch(luwrain);
 	layouts.add(new AreaLayout(readerArea));
@@ -199,7 +201,7 @@ return true;
 
 		@Override public Action[] getAreaActions()
 		{
-		    return actions.getReaderAreaActions(base.hasDocument(), mode);
+		    return actionLists.getReaderActions();
 		}
 		@Override public String getAreaName()
 		{

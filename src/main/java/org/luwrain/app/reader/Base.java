@@ -301,7 +301,7 @@ successNotification.run();
 
     boolean hasDocument()
     {
-	return res.doc!= null;
+	return res != null && res.doc!= null;
     }
 
     Document getDocument()
@@ -319,12 +319,12 @@ successNotification.run();
 	return res != null && res.book != null;
     }
 
-    String getCurrentContentType()
+    String getContentType()
     {
-	if (res.doc == null)
+	if (!hasDocument())
 	    return "";
-	final String resStr = res.doc.getProperty("contenttype");
-	return resStr != null?resStr:"";
+	final String r = res.doc.getProperty("contenttype");
+	return r != null?r:"";
     }
 
     URL getCurrentUrl()
@@ -354,6 +354,8 @@ ListArea.Model getNotesModel()
     {
 	return res;
     }
+
+    
 
     UrlLoader.Result getErrorRes()
     {

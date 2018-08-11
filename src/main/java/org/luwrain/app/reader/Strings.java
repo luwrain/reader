@@ -76,4 +76,5 @@ public interface Strings
     String sectionsTreeHidden();
     String notesShown();
     String notesHidden();
+    String actionChangeTextParaStyle();
 }

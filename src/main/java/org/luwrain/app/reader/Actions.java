@@ -29,7 +29,7 @@ import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
 
-class Actions
+final class Actions
 {
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
 static final LinkedList<String> enteredUrls = new LinkedList<String>();
@@ -48,51 +48,6 @@ static final LinkedList<String> enteredUrls = new LinkedList<String>();
 	this.strings = strings;
     }
 
-Action[] getReaderAreaActions(boolean hasDocument, App.Modes mode)
-    {
-	NullCheck.notNull(mode, "mode");
-	final LinkedList<Action> res = new LinkedList<Action>();
-	if (hasDocument)
-	{
-	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
-	    //	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
-
-	    res.add(new Action("save-bookmark", strings.actionSaveBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2)));
-	    res.add(new Action("restore-bookmark", strings.actionRestoreBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
-	    switch(mode)
-	    {
-	    case DOC:
-		res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-		break;
-	    case DOC_NOTES:
-		res.add(new Action("change-format", strings.actionChangeFormat(), new KeyboardEvent(KeyboardEvent.Special.F9)));
-		res.add(new Action("change-charset", strings.actionChangeCharset(), new KeyboardEvent(KeyboardEvent.Special.F10)));
-		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-		break;
-	    case BOOK:
-		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-		break;
-	    case BOOK_TREE_ONLY:
-		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-		res.add(new Action("show-notes", strings.actionShowNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-		break;
-	    case BOOK_NOTES_ONLY:
-		res.add(new Action("show-sections-tree", strings.actionShowSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-		break;
-	    case BOOK_TREE_NOTES:
-		res.add(new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.F5)));
-		res.add(new Action("hide-notes", strings.actionHideNotes(), new KeyboardEvent(KeyboardEvent.Special.F6)));
-		break;
-	    }
-	}
-	res.add(new Action("open-file", strings.actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F3, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
-	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F4, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
-	return res.toArray(new Action[res.size()]);
-    }
 
     static boolean onSaveBookmark(Luwrain luwrain, Strings strings, DocumentArea area)
     {
@@ -220,7 +175,7 @@ luwrain.playSound(Sounds.DONE);
     Action[] getTreeAreaActions(boolean hasDocument, App.Modes mode)
     {
 	NullCheck.notNull(mode, "mode");
-	return getReaderAreaActions(hasDocument, mode);
+	return new Action[0];
     }
 
 Action[] getNotesAreaActions(boolean hasDocument, App.Modes mode)
@@ -229,8 +184,6 @@ Action[] getNotesAreaActions(boolean hasDocument, App.Modes mode)
 	final LinkedList<Action> res = new LinkedList<Action>();
 	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
 	res.add(new Action("delete-note", strings.actionDeleteNote(), new KeyboardEvent(KeyboardEvent.Special.DELETE)));
-	for(Action a: getReaderAreaActions(hasDocument, mode))
-	    res.add(a);
 	return res.toArray(new Action[res.size()]);
     }
 
