@@ -57,7 +57,7 @@ final class Conversations
 	}
     }
 
-    File fileToOPen()
+    File fileToOpen()
     {
 	return Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
 			   luwrain.getFileProperty("luwrain.dir.userhome"),

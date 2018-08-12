@@ -30,6 +30,8 @@ import org.luwrain.app.reader.books.*;
 
 class App implements Application
 {
+    static private final String LOG_COMPONENT = "reader";
+
     enum Modes {DOC, DOC_NOTES, BOOK, BOOK_TREE_ONLY, BOOK_NOTES_ONLY, BOOK_TREE_NOTES};
 
     static private final int READER_ONLY_LAYOUT_INDEX = 0;
@@ -184,7 +186,7 @@ return true;
 		    switch(event.getCode())
 		    {
 			case SAVE:
-			    return Actions.onSaveBookmark(luwrain, strings, readerArea);
+			    return actions.onSaveBookmark(readerArea);
 
 
 		    case ACTION:
@@ -318,14 +320,10 @@ if (base.isBusy())
     private boolean onAction(EnvironmentEvent event)
     {
 	NullCheck.notNull(event, "event");
-	/*
 	if (ActionEvent.isAction(event, "open-url"))
-	    Actions.openNew(this, true, base, luwrain, strings, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
-	*/
-	/*
+	    return actions.onOpenUrl(Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-file"))
-	    return Actions.openNew(this, false, base, luwrain, strings, Base.hasHref(readerArea)?Base.getHref(readerArea):"");
-	*/
+	    return actions.onOpenFile();
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 
@@ -345,10 +343,10 @@ if (base.isBusy())
 
 
 	if (ActionEvent.isAction(event, "save-bookmark"))
-	    return Actions.onSaveBookmark(luwrain, strings, readerArea);
+	    return actions.onSaveBookmark(readerArea);
 
 	if (ActionEvent.isAction(event, "restore-bookmark"))
-	    return Actions.onRestoreBookmark(luwrain, strings, readerArea);
+	    return actions.onRestoreBookmark(readerArea);
 
 
 
@@ -411,6 +409,8 @@ if (base.isBusy())
 	base.updateNotesModel();
 	notesArea.refresh();
 	updateMode();
+	doc.commit();
+	Log.debug(LOG_COMPONENT, "Preparing reader area for new document");
 	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	luwrain.setActiveArea(readerArea);
 	announceNewDoc(doc);

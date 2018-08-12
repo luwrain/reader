@@ -72,7 +72,7 @@ public final class UrlLoader
 	this.requestedContentType = contentType;
     }
 
-    public void setChrset(String charset)
+    public void setCharset(String charset)
     {
 	NullCheck.notEmpty(charset, "charset");
 	this.requestedCharset = charset;

@@ -66,7 +66,7 @@ final class Base
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
 
-    boolean open(URL url, String contentType/*, int currentRowIndex*/)
+    boolean open(URL url, String contentType)
     {
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
@@ -77,10 +77,6 @@ final class Base
 	}
 	if (task != null && !task.isDone())
 	    return false;
-	/*
-	if (!history .isEmpty() && currentRowIndex >= 0)
-	    history.getLast().startingRowIndex = currentRowIndex;
-	*/
 	final UrlLoader urlLoader;
 	try {
 	    urlLoader = new UrlLoader(luwrain, url);
@@ -96,6 +92,27 @@ final class Base
 	luwrain.executeBkg(task);
 	return true;
     }
+
+        boolean changeCharset(String newCharset)
+    {
+	NullCheck.notNull(newCharset, "newCharset");
+	if (isInBookMode() || isBusy() || !hasDocument())
+	    return false;
+	final UrlLoader urlLoader;
+	try {
+	    urlLoader = new UrlLoader(luwrain, res.doc.getUrl());
+	}
+	catch(MalformedURLException e)
+	{
+	    luwrain.crash(e);
+	    return false;
+	}
+	urlLoader.setCharset(newCharset);
+	task = createTask(urlLoader);
+	luwrain.executeBkg(task);
+	return true;
+    }
+
 
     boolean jumpByHrefInNonBook(String href, int currentRowIndex)
     {

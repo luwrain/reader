@@ -32,6 +32,7 @@ final class TextFiles
     Document makeDoc() throws IOException
     {
 	final String[] lines = FileUtils.readTextFileMultipleStrings(file, charset, null);
+	//Log.debug("proba", "" + lines.length + " lines");
 	switch(paraStyle)
 	{
 	case EMPTY_LINES:
@@ -64,6 +65,7 @@ final class TextFiles
 	final Paragraph para = createPara(paraLines);
 	if (para != null)
 	    builder.addSubnode(para);
+	Log.debug("proba", "" + builder.newRoot().getSubnodes().length + " nodes");
 	return new Document(builder.newRoot());
     }
 
@@ -120,12 +122,15 @@ final class TextFiles
 	lines.clear();
 	if (l.length == 0)
 	    return null;
+	Log.debug("proba", "here");
 	if (l.length == 1)
 	    return NodeFactory.newPara(l[0]);
+	//Log.debug("proba", "here2");
 	final StringBuilder b = new StringBuilder();
 	b.append(l[0]);
 	for(int i = 1;i < l.length;++i)
 	    b.append(" " + l[i]);
+	//Log.debug("proba", new String(b));
 	return NodeFactory.newPara(new String(b));
     }
 }

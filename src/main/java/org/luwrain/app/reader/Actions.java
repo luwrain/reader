@@ -25,6 +25,7 @@ import javax.activation.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
+import org.luwrain.util.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
@@ -32,11 +33,11 @@ import org.luwrain.controls.doc.*;
 final class Actions
 {
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
-static final LinkedList<String> enteredUrls = new LinkedList<String>();
 
     private final Luwrain luwrain;
     private final Strings strings;
     private final Base base;
+    final Conversations conv;
 
     Actions(Luwrain luwrain, Base base, Strings strings)
     {
@@ -46,6 +47,7 @@ static final LinkedList<String> enteredUrls = new LinkedList<String>();
 	this.luwrain = luwrain;
 	this.base = base;
 	this.strings = strings;
+	this.conv = new Conversations(luwrain, strings);
     }
 
 boolean onOpenUrl(String currentHref)
@@ -53,21 +55,9 @@ boolean onOpenUrl(String currentHref)
 	NullCheck.notNull(currentHref, "currentHref");
 	if (base.isBusy())
 	    return false;
-	    final String res = Popups.fixedEditList(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), currentHref.isEmpty()?"http://":currentHref, 
-						    enteredUrls.toArray(new String[enteredUrls.size()]));
-	    if (res == null)
-		return true;
-	    enteredUrls.add(res);
-	    final URL url;
-	    try {
-		url = new URL(res);
-	    }
-	    catch(MalformedURLException e)
-	    {
-		e.printStackTrace(); 
-		luwrain.message(strings.badUrl() + res, Luwrain.MessageType.ERROR);
-		return true;
-	    }
+	final URL url = conv.urlToOpen(currentHref);
+	if (url == null)
+	    return true;
 	    base.open(url, "");
 	    return true;
     }
@@ -76,27 +66,15 @@ boolean onOpenUrl(String currentHref)
     {
 	if (base.isBusy())
 	    return false;
-	final File res = Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
-				      luwrain.getFileProperty("luwrain.dir.userhome"),
-				      (fileToCheck, announce)->{
-					  if (fileToCheck.isDirectory())
-					  {
-					      if (announce)
-					      luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MessageType.ERROR);
-					      return false;
-					  }
-					  return true;
-				      });
+	final File res = conv.fileToOpen();
+	if (res == null)
 	return false;
+	base.open(Urls.toUrl(res), "");
+	return true;
     }
 
-
-
-
-    static boolean onSaveBookmark(Luwrain luwrain, Strings strings, DocumentArea area)
+    boolean onSaveBookmark(DocumentArea area)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(area, "area");
 	final int value = area.getCurrentRowIndex();
 	if (value < 0)
@@ -109,10 +87,8 @@ boolean onOpenUrl(String currentHref)
 	return true;
     }
 
-    static boolean onRestoreBookmark(Luwrain luwrain, Strings strings, DocumentArea area)
+    boolean onRestoreBookmark(DocumentArea area)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(area, "area");
 	final URL url = area.getUrl();
 	if (url == null)
@@ -128,20 +104,14 @@ luwrain.playSound(Sounds.DONE);
     }
 
 
-    /*
-    static boolean onChangeCharset(App app, Luwrain luwrain,
-				   Strings strings, Base base)
+    boolean onChangeCharset()
     {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
-	NullCheck.notNull(base, "base");
-	if (base.fetchingInProgress())
+	if (base.isBusy())
 	    return false;
 	final URL url = base.getCurrentUrl();
 	if (url == null)
 	    return false;
-	final String contentType = base.getCurrentContentType();
+	final String contentType = base.getContentType();
 	if (contentType.isEmpty())
 	    return false;
 	final String chosen = (String)Popups.fixedList(luwrain, strings.changeCharsetPopupName(), charsets(luwrain.getRegistry()));
@@ -150,7 +120,7 @@ luwrain.playSound(Sounds.DONE);
 	try {
 	    final MimeType newMime = new MimeType(contentType);
 	    newMime.setParameter("charset", chosen);
-	    base.open(app, url, newMime.toString());
+	    base.open(url, newMime.toString());
 	    return true;
 	}
 	catch(MimeTypeParseException e)
@@ -159,7 +129,6 @@ luwrain.playSound(Sounds.DONE);
 	    return true;
 	}
     }
-    */
 
     Action[] getTreeAreaActions(boolean hasDocument, App.Modes mode)
     {
