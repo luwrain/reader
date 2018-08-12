@@ -29,6 +29,7 @@ import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
+import org.luwrain.app.reader.formats.*;
 
 final class Base
 {
@@ -112,6 +113,27 @@ final class Base
 	luwrain.executeBkg(task);
 	return true;
     }
+
+	        boolean changeTextParaStyle(TextFiles.ParaStyle newParaStyle)
+    {
+	NullCheck.notNull(newParaStyle, "newParaStyle");
+	if (isInBookMode() || isBusy() || !hasDocument())
+	    return false;
+	final UrlLoader urlLoader;
+	try {
+	    urlLoader = new UrlLoader(luwrain, res.doc.getUrl());
+	}
+	catch(MalformedURLException e)
+	{
+	    luwrain.crash(e);
+	    return false;
+	}
+	urlLoader.setTxtParaStyle(newParaStyle);
+	task = createTask(urlLoader);
+	luwrain.executeBkg(task);
+	return true;
+    }
+
 
 
     boolean jumpByHrefInNonBook(String href, int currentRowIndex)

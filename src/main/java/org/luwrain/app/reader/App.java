@@ -324,6 +324,11 @@ if (base.isBusy())
 	    return actions.onOpenUrl(Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-file"))
 	    return actions.onOpenFile();
+
+		if (ActionEvent.isAction(event, "change-text-para-style"))
+	    return actions.onChangeTextParaStyle();
+
+		
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
 
@@ -409,7 +414,7 @@ if (base.isBusy())
 	base.updateNotesModel();
 	notesArea.refresh();
 	updateMode();
-	doc.commit();
+	//doc.commit();
 	Log.debug(LOG_COMPONENT, "Preparing reader area for new document");
 	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	luwrain.setActiveArea(readerArea);

@@ -23,6 +23,7 @@ import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
+import org.luwrain.app.reader.formats.*;
 
 final class Conversations
 {
@@ -70,5 +71,22 @@ final class Conversations
 			       }
 			       return true;
 			   });
+    }
+
+    TextFiles.ParaStyle textParaStyle()
+    {
+	final String emptyLines = "Разбиение по пустым строкам";
+	final String indent = "Разбиение по отступам строк";
+	final String eachLine = "Одна строка - один параграф";
+	final Object o = Popups.fixedList(luwrain, "Тип форматирования параграфов:", new Object[]{emptyLines, indent, eachLine});
+	if (o == null)
+	    return null;
+	if (o == emptyLines)
+	    return TextFiles.ParaStyle.EMPTY_LINES;
+	if (o == indent)
+	    return TextFiles.ParaStyle.INDENT;
+	if (o == eachLine)
+	    return TextFiles.ParaStyle.EACH_LINE;
+	return null;
     }
 }

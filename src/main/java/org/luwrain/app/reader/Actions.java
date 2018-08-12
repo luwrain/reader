@@ -27,8 +27,8 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.util.*;
 import org.luwrain.popups.Popups;
-import org.luwrain.doctree.*;
 import org.luwrain.controls.doc.*;
+import org.luwrain.app.reader.formats.*;
 
 final class Actions
 {
@@ -70,6 +70,17 @@ boolean onOpenUrl(String currentHref)
 	if (res == null)
 	return false;
 	base.open(Urls.toUrl(res), "");
+	return true;
+    }
+
+    boolean onChangeTextParaStyle()
+    {
+	if (base.isBusy() || !base.hasDocument())
+	    return false;
+	final TextFiles.ParaStyle paraStyle = conv.textParaStyle();
+	if (paraStyle == null)
+	return true;
+	base.changeTextParaStyle(paraStyle);
 	return true;
     }
 
