@@ -87,28 +87,6 @@ interface Settings
 	return -1;
     }
 
-    static void setBookmark(Registry registry, String url, int pos)
-    {
-	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(url, "url");
-	registry.addDirectory(BOOKMARKS_PATH);
-	for(String p: registry.getDirectories(BOOKMARKS_PATH))
-	{
-	    if (p.isEmpty())
-		continue;
-	    final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, p));
-	    if (bookmark.getUrl("").equals(url))
-	    {
-		bookmark.setPosition(pos);
-		return;
-	    }
-	}
-	final int next = Registry.nextFreeNum(registry, BOOKMARKS_PATH);
-	final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, ""+next));
-	bookmark.setUrl(url);
-	bookmark.setPosition(pos);
-    }
-
     static org.luwrain.app.reader.Note[] getNotes(Registry registry, String url)
     {
 	NullCheck.notNull(registry, "registry");

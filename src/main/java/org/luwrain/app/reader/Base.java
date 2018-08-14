@@ -122,6 +122,9 @@ final class Base
 	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
 		storedProps.sett.setCharset(newCharset);
 	urlLoader.setCharset(newCharset);
+	final TextFiles.ParaStyle paraStyle = translateParaStyle(storedProps.sett.getParaStyle(""));
+	if (paraStyle != null)
+	    urlLoader.setTxtParaStyle(paraStyle);
 	task = createTask(urlLoader);
 	luwrain.executeBkg(task);
 	return true;
@@ -145,6 +148,8 @@ final class Base
 	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
 	storedProps.sett.setParaStyle(newParaStyle.toString());
 	urlLoader.setTxtParaStyle(newParaStyle);
+	if (!storedProps.sett.getCharset("").isEmpty())
+	    urlLoader.setCharset(storedProps.sett.getCharset(""));
 	task = createTask(urlLoader);
 	luwrain.executeBkg(task);
 	return true;
@@ -216,6 +221,7 @@ successNotification.run();
 		    final UrlLoader.Result r = urlLoader.load();
 		if (r != null)
 		    luwrain.runUiSafely(()->{
+			    task = null; //Strong mark that the work is mostly done
 			    if (r.type == UrlLoader.Result.Type.OK)
 			    {
 				onNewLoadingRes(r);
@@ -248,13 +254,28 @@ successNotification.run();
 	    history.clear();
 	}
 	NullCheck.notNull(res.doc, "res.doc");
-	history.add(new HistoryItem(res.doc));
 	if (res.doc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))
 	    Visitor.walk(res.doc.getRoot(), new org.luwrain.app.reader.filters.GDotCom());
-	final int savedPosition = Settings.getBookmark(luwrain.getRegistry(), res.doc.getUrl().toString());
+	if (StoredProperties.hasProperties(luwrain.getRegistry(), res.doc.getUrl().toString ()))
+	{
+	    this.storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
+	    final int savedPosition = storedProps.sett.getBookmarkPos(0);
 	if (savedPosition > 0)
 	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
+	}
 	res.doc.commit();
+    }
+
+    boolean setBookmark(int pos)
+    {
+	if (pos < 0)
+	    throw new IllegalArgumentException("pos (" + pos + ") may not be negative");
+	if (!hasDocument())
+	    return false;
+	if (storedProps == null)
+	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
+	storedProps.sett.setBookmarkPos(pos);
+	return true;
     }
 
     void prepareErrorText(UrlLoader.Result res, MutableLines lines)

@@ -87,14 +87,17 @@ boolean onOpenUrl(String currentHref)
     boolean onSaveBookmark(DocumentArea area)
     {
 	NullCheck.notNull(area, "area");
+	if (base.isBusy() || !base.hasDocument())
+	    return false;
 	final int value = area.getCurrentRowIndex();
 	if (value < 0)
 	    return false;
-	final URL url = area.getUrl();
+	final URL url = area.getDocument().getUrl();
 	if (url == null)
 	    return false;
-	Settings.setBookmark(luwrain.getRegistry(), url.toString(), value);
-	luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
+	if (!base.setBookmark(value))
+	return false;
+luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
 	return true;
     }
 
