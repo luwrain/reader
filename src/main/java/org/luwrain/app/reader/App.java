@@ -586,7 +586,7 @@ private void openStartFrom()
 {
     try {
 	if (!startingUrl.isEmpty())
-	    base.open(/*this,*/ new  URL(startingUrl), startingContentType/*, getCurrentRowIndex()*/);
+	    base.openInitial(new  URL(startingUrl), startingContentType);
     }
     catch(MalformedURLException e)
     {

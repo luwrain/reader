@@ -45,6 +45,7 @@ final class Base
 
     private final Runnable successNotification;
     private final Runnable errorNotification;
+    private StoredProperties storedProps = null;
     private UrlLoader.Result res = null;
     private UrlLoader.Result errorRes = null;
     private final LinkedList<HistoryItem> history = new LinkedList();
@@ -67,7 +68,7 @@ final class Base
 	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
 
-    boolean open(URL url, String contentType)
+    boolean openInitial(URL url, String contentType)
     {
 	NullCheck.notNull(url, "url");
 	NullCheck.notNull(contentType, "contentType");
@@ -76,7 +77,7 @@ final class Base
 	    luwrain.launchApp("reader", new String[]{url.toString()});
 	    return true;
 	}
-	if (task != null && !task.isDone())
+	if (isBusy())
 	    return false;
 	final UrlLoader urlLoader;
 	try {
@@ -86,6 +87,15 @@ final class Base
 	{
 	    luwrain.crash(e);
 	    return false;
+	    	}
+	if (StoredProperties.hasProperties(luwrain.getRegistry(), url.toString()))
+	{
+	    final StoredProperties props = new StoredProperties(luwrain.getRegistry(), url.toString());
+	    if (!props.sett.getCharset("").isEmpty())
+		urlLoader.setCharset(props.sett.getCharset(""));
+	    	final TextFiles.ParaStyle paraStyle = translateParaStyle(props.sett.getParaStyle(""));
+		if (paraStyle != null)
+		    urlLoader.setTxtParaStyle(paraStyle);
 	}
 	if (!contentType.isEmpty())
 	    urlLoader.setContentType(contentType);
@@ -108,13 +118,16 @@ final class Base
 	    luwrain.crash(e);
 	    return false;
 	}
+		if (storedProps == null)
+	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
+		storedProps.sett.setCharset(newCharset);
 	urlLoader.setCharset(newCharset);
 	task = createTask(urlLoader);
 	luwrain.executeBkg(task);
 	return true;
     }
 
-	        boolean changeTextParaStyle(TextFiles.ParaStyle newParaStyle)
+    boolean changeTextParaStyle(TextFiles.ParaStyle newParaStyle)
     {
 	NullCheck.notNull(newParaStyle, "newParaStyle");
 	if (isInBookMode() || isBusy() || !hasDocument())
@@ -128,6 +141,9 @@ final class Base
 	    luwrain.crash(e);
 	    return false;
 	}
+	if (storedProps == null)
+	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
+	storedProps.sett.setParaStyle(newParaStyle.toString());
 	urlLoader.setTxtParaStyle(newParaStyle);
 	task = createTask(urlLoader);
 	luwrain.executeBkg(task);
@@ -154,7 +170,7 @@ final class Base
 	    return true;
 	}
 	history.add(new HistoryItem(res.doc));
-	if (!open(url, ""/*, currentRowIndex*/))
+	if (!openInitial(url, ""/*, currentRowIndex*/))
 	    return false;
 	luwrain.message(strings.fetching() + " " + href, Luwrain.MessageType.NONE);
 	return true;
@@ -414,5 +430,21 @@ ListArea.Model getNotesModel()
     {
 	NullCheck.notNull(area, "area");
 	return !getHref(area).isEmpty();
+    }
+
+    static private TextFiles.ParaStyle translateParaStyle(String str)
+    {
+	NullCheck.notNull(str, "str");
+	switch(str)
+	{
+	case "EMPTY_LINES":
+	    return TextFiles.ParaStyle.EMPTY_LINES;
+	case "INDENT":
+	    return TextFiles.ParaStyle.INDENT;
+	case "EACH_LINE":
+	    return TextFiles.ParaStyle.EACH_LINE;
+	default:
+	    return null;
+	}
     }
 }

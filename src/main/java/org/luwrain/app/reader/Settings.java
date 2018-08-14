@@ -22,7 +22,20 @@ import org.luwrain.core.*;
 
 interface Settings
 {
+    static final String PROPERTIES_PATH = "/org/luwrain/app/reader/properties";
     static final String BOOKMARKS_PATH = "/org/luwrain/app/reader/bookmarks";
+
+    interface Properties
+    {
+	String getBookmarkUrl(String defValue);
+	void setBookmarkUrl(String value);
+	int getBookmarkPos(int defValue);
+	void setBookmarkPos(int value);
+	String getCharset(String defValue);
+	void setCharset(String value);
+	String getParaStyle(String defValue);
+	void setParaStyle(String defValue);
+    }
 
     interface Bookmark
     {
@@ -200,5 +213,12 @@ interface Settings
 	    res.add(new org.luwrain.app.reader.Note(num, note));
 	}
 	return res.toArray(new org.luwrain.app.reader.Note[res.size()]);
+    }
+
+    static Properties createProperties(Registry registry, String path)
+    {
+	NullCheck.notNull(registry, "registry");
+	NullCheck.notEmpty(path, "path");
+	return RegistryProxy.create(registry, path, Properties.class);
     }
 }

@@ -58,7 +58,7 @@ boolean onOpenUrl(String currentHref)
 	final URL url = conv.urlToOpen(currentHref);
 	if (url == null)
 	    return true;
-	    base.open(url, "");
+	    base.openInitial(url, "");
 	    return true;
     }
 
@@ -69,7 +69,7 @@ boolean onOpenUrl(String currentHref)
 	final File res = conv.fileToOpen();
 	if (res == null)
 	return false;
-	base.open(Urls.toUrl(res), "");
+	base.openInitial(Urls.toUrl(res), "");
 	return true;
     }
 
@@ -114,31 +114,15 @@ luwrain.playSound(Sounds.DONE);
 	return true;
     }
 
-
     boolean onChangeCharset()
     {
-	if (base.isBusy())
-	    return false;
-	final URL url = base.getCurrentUrl();
-	if (url == null)
-	    return false;
-	final String contentType = base.getContentType();
-	if (contentType.isEmpty())
+	if (!base.hasDocument() || base.isBusy())
 	    return false;
 	final String chosen = (String)Popups.fixedList(luwrain, strings.changeCharsetPopupName(), charsets(luwrain.getRegistry()));
 	if (chosen == null || chosen.isEmpty())
 	    return true;
-	try {
-	    final MimeType newMime = new MimeType(contentType);
-	    newMime.setParameter("charset", chosen);
-	    base.open(url, newMime.toString());
-	    return true;
-	}
-	catch(MimeTypeParseException e)
-	{
-	    luwrain.crash(e);
-	    return true;
-	}
+	base.changeCharset(chosen);
+	return true;
     }
 
     Action[] getTreeAreaActions(boolean hasDocument, App.Modes mode)
