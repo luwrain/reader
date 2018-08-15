@@ -32,7 +32,6 @@ public final class TextFiles
     public Document makeDoc() throws IOException
     {
 	final String[] lines = FileUtils.readTextFileMultipleStrings(file, charset, null);
-	//Log.debug("proba", "" + lines.length + " lines");
 	switch(paraStyle)
 	{
 	case EMPTY_LINES:
@@ -66,7 +65,7 @@ public final class TextFiles
 	if (para != null)
 	    builder.addSubnode(para);
 	Log.debug("proba", "" + builder.newRoot().getSubnodes().length + " nodes");
-	return new Document(builder.newRoot());
+	return new Document(makeTitle(), builder.newRoot());
     }
 
     private Document formatParaEachLine(String[] lines)
@@ -79,7 +78,7 @@ public final class TextFiles
 		continue;
 	    builder.addPara(line.trim());
 	}
-	return new Document(builder.newRoot());
+	return new Document(makeTitle(), builder.newRoot());
     }
 
     private Document formatParaIndent(String[] lines)
@@ -112,7 +111,7 @@ public final class TextFiles
 	final Node para = createPara(paraLines);
 	if (para != null)
 	    builder.addSubnode(para);
-	return new Document(builder.newRoot());
+	return new Document(makeTitle(), builder.newRoot());
     }
 
     private Paragraph createPara(List<String> lines)
@@ -132,5 +131,10 @@ public final class TextFiles
 	    b.append(" " + l[i]);
 	//Log.debug("proba", new String(b));
 	return NodeFactory.newPara(new String(b));
+    }
+
+    private String makeTitle()
+    {
+	return "FIXME";
     }
 }

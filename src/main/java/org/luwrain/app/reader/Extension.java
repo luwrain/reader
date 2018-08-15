@@ -234,4 +234,41 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 	NullCheck.notNull(registry, "registry");
 	return RegistryProxy.create(registry, "/org/luwrain/app/reader", Settings.class);
     }
+
+    @Override public UniRefProc[] getUniRefProcs(Luwrain luwrain)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	return new UniRefProc[]{
+	    new UniRefProc(){
+		static private final String TYPE = "reader";
+		@Override public String getUniRefType()
+		{
+		    return TYPE;
+		}
+		@Override public UniRefInfo getUniRefInfo(String uniRef)
+		{
+		    NullCheck.notNull(uniRef, "uniRef");
+		    if (uniRef.isEmpty() || !uniRef.startsWith(TYPE + ":"))
+			return null;
+		    final String url = uniRef.substring(TYPE.length() + 1);
+		    if (url.isEmpty())
+			return null;
+		    return new UniRefInfo(uniRef, "", url);
+		}
+		@Override public boolean openUniRef(String uniRef, Luwrain luwrain)
+		{
+		    NullCheck.notNull(uniRef, "uniRef");
+		    NullCheck.notNull(luwrain, "luwrain");
+		    if (uniRef.isEmpty() || !uniRef.startsWith(TYPE + ":"))
+			return false;
+		    final String url = uniRef.substring(TYPE.length() + 1);
+		    if (url.isEmpty())
+			return false;
+		    luwrain.launchApp("reader", new String[]{url});
+		    return true;
+		}
+	    },
+	};
+    }
+    
 }
