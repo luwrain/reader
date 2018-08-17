@@ -191,7 +191,7 @@ return true;
 			closeApp();
 			return true;
 		    case PROPERTIES:
-			return showDocProperties();
+			return showProps();
 		    default:
 			return super.onSystemEvent(event);
 		    }
@@ -469,6 +469,45 @@ void switchMode()
 	readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
 	    */
     }
+
+        private boolean showProps()
+    {
+	if (!base.hasDocument())
+	    return false;
+	final SimpleArea propsArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.propertiesAreaName()) {
+		@Override public boolean onInputEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+			{
+			case ESCAPE:
+			    layout.closeTempLayout();
+			    return true;
+			}
+		    return super.onInputEvent(event);
+		}
+		@Override public boolean onSystemEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+			return super.onSystemEvent(event);
+		    switch(event.getCode())
+		    {
+		    case CLOSE:
+			closeApp();
+			return true;
+		    default:
+			return super.onSystemEvent(event);
+		    }
+		}
+	    };
+	final PropertiesArea props = new PropertiesArea(luwrain, strings, base.getDocument());
+	props.fillProperties(propsArea);
+	layout.openTempArea(propsArea);
+	return true;
+    }
+
 
     private int getSuitableWidth()
     {
