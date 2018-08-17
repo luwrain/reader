@@ -31,13 +31,10 @@ public interface Book
 	}
     }
 
-    Document[] getDocuments();
-    Map<URL, Document> getDocumentsWithUrls();
     Document getStartingDocument();
-    Document openHref(String href);
     AudioFragment findAudioForId(String ids);
     String findTextForAudio(String audioFileUrl, long msec);
     //Expecting that href is absolute
-    Document getDocument(String href);
+        Document getDocument(String href);
     Section[] getBookSections();
 }

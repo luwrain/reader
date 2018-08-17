@@ -261,7 +261,7 @@ return new Fb2(is, selectedCharset).createDoc();
 }).createDoc();
 		return res;
 	    case TXT:
-		res.doc = new TextFiles(tmpFile.toFile(), selectedCharset, requestedTxtParaStyle).makeDoc();
+		res.doc = new TextFiles(tmpFile.toFile(), makeTitleFromUrl(), selectedCharset, requestedTxtParaStyle).makeDoc();
 		    return res;
 	    default:
 		return new Result(Result.Type.UNRECOGNIZED_FORMAT);
@@ -287,6 +287,22 @@ return new Fb2(is, selectedCharset).createDoc();
 	    return new Fb2(tmpFile, selectedCharset).createDoc();
 	}
 	return null;
+    }
+
+    private String makeTitleFromUrl()
+    {
+	final String path = responseUrl.getPath();
+	if (path == null || path.isEmpty())
+	    return responseUrl.toString();
+	final int lastSlashPos = path.lastIndexOf("/");
+	final String fileName = (lastSlashPos >= 0 && lastSlashPos + 1 < path.length())?path.substring(lastSlashPos + 1):path;
+	try {
+	    return URLDecoder.decode(fileName, "UTF-8");
+	}
+	catch(IOException e)
+	{
+	    return fileName;
+	}
     }
 
     static public Format chooseFilterByContentType(String contentType)

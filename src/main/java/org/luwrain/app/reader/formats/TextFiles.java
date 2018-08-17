@@ -16,15 +16,18 @@ public final class TextFiles
 	INDENT};
 
     private final File file;
+    private String title;
     private final String charset;
     private final ParaStyle paraStyle;
 
-    public TextFiles(File file, String charset, ParaStyle paraStyle)
+    public TextFiles(File file, String title, String charset, ParaStyle paraStyle)
     {
 	NullCheck.notNull(file, "file");
+	NullCheck.notNull(title, "title");
 	NullCheck.notEmpty(charset, "charset");
 	NullCheck.notNull(paraStyle, "paraStyle");
 	this.file = file;
+	this.title = title;
 	this.charset = charset;
 	this.paraStyle = paraStyle;
     }
@@ -65,7 +68,7 @@ public final class TextFiles
 	if (para != null)
 	    builder.addSubnode(para);
 	Log.debug("proba", "" + builder.newRoot().getSubnodes().length + " nodes");
-	return new Document(makeTitle(), builder.newRoot());
+	return new Document(title, builder.newRoot());
     }
 
     private Document formatParaEachLine(String[] lines)
@@ -78,7 +81,7 @@ public final class TextFiles
 		continue;
 	    builder.addPara(line.trim());
 	}
-	return new Document(makeTitle(), builder.newRoot());
+	return new Document(title, builder.newRoot());
     }
 
     private Document formatParaIndent(String[] lines)
@@ -111,7 +114,7 @@ public final class TextFiles
 	final Node para = createPara(paraLines);
 	if (para != null)
 	    builder.addSubnode(para);
-	return new Document(makeTitle(), builder.newRoot());
+	return new Document(title, builder.newRoot());
     }
 
     private Paragraph createPara(List<String> lines)
@@ -131,10 +134,5 @@ public final class TextFiles
 	    b.append(" " + l[i]);
 	//Log.debug("proba", new String(b));
 	return NodeFactory.newPara(new String(b));
-    }
-
-    private String makeTitle()
-    {
-	return "FIXME";
     }
 }
