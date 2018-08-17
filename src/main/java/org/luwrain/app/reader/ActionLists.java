@@ -61,4 +61,18 @@ final class ActionLists
 	res.add(new Action("open-url", strings.actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F4, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
 	return res.toArray(new Action[res.size()]);
     }
+
+        Action[] getTreeAreaActions(boolean hasDocument)
+    {
+	return new Action[0];
+    }
+
+Action[] getNotesAreaActions(boolean hasDocument)
+    {
+	final LinkedList<Action> res = new LinkedList<Action>();
+	res.add(new Action("add-note", strings.actionAddNote(), new KeyboardEvent(KeyboardEvent.Special.INSERT)));
+	res.add(new Action("delete-note", strings.actionDeleteNote(), new KeyboardEvent(KeyboardEvent.Special.DELETE)));
+	return res.toArray(new Action[res.size()]);
+    }
+
 }

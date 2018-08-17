@@ -32,14 +32,6 @@ class App implements Application
 {
     static private final String LOG_COMPONENT = "reader";
 
-    enum Modes {DOC, DOC_NOTES, BOOK, BOOK_TREE_ONLY, BOOK_NOTES_ONLY, BOOK_TREE_NOTES};
-
-    static private final int READER_ONLY_LAYOUT_INDEX = 0;
-    static private final int READER_TREE_LAYOUT_INDEX = 1;
-    static private final int READER_NOTES_LAYOUT_INDEX = 2;
-    static private final int READER_TREE_NOTES_LAYOUT_INDEX = 3;
-    static private final int PROPERTIES_LAYOUT_INDEX = 4;
-
     private Luwrain luwrain = null;
     private Base base = null;
     private Actions actions = null;
@@ -49,12 +41,13 @@ class App implements Application
     private DocumentArea readerArea = null;
     private TreeArea treeArea = null;
     private ListArea notesArea = null;
-    private SimpleArea propertiesArea = null;
-    private AreaLayoutSwitch layouts;
+    private AreaLayoutHelper layout = null;
 
-    private String startingUrl;
-    private String startingContentType;
-    private Modes mode = Modes.DOC;
+    private boolean showSections = false;
+    private final boolean showNotes = false;
+
+    private final String startingUrl;
+    private final String startingContentType;
 
     App()
     {
@@ -84,12 +77,11 @@ class App implements Application
 	this.actions = new Actions(luwrain, base, strings);
 	this.actionLists = new ActionLists(luwrain, base, strings);
 	createAreas();
-	layouts = new AreaLayoutSwitch(luwrain);
-	layouts.add(new AreaLayout(readerArea));
-	layouts.add(new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea));
-	layouts.add(new AreaLayout(AreaLayout.TOP_BOTTOM, readerArea, notesArea));
-	layouts.add(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
-	layouts.add(new AreaLayout(propertiesArea));
+
+		this.layout = new AreaLayoutHelper(()->{
+		luwrain.onNewAreaLayout();
+		luwrain.announceActiveArea();
+	    }, readerArea);
 	openStartFrom();
 	return new InitResult();
     }
@@ -140,7 +132,7 @@ class App implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return actions.getTreeAreaActions(base.hasDocument(), mode);
+		    return actionLists.getTreeAreaActions(base.hasDocument());
 		}
 	    };
 
@@ -152,6 +144,7 @@ class App implements Application
 			switch(event.getSpecial())
 			{
 			case TAB:
+			    /*
 			    switch(mode)
 			    {
 			    case DOC:
@@ -168,6 +161,9 @@ return true;
 			    default:
 			    return false;
 			}
+			    */
+			    //FIXME:
+			    return false;
 			case ESCAPE:
 			    return base.stopAudio();
 			case ENTER:
@@ -252,6 +248,8 @@ if (base.isBusy())
 			switch(event.getSpecial())
 			{
 			case TAB:
+			    //FIXME:
+			    /*
 			    switch(mode)
 			    {
 			    case DOC:
@@ -267,6 +265,8 @@ if (base.isBusy())
 			    default:
 			    return false;
 			    }
+			    */
+			    return false;
 			}
 		    return super.onInputEvent(event);
 		}
@@ -286,33 +286,7 @@ if (base.isBusy())
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return actions.getNotesAreaActions(base.hasDocument(), mode);
-		}
-	    };
-
-	propertiesArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.propertiesAreaName()){
-		@Override public boolean onInputEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-			{
-			case ESCAPE:
-			    return closePropertiesArea();
-			}
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "evet");
-		    switch(event.getCode())
-		    {
-		    case CLOSE:
-			closeApp();
-			return true;
-		    default:
-			return super.onSystemEvent(event);
-		    }
+		    return actionLists.getNotesAreaActions(base.hasDocument());
 		}
 	    };
     }
@@ -333,13 +307,13 @@ if (base.isBusy())
 	    return base.openInNarrator();
 
 	if (ActionEvent.isAction(event, "show-sections-tree"))
-	    return Actions.onShowSectionsTree(luwrain, strings, this);
+	    return false;//FIXME:
 	if (ActionEvent.isAction(event, "hide-sections-tree"))
-	    return Actions.onHideSectionsTree(luwrain, strings, this);
+	    return false;//FIXME:
 	if (ActionEvent.isAction(event, "show-notes"))
-	    return Actions.onShowNotes(luwrain, strings, this);
+	    return false;//FIXME:
 	if (ActionEvent.isAction(event, "hide-notes"))
-	    return Actions.onHideNotes(luwrain, strings, this);
+	    return false;//FIXME:
 
 
 
@@ -448,56 +422,25 @@ if (base.isBusy())
 
     private boolean showDocProperties()
     {
-	propertiesArea.clear();
-	if (!base.fillDocProperties(propertiesArea))
-	    return false;
-	layouts.show(PROPERTIES_LAYOUT_INDEX);
-	luwrain.announceActiveArea();
-	return true;
+	//FIXME:
+	return false;
     }
 
     //Handles the error notification
     private void showErrorPage()
     {
-	final UrlLoader.Result res = base.getErrorRes();
-	propertiesArea.clear();
-	base.prepareErrorText(res, propertiesArea);
-	//	luwrain.silence();
-	//	luwrain.playSound(Sounds.INTRO_REGULAR);
-	layouts.show(PROPERTIES_LAYOUT_INDEX);
-	luwrain.message(strings.errorAnnouncement(), Luwrain.MessageType.ERROR);
+	//FIXME:
     }
 
     private void updateMode()
     {
-	switch(mode)
-	{
-	case DOC:
-	    if (base.isInBookMode())
-		switchMode(Modes.BOOK_TREE_ONLY);
-	    return;
-	case DOC_NOTES:
-	    if (base.isInBookMode())
-		switchMode(Modes.BOOK_TREE_NOTES);
-	    return;
-	case BOOK:
-	case BOOK_TREE_ONLY:
-	case BOOK_NOTES_ONLY:
-	case BOOK_TREE_NOTES:
-	    if (!base.isInBookMode())
-		switchMode(Modes.DOC);
-	    return;
-	}
-    }
-
-    Modes getCurrentMode()
-    {
-	return mode;
+	//FIXME:
     }
 
     //Doesn't check if the base in book mode
-void switchMode(Modes newMode)
+void switchMode()
     {
+	/*
 	NullCheck.notNull(newMode, "newMode");
 	switch(newMode)
 	{
@@ -524,15 +467,7 @@ void switchMode(Modes newMode)
 	}
 	mode = newMode;
 	readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
-    }
-
-    private boolean closePropertiesArea()
-    {
-	if (!base.hasDocument())
-	    return false;
-	switchMode(mode);
-	  luwrain.announceActiveArea();
-	  return true;
+	    */
     }
 
     private int getSuitableWidth()
@@ -616,6 +551,6 @@ private void openStartFrom()
 
     @Override public AreaLayout getAreaLayout()
     {
-	return layouts.getCurrentLayout();
+	return layout.getLayout();
     }
 }
