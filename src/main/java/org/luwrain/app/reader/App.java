@@ -150,7 +150,7 @@ class App implements Application
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
 			    return Actions.onPlayAudio(base, readerArea);
 			case BACKSPACE:
-		    return base.onPrevDoc();
+			    return base.onPrevDoc();
 			}
 		    return super.onInputEvent(event);
 		}
@@ -159,8 +159,8 @@ class App implements Application
 		    NullCheck.notNull(event, "event");
 		    switch(event.getCode())
 		    {
-			case SAVE:
-			    return actions.onSaveBookmark(readerArea);
+		    case SAVE:
+			return actions.onSaveBookmark(readerArea);
 		    case ACTION:
 			return onAction(event);
 		    case CLOSE:
@@ -177,27 +177,27 @@ class App implements Application
 		    NullCheck.notNull(query, "query");
 		    switch(query.getQueryCode())
 		    {
-		    	case AreaQuery.UNIREF_AREA:
-			    if (isEmpty() || !base.hasDocument())
-		return false;
-	    {
-		final String title = getAreaName().replaceAll(":", "\\:");
-		final String url = base.getDocument().getUrl().toString();
-	    ((UniRefAreaQuery)query).answer("link:" + title + ":reader:" + url);
-	    }
-	    return true;
-	    		    	case AreaQuery.URL_AREA:
-			    if (isEmpty() || !base.hasDocument())
-		return false;
-			    ((UrlAreaQuery)query).answer(base.getDocument().getUrl().toString());
-	    return true;
-	    		    case AreaQuery.BACKGROUND_SOUND:
-if (base.isBusy())
+		    case AreaQuery.UNIREF_AREA:
+			if (isEmpty() || !base.hasDocument())
+			    return false;
+			{
+			    final String title = getAreaName().replaceAll(":", "\\:");
+			    final String url = base.getDocument().getUrl().toString();
+			    ((UniRefAreaQuery)query).answer("link:" + title + ":reader:" + url);
+			}
+			return true;
+		    case AreaQuery.URL_AREA:
+			if (isEmpty() || !base.hasDocument())
+			    return false;
+			((UrlAreaQuery)query).answer(base.getDocument().getUrl().toString());
+			return true;
+		    case AreaQuery.BACKGROUND_SOUND:
+			if (base.isBusy())
 			{
 			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
-			return true;
+			    return true;
 			}
-return false;
+			return false;
 		    default:
 			return super.onAreaQuery(query);
 		    }
@@ -229,7 +229,6 @@ return false;
 	listParams.appearance = new ListUtils.DefaultAppearance(listParams.context, Suggestions.LIST_ITEM);
 	listParams.clickHandler = (area, index, obj)->onNotesClick(obj);
 	listParams.name = strings.notesAreaName();
-
 	notesArea = new ListArea(listParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
@@ -239,23 +238,6 @@ return false;
 			{
 			case TAB:
 			    //FIXME:
-			    /*
-			    switch(mode)
-			    {
-			    case DOC:
-			    case BOOK:
-			    case DOC_NOTES:
-			    case BOOK_NOTES_ONLY:
-				goToReaderArea();
-				return true;
-			    case BOOK_TREE_ONLY:
-			    case BOOK_TREE_NOTES:
-				goToTreeArea();
-			    return true;
-			    default:
-			    return false;
-			    }
-			    */
 			    return false;
 			}
 		    return super.onInputEvent(event);
