@@ -100,9 +100,7 @@ class App implements Application
 	treeParams.model = base.getTreeModel();
 	treeParams.name = strings.treeAreaName();
 	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
-
 	treeArea = new TreeArea(treeParams){
-
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -115,7 +113,6 @@ class App implements Application
 			}
 		    return super.onInputEvent(event);
 		}
-
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -144,24 +141,6 @@ class App implements Application
 			switch(event.getSpecial())
 			{
 			case TAB:
-			    /*
-			    switch(mode)
-			    {
-			    case DOC:
-			    case BOOK:
-				return false;
-			    case DOC_NOTES:
-			    case BOOK_NOTES_ONLY:
-			    case BOOK_TREE_NOTES:
-				goToNotesArea();
-			    return true;
-			    case BOOK_TREE_ONLY:
-goToTreeArea();
-return true;
-			    default:
-			    return false;
-			}
-			    */
 			    //FIXME:
 			    return false;
 			case ESCAPE:
@@ -175,7 +154,6 @@ return true;
 			}
 		    return super.onInputEvent(event);
 		}
-
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -183,8 +161,6 @@ return true;
 		    {
 			case SAVE:
 			    return actions.onSaveBookmark(readerArea);
-
-
 		    case ACTION:
 			return onAction(event);
 		    case CLOSE:
@@ -196,36 +172,50 @@ return true;
 			return super.onSystemEvent(event);
 		    }
 		}
-
+		@Override public boolean onAreaQuery(AreaQuery query)
+		{
+		    NullCheck.notNull(query, "query");
+		    switch(query.getQueryCode())
+		    {
+		    	case AreaQuery.UNIREF_AREA:
+			    if (isEmpty() || !base.hasDocument())
+		return false;
+	    {
+		final String title = getAreaName().replaceAll(":", "\\:");
+		final String url = base.getDocument().getUrl().toString();
+	    ((UniRefAreaQuery)query).answer("link:" + title + ":reader:" + url);
+	    }
+	    return true;
+	    		    	case AreaQuery.URL_AREA:
+			    if (isEmpty() || !base.hasDocument())
+		return false;
+			    ((UrlAreaQuery)query).answer(base.getDocument().getUrl().toString());
+	    return true;
+	    		    case AreaQuery.BACKGROUND_SOUND:
+if (base.isBusy())
+			{
+			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
+			return true;
+			}
+return false;
+		    default:
+			return super.onAreaQuery(query);
+		    }
+		}
 		@Override public Action[] getAreaActions()
 		{
 		    return actionLists.getReaderActions();
 		}
 		@Override public String getAreaName()
 		{
-		    final Document doc = getDocument();
-		    return doc != null?doc.getTitle():strings.appName();
+		    if (!base.hasDocument())
+			return strings.appName();
+		    return base.getDocument().getTitle();
 		}
 		@Override protected void announceRow(org.luwrain.doctree.view.Iterator it, boolean briefAnnouncement)
 		{
 		    NullCheck.notNull(it, "it");
 		    announcement.announce(it, briefAnnouncement);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    switch(query.getQueryCode())
-		    {
-		    case AreaQuery.BACKGROUND_SOUND:
-if (base.isBusy())
-			{
-			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
-			return true;
-			}
-			return false;
-		    default:
-			return super.onAreaQuery(query);
-		    }
 		}
 		@Override protected String noContentStr()
 		{
@@ -502,7 +492,7 @@ void switchMode()
 		    }
 		}
 	    };
-	final PropertiesArea props = new PropertiesArea(luwrain, strings, base.getDocument());
+	final DocProps props = new DocProps(luwrain, strings, base.getDocument());
 	props.fillProperties(propsArea);
 	layout.openTempArea(propsArea);
 	return true;
