@@ -23,8 +23,6 @@ import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
 
-import org.luwrain.app.wiki.WikiApp;
-
 public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 {
     private final Set<String> queries = new TreeSet();
@@ -143,20 +141,6 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 	    new Command(){
 		@Override public String getName()
 		{
-		    return "wiki";
-		}
-		@Override public void onCommand(Luwrain luwrain)
-		{
-		    final String word = luwrain.getActiveAreaText(Luwrain.AreaTextType.WORD, true);
-		    if (word != null && !word.trim().isEmpty())
-			luwrain.launchApp("wiki", new String[]{word.trim()}); else
-			luwrain.launchApp("wiki");
-		}
-	    },
-
-	    new Command(){
-		@Override public String getName()
-		{
 		    return "opds";
 		}
 		@Override public void onCommand(Luwrain luwrain)
@@ -188,18 +172,6 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 		}
 	    };
 
-	final Shortcut wiki = new Shortcut() {
-		@Override public String getExtObjName()
-		{
-		    return "wiki";
-		}
-		@Override public Application[] prepareApp(String[] args)
-		{
-		    if (args != null && args.length == 1 && args[0] != null)
-			return new Application[]{new WikiApp(args[0])};
-		    return new Application[]{new WikiApp()};
-		}
-	    };
 
 	final Shortcut opds = new Shortcut() {
 		@Override public String getExtObjName()
@@ -212,7 +184,7 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 		}
 	    };
 
-	return new Shortcut[]{reader, wiki, opds};
+	return new Shortcut[]{reader, opds};
     }
 
     private String constructGoogleUrl(Registry registry, String query)
