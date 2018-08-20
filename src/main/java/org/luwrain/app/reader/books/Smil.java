@@ -1,3 +1,18 @@
+/*
+   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.app.reader.books;
 
@@ -13,9 +28,11 @@ import org.jsoup.parser.*;
 
 import org.luwrain.core.*;
 
-public final class Smil
+final class Smil
 {
-    static public class Entry
+    static private final String LOG_COMPONENT = "smil";
+
+    static class Entry
     {
 	public enum Type {
 	    SEQ,
@@ -24,9 +41,9 @@ public final class Smil
 	    TEXT,
 	    FILE};
 
-	public final Type type;
-	public final String id;
-	public final Entry[] entries;
+	final Type type;
+	final String id;
+	final Entry[] entries;
 	private String src = null;
 	private final AudioFragment audioInfo;
 
@@ -84,7 +101,7 @@ public final class Smil
 	    this.entries = new Entry[0];
 	}
 
-	public void saveTextSrc(List<String> res)
+	void saveTextSrc(List<String> res)
 	{
 	    if (type == Type.TEXT &&
 		src != null && !src.isEmpty())
@@ -94,7 +111,7 @@ public final class Smil
 		    e.saveTextSrc(res);
 	}
 
-	public void allSrcToUrls(URL base) throws MalformedURLException
+	void allSrcToUrls(URL base) throws MalformedURLException
 	{
 	    NullCheck.notNull(base, "base");
 	    if (src != null && !src.isEmpty())
@@ -104,7 +121,7 @@ public final class Smil
 		    e.allSrcToUrls(base);
 	}
 
-	public Entry findById(String id)
+	Entry findById(String id)
 	{
 	    NullCheck.notNull(id, "id");
 	    if (this.id != null && this.id.equals(id))
@@ -120,18 +137,18 @@ public final class Smil
 	    return null;
 	}
 
-	public AudioFragment getAudioFragment()
+	AudioFragment getAudioFragment()
 	{
 	    return audioInfo;
 	}
 
-	public String src()
+	String src()
 	{
 	    return src;
 	}
     }
 
-    static public final class File extends Entry
+    static final class File extends Entry
     {
 	File()
 	{
@@ -144,27 +161,24 @@ public final class Smil
 	NullCheck.notNull(url, "url");
 	final org.jsoup.nodes.Document doc;
 	try {
-	    if (url.getProtocol().equals("file"))
+	    if (!url.getProtocol().equals("file"))
 	    {
 		final Connection con=Jsoup.connect(url.toString());
 		con.userAgent(org.luwrain.util.Connections .DEFAULT_USER_AGENT);
 		con.timeout(30000);
 		doc = con.get();
 	    } else
-	    {
 		doc = Jsoup.parse(url.openStream(), "utf-8", "", Parser.xmlParser());
-	    }
 	}	
 	catch(Exception e)
 	{
-	    Log.error("doctree-smil", "unable to fetch SMIL from URL " + url.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
-	    e.printStackTrace(); 
+	    Log.error(LOG_COMPONENT, "unable to fetch SMIL from URL " + url.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
 	    return null;
 	}
 	return new Entry(Entry.Type.FILE, onNode(doc.body()));
     }
 
-    static public Entry fromFile(java.io.File file)
+    static Entry fromFile(java.io.File file)
     {
 	NullCheck.notNull(file, "file");
 	final org.jsoup.nodes.Document doc;
@@ -173,8 +187,7 @@ public final class Smil
 	}
 	catch(Exception e)
 	{
-	    Log.error("doctree-smil", "unable to parse " + file.getAbsolutePath() + ":" + e.getClass().getName() + ":" + e.getMessage());
-	    e.printStackTrace(); 
+	    Log.error(LOG_COMPONENT, "unable to parse " + file.getAbsolutePath() + ":" + e.getClass().getName() + ":" + e.getMessage());
 	    return null;
 	}
 	return new Entry(Entry.Type.FILE, onNode(doc.body()));

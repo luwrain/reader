@@ -94,19 +94,19 @@ public final class UrlLoader
 	try {
 	    try {
 		Log.debug(LOG_COMPONENT, "fetching " + requestedUrl.toString());
-				fetch();
+		fetch();
 	    }
 	    catch(Connections.InvalidHttpResponseCodeException e)
 	    {
 		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
-				final Result res = new Result(Result.Type.HTTP_ERROR);
+		final Result res = new Result(Result.Type.HTTP_ERROR);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("httpcode", "" + e.getHttpCode());
 		return res;
 	    }
 	    catch (UnknownHostException  e)
 	    {
-				Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
+		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
 		final Result res = new Result(Result.Type.UNKNOWN_HOST);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("host", e.getMessage());
@@ -114,7 +114,7 @@ public final class UrlLoader
 	    }
 	    catch (IOException e)
 	    {
-				Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
+		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
 		final Result res = new Result(Result.Type.FETCHING_ERROR);
 		res.setProperty("url", requestedUrl.toString());
 		res.setProperty("descr", e.getClass().getName() + ":" + e.getMessage());
@@ -122,7 +122,7 @@ public final class UrlLoader
 	    }
 	    this.selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
 	    if (selectedContentType.isEmpty() || ContentTypes.isUnknown(selectedContentType))
-			this.selectedContentType = luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
+		this.selectedContentType = luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
 	    if (selectedContentType.isEmpty())
 		return new Result(Result.Type.UNDETERMINED_CONTENT_TYPE);
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
@@ -131,37 +131,30 @@ public final class UrlLoader
 	    {
 		Log.error(LOG_COMPONENT, "unable to choose the suitable filter for " + requestedUrl.toString());
 		final Result res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
-res.setProperty("contenttype", selectedContentType);
-res.setProperty("url", responseUrl.toString());
-return res;
+		res.setProperty("contenttype", selectedContentType);
+		res.setProperty("url", responseUrl.toString());
+		return res;
 	    }
 	    selectCharset(format);
 	    final Result res = parse(format);
 	    if (res.doc == null)
 	    {
 		final Result r = new Result(Result.Type.UNRECOGNIZED_FORMAT);
-r.setProperty("contenttype", selectedContentType);
-r.setProperty("url", responseUrl.toString());
-return r;
+		r.setProperty("contenttype", selectedContentType);
+		r.setProperty("url", responseUrl.toString());
+		return r;
 	    }
-res.doc.setProperty("url", responseUrl.toString());
-res.doc.setProperty("format", format.toString());
-res.doc.setProperty("contenttype", selectedContentType);
-res.doc.setProperty("charset", selectedCharset);
-if (requestedTagRef != null)
-    res.doc.setProperty("startingref", requestedTagRef);
-/*
-		if (responseUrl.getFile().toLowerCase().endsWith("/ncc.html"))
-		{
-		    Log.debug("doctree", "daisy book detected");
-		    res.book = BookFactory.initDaisy2(res.doc, this);
-			res.doc = null;
-		}
-*/
-res.setProperty("url", responseUrl.toString());
-res.setProperty("format", format.toString());
-res.setProperty("contenttype", selectedContentType);
-res.setProperty("charset", selectedCharset);
+	    res.doc.setProperty("url", responseUrl.toString());
+	    res.doc.setProperty("contenttype", selectedContentType);
+	    if (format == Format.TXT)
+		res.doc.setProperty("charset", selectedCharset);
+	    if (requestedTagRef != null)
+		res.doc.setProperty("startingref", requestedTagRef);
+	    if (responseUrl.getFile().toLowerCase().endsWith("/ncc.html"))
+	    {
+		res.book = BookFactory.initDaisy2(luwrain, res.doc);
+		res.doc = null;
+	    }
 	    return res;
 	}
 	finally {

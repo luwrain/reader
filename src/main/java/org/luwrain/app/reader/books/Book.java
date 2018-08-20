@@ -9,7 +9,7 @@ import org.luwrain.doctree.*;
 
 public interface Book
 {
-    static public class Section
+    static public final class Section
     {
 	public final int level;
 	public final String title;

@@ -248,13 +248,16 @@ successNotification.run();
         private void onNewLoadingRes(UrlLoader.Result newRes)
     {
 	NullCheck.notNull(newRes, "newRes");
+
+	if (isInBookMode() && res.book != null)
+	    throw new RuntimeException("Cannot open the new book being in book mode");
 	this.res = newRes;
 	if (res.book != null)
 	{
-	    //Opening new book
 	    bookTreeModelSource.setSections(res.book.getBookSections());
 	    res.doc = res.book.getStartingDocument();
 	    history.clear();
+	    newBookNotification.run();
 	}
 	NullCheck.notNull(res.doc, "res.doc");
 	if (res.doc.getProperty("url").matches("http://www\\.google\\.ru/search.*"))

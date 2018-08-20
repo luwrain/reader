@@ -11,8 +11,10 @@ import org.luwrain.doctree.*;
 import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
 
-class Daisy2 implements Book
+final class Daisy2 implements Book
 {
+    static private final String LOG_COMPONENT = "daisy";
+    
     protected final Luwrain luwrain;
     protected final Map<URL, Document> docs = new HashMap();
     protected final Map<URL, Smil.Entry> smils = new HashMap();
@@ -147,7 +149,7 @@ class Daisy2 implements Book
 	    {
 		e.printStackTrace();
 	    }
-	Log.debug("doctree-daisy", "" + smils.size() + " SMIL(s) loaded");
+	Log.debug(LOG_COMPONENT, "" + smils.size() + " SMIL(s) loaded");
 	for(String s: textSrcs)
 	    try {
 		URL url = new URL(nccDoc.getUrl(), s);
@@ -158,7 +160,7 @@ class Daisy2 implements Book
 	    {
 		e.printStackTrace();
 	    }
-	Log.debug("doctree-daisy", "" + docs.size() + " documents loaded");
+	Log.debug(LOG_COMPONENT, "" + docs.size() + " documents loaded");
 	this.nccDoc = nccDoc;
 	this.nccDocUrl = this.nccDoc.getUrl();
 	final SectionsVisitor visitor = new SectionsVisitor();
@@ -202,16 +204,14 @@ class Daisy2 implements Book
 	return bookSections;
     }
 
-    private void loadSmil(URL url, LinkedList<String> textSrcs)
+    private void loadSmil(URL url, List<String> textSrcs)
     {
 	NullCheck.notNull(url, "url");
 	if (smils.containsKey(url))
 	    return;
 	final Smil.Entry smil = Smil.fromUrl(url);
 	if (smil == null)
-	{
-	    Log.error("doctree-daisy", "unable to read SMIL " + url.toString());
-	}
+	    throw new RuntimeException("Unable to load SMIL from " + url.toString());
 	smils.put(url, smil);
 	smil.saveTextSrc(textSrcs);
 	try {
