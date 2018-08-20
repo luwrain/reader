@@ -18,13 +18,22 @@ public final class UrlLoader
 {
     static private final String LOG_COMPONENT = "reader";
 
+    enum Format {
+	TXT,
+	HTML,
+	XML,
+	DOC,
+	DOCX,
+	FB2,
+	FB2_ZIP,
+	//	EPUB,
+    };
+
     static public final String CONTENT_TYPE_DATA = "application/octet-stream";
     static public final String CONTENT_TYPE_PDF = "application/pdf";
     static public final String CONTENT_TYPE_POSTSCRIPT = "application/postscript";
     static public final String CONTENT_TYPE_XHTML = "application/xhtml";
     static public final String CONTENT_TYPE_ZIP = "application/zip";
-    static public final String CONTENT_TYPE_DOC = "application/msword";
-    static public final String CONTENT_TYPE_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     static public final String CONTENT_TYPE_HTML = "text/html";
     static public final String CONTENT_TYPE_TXT = "text/plain";
     static public final String CONTENT_TYPE_XML = "application/xml";
@@ -35,10 +44,6 @@ public final class UrlLoader
 
     static private final String DEFAULT_CHARSET = "UTF-8";
 
-    enum Format {
-	TXT, HTML, XML, DOC, DOCX,
-	FB2, FB2_ZIP, EPUB, SMIL,
-    };
 
     private final Luwrain luwrain;
     private final URL requestedUrl;
@@ -116,11 +121,11 @@ public final class UrlLoader
 		return res;
 	    }
 	    this.selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
-
-	    	    if (selectedContentType.isEmpty())
+	    if (selectedContentType.isEmpty() || ContentTypes.isUnknown(selectedContentType))
 			this.selectedContentType = luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
 	    if (selectedContentType.isEmpty())
 		return new Result(Result.Type.UNDETERMINED_CONTENT_TYPE);
+	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
 	    final Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
 	    if (format == null)
 	    {
@@ -308,6 +313,10 @@ return new Fb2(is, selectedCharset).createDoc();
     static public Format chooseFilterByContentType(String contentType)
     {
 	NullCheck.notEmpty(contentType, "contentType");
+	if (ContentTypes.isAppDoc(contentType))
+	    return Format.DOC;
+	if (ContentTypes.isAppDocX(contentType))
+	    return Format.DOCX;
 	switch(contentType.toLowerCase().trim())
 	{
 	case ContentTypes.TEXT_HTML_DEFAULT:

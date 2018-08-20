@@ -73,6 +73,7 @@ class App implements Application
 	this.luwrain = luwrain;
 	this.base = new Base(luwrain, strings,
 			     ()->onNewDocument(),
+			     ()->onNewBook(),
 			     ()->showErrorPage());
 	this.actions = new Actions(luwrain, base, strings);
 	this.actionLists = new ActionLists(luwrain, base, strings);
@@ -80,7 +81,7 @@ class App implements Application
 
 		this.layout = new AreaLayoutHelper(()->{
 		luwrain.onNewAreaLayout();
-		luwrain.announceActiveArea();
+		//luwrain.announceActiveArea();
 	    }, readerArea);
 	openStartFrom();
 	return new InitResult();
@@ -270,14 +271,10 @@ class App implements Application
 	    return actions.onOpenUrl(Base.hasHref(readerArea)?Base.getHref(readerArea):"");
 	if (ActionEvent.isAction(event, "open-file"))
 	    return actions.onOpenFile();
-
-		if (ActionEvent.isAction(event, "change-text-para-style"))
+	if (ActionEvent.isAction(event, "change-text-para-style"))
 	    return actions.onChangeTextParaStyle();
-
-		
 	if (ActionEvent.isAction(event, "open-in-narrator"))
 	    return base.openInNarrator();
-
 	if (ActionEvent.isAction(event, "show-sections-tree"))
 	    return false;//FIXME:
 	if (ActionEvent.isAction(event, "hide-sections-tree"))
@@ -286,21 +283,10 @@ class App implements Application
 	    return false;//FIXME:
 	if (ActionEvent.isAction(event, "hide-notes"))
 	    return false;//FIXME:
-
-
-
-
-
-
-
 	if (ActionEvent.isAction(event, "save-bookmark"))
 	    return actions.onSaveBookmark(readerArea);
-
 	if (ActionEvent.isAction(event, "restore-bookmark"))
 	    return actions.onRestoreBookmark(readerArea);
-
-
-
 	/*
 	if (ActionEvent.isAction(event, "change-format"))
 	    return Actions.onChangeFormat(this, luwrain, strings, base);
@@ -351,17 +337,24 @@ class App implements Application
 	return true;
     }
 
+    //Handle the new book notification
+    private void onNewBook()
+    {
+	if (!base.isInBookMode())
+	    throw new RuntimeException("Must be in book mode");
+	treeArea.refresh();
+	showSections = true;
+    }
+
     //Handles the success notification
     private void onNewDocument()
     {
-	final Document doc = base.getDocument();
-	if (base.isInBookMode())
-	    treeArea.refresh();
+	if (!base.hasDocument())
+	    throw new RuntimeException("base does not have any document");
 	base.updateNotesModel();
 	notesArea.refresh();
 	updateMode();
-	//doc.commit();
-	Log.debug(LOG_COMPONENT, "Preparing reader area for new document");
+	final Document doc = base.getDocument();
 	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
 	luwrain.setActiveArea(readerArea);
 	announceNewDoc(doc);
@@ -392,12 +385,6 @@ class App implements Application
 	return false;
     }
 
-    private boolean showDocProperties()
-    {
-	//FIXME:
-	return false;
-    }
-
     //Handles the error notification
     private void showErrorPage()
     {
@@ -406,43 +393,31 @@ class App implements Application
 
     private void updateMode()
     {
-	//FIXME:
-    }
-
-    //Doesn't check if the base in book mode
-void switchMode()
-    {
-	/*
-	NullCheck.notNull(newMode, "newMode");
-	switch(newMode)
+	final boolean sects = this.showSections && base.isInBookMode();
+	final boolean notes = this.showNotes;
+	if (sects && notes)
 	{
-	case DOC:
-	    layouts.show(READER_ONLY_LAYOUT_INDEX);
-	    break;
-	case DOC_NOTES:
-	    layouts.show(READER_NOTES_LAYOUT_INDEX);
-	    break;
-	case BOOK:
-	    layouts.show(READER_ONLY_LAYOUT_INDEX);
-	    break;
-	case BOOK_TREE_ONLY:
-	    layouts.show(READER_TREE_LAYOUT_INDEX);
-	    break;
-	case BOOK_NOTES_ONLY:
-	    layouts.show(READER_NOTES_LAYOUT_INDEX);
-	    break;
-	case BOOK_TREE_NOTES:
-	    layouts.show(READER_TREE_NOTES_LAYOUT_INDEX);
-	    break;
-	default:
+	    layout.setBasicLayout(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
+	    readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
 	    return;
 	}
-	mode = newMode;
+	if (sects)
+	{
+	    layout.setBasicLayout(new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea));
+	    readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
+	    return;
+	}
+	if (notes)
+	{
+	    layout.setBasicLayout(new AreaLayout(AreaLayout.TOP_BOTTOM, readerArea, notesArea));
+	    readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
+	    return;
+	}
+	layout.setBasicLayout(new AreaLayout(readerArea));
 	readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
-	    */
     }
 
-        private boolean showProps()
+    private boolean showProps()
     {
 	if (!base.hasDocument())
 	    return false;
@@ -479,7 +454,6 @@ void switchMode()
 	layout.openTempArea(propsArea);
 	return true;
     }
-
 
     private int getSuitableWidth()
     {

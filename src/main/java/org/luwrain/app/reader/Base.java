@@ -44,6 +44,7 @@ final class Base
     private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
 
     private final Runnable successNotification;
+    private final Runnable newBookNotification;
     private final Runnable errorNotification;
     private StoredProperties storedProps = null;
     private UrlLoader.Result res = null;
@@ -51,15 +52,17 @@ final class Base
     private final LinkedList<HistoryItem> history = new LinkedList();
 
     Base(Luwrain luwrain, Strings strings,
-	 Runnable successNotification, Runnable errorNotification)
+	 Runnable successNotification, Runnable newBookNotification, Runnable errorNotification)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(successNotification, "successNotification");
+	NullCheck.notNull(newBookNotification, "newBookNotification");
 	NullCheck.notNull(errorNotification, "errorNotification");
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.successNotification = successNotification;
+	this.newBookNotification = newBookNotification;
 	this.errorNotification = errorNotification;
 	this.audioPlaying = new AudioPlaying();
 	if (!audioPlaying.init(luwrain))
