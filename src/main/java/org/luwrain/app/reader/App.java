@@ -109,7 +109,7 @@ class App implements Application
 			switch(event.getSpecial())
 			{
 			case TAB:
-			    goToReaderArea();
+			    luwrain.setActiveArea(readerArea);
 			    return true;
 			}
 		    return super.onInputEvent(event);
@@ -142,7 +142,16 @@ class App implements Application
 			switch(event.getSpecial())
 			{
 			case TAB:
-			    //FIXME:
+			    if (showNotes)
+			    {
+				luwrain.setActiveArea(notesArea);
+				return true;
+			    }
+			    if (base.isInBookMode() && showSections)
+			    {
+				luwrain.setActiveArea(treeArea);
+				return true;
+			    }
 			    return false;
 			case ESCAPE:
 			    return base.stopAudio();
@@ -238,8 +247,10 @@ class App implements Application
 			switch(event.getSpecial())
 			{
 			case TAB:
-			    //FIXME:
-			    return false;
+			    if (base.isInBookMode() && showSections)
+				luwrain.setActiveArea(treeArea); else
+				luwrain.setActiveArea(readerArea);
+			    return true;
 			}
 		    return super.onInputEvent(event);
 		}
@@ -310,7 +321,6 @@ class App implements Application
 	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
-	Log.debug("reader", "click in sections tree to open:" + sect.href);
 	if (!jumpByHref(sect.href, luwrain.getAreaVisibleWidth(readerArea)))
 	    return false;
 	//	goToReaderArea();
@@ -502,17 +512,17 @@ class App implements Application
 	luwrain.say(doc.getTitle());
     }
 
-private void openStartFrom()
-{
-    try {
-	if (!startingUrl.isEmpty())
-	    base.openInitial(new  URL(startingUrl), startingContentType);
-    }
-    catch(MalformedURLException e)
+    private void openStartFrom()
+    {
+	try {
+	    if (!startingUrl.isEmpty())
+		base.openInitial(new  URL(startingUrl), startingContentType);
+	}
+	catch(MalformedURLException e)
     {
 	luwrain.crash(e);//FIXME:
     }
-}
+    }
 
     private void goToTreeArea()
     {
