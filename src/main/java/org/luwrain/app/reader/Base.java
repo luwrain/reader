@@ -39,8 +39,7 @@ final class Base
     private final Strings strings;
     private FutureTask task = null;
     private AudioPlaying audioPlaying = null;
-    private BookTreeModelSource bookTreeModelSource;
-    private CachedTreeModel bookTreeModel;
+    private Book.Section[] sections = new Book.Section[0];
     private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
 
     private final Runnable successNotification;
@@ -67,8 +66,6 @@ final class Base
 	this.audioPlaying = new AudioPlaying();
 	if (!audioPlaying.init(luwrain))
 	    audioPlaying = null;
-	bookTreeModelSource = new BookTreeModelSource(strings.bookTreeRoot(), new Book.Section[0]);
-	bookTreeModel = new CachedTreeModel(bookTreeModelSource);
     }
 
     boolean openInitial(URL url, String contentType)
@@ -254,7 +251,7 @@ successNotification.run();
 	this.res = newRes;
 	if (res.book != null)
 	{
-	    bookTreeModelSource.setSections(res.book.getBookSections());
+	    this.sections = res.book.getBookSections();
 	    res.doc = res.book.getStartingDocument();
 	    history.clear();
 	    newBookNotification.run();
@@ -424,7 +421,7 @@ successNotification.run();
 
     TreeArea.Model getTreeModel()
     {
-	return bookTreeModel;
+	return new CachedTreeModel(new BookTreeModelSource(strings.bookTreeRoot()));
     }
 
 ListArea.Model getNotesModel()
@@ -474,4 +471,46 @@ ListArea.Model getNotesModel()
 	    return null;
 	}
     }
+
+    private final class BookTreeModelSource implements CachedTreeModelSource
+{
+    private final String root;
+    BookTreeModelSource(String root)
+    {
+	NullCheck.notNull(root, "root");
+	this.root = root;
+    }
+    @Override public Object getRoot()
+    {
+	return root;
+    }
+    @Override public Object[] getChildObjs(Object obj)
+    {
+	final List res = new LinkedList();
+	if (obj == root)
+	{
+	    for(Book.Section s: sections)
+		if (s.level == 1)
+		    res.add(s);
+	} else
+	{
+	    int i = 0;
+	    for(i = 0;i < sections.length;++i)
+		if (sections[i] == obj)
+		    break;
+	    if (i < sections.length)
+	    {
+		final Book.Section sect = sections[i];
+		for(int k = i + 1;k < sections.length;++k)
+		{
+		    if (sections[k].level <= sect.level)
+			break;
+		    if (sections[k].level == sect.level + 1)
+			res.add(sections[k]);
+		}
+	    }
+	}
+	return res.toArray(new Object[res.size()]);
+    }
+}
 }
