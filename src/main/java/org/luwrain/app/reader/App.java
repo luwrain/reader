@@ -120,7 +120,14 @@ class App implements Application
 		    switch(event.getCode())
 		    {
 		    case ACTION:
-			return onAction(event);
+			if (ActionEvent.isAction(event, "hide-sections-tree"))
+			{
+			    showSections = false;
+			    luwrain.setActiveArea(readerArea);
+			    updateMode();
+			    return true;
+			}
+			return false;
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -130,7 +137,9 @@ class App implements Application
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return actionLists.getTreeAreaActions(base.hasDocument());
+		    return new Action[]{
+			new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.ESCAPE)),
+		    };
 		}
 	    };
 
