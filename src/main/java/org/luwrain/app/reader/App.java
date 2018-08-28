@@ -128,6 +128,9 @@ class App implements Application
 			    return true;
 			}
 			return false;
+		    case HELP:
+			luwrain.openHelp("luwrain.reader");
+			return true;
 		    case CLOSE:
 			closeApp();
 			return true;
@@ -163,11 +166,14 @@ class App implements Application
 			    }
 			    return false;
 			case ESCAPE:
-			    return base.stopAudio();
+			    if (base.stopAudio())
+				return true;
+			    closeApp();
+			    return true;
 			case ENTER:
 			    if (Base.hasHref(this))
 				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
-			    return Actions.onPlayAudio(base, readerArea);
+			    return actions.onPlayAudio(readerArea);
 			case BACKSPACE:
 			    return base.onPrevDoc();
 			}
@@ -180,7 +186,10 @@ class App implements Application
 		    {
 		    case SAVE:
 			return actions.onSaveBookmark(readerArea);
-		    case ACTION:
+					    case HELP:
+			luwrain.openHelp("luwrain.reader");
+			return true;
+					    case ACTION:
 			return onAction(event);
 		    case CLOSE:
 			closeApp();
@@ -270,7 +279,10 @@ class App implements Application
 		    {
 		    case ACTION:
 			return onAction(event);
-		    case CLOSE:
+					    case HELP:
+			luwrain.openHelp("luwrain.reader");
+			return true;
+					    case CLOSE:
 			closeApp();
 			return true;
 		    default:
@@ -315,8 +327,6 @@ class App implements Application
 	if (ActionEvent.isAction(event, "change-charset"))
 	    return Actions.onChangeCharset(this, luwrain, strings, base);
 	*/
-	if (ActionEvent.isAction(event, "play-audio"))
-	    return Actions.onPlayAudio(base, readerArea);
 	if (ActionEvent.isAction(event, "add-note"))
 	    return addNote();
 	if (ActionEvent.isAction(event, "delete-note"))
@@ -460,7 +470,10 @@ class App implements Application
 			return super.onSystemEvent(event);
 		    switch(event.getCode())
 		    {
-		    case CLOSE:
+					    case HELP:
+			luwrain.openHelp("luwrain.reader");
+			return true;
+					    case CLOSE:
 			closeApp();
 			return true;
 		    default:

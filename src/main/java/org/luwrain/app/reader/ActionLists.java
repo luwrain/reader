@@ -42,8 +42,6 @@ final class ActionLists
 	final List<Action> res = new LinkedList();
 	if (base.hasDocument())
 	{
-	    res.add(new Action("play-audio", strings.actionPlayAudio(), new KeyboardEvent(KeyboardEvent.Special.F7)));
-	    //	    res.add(new Action("open-in-narrator", strings.actionOpenInNarrator(), new KeyboardEvent(KeyboardEvent.Special.F8)));
 	    res.add(new Action("save-bookmark", strings.actionSaveBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2)));
 	    res.add(new Action("restore-bookmark", strings.actionRestoreBookmark(), new KeyboardEvent(KeyboardEvent.Special.F2, EnumSet.of(KeyboardEvent.Modifiers.SHIFT))));
 	    if (!base.isInBookMode() && base.getContentType().equals(ContentTypes.TEXT_PLAIN_DEFAULT))

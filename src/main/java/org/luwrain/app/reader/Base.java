@@ -33,22 +33,25 @@ import org.luwrain.app.reader.formats.*;
 
 final class Base
 {
+    static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
 
     private final Luwrain luwrain;
     private final Strings strings;
-    private FutureTask task = null;
-    private AudioPlaying audioPlaying = null;
-    private Book.Section[] sections = new Book.Section[0];
-    private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
+        private final AudioPlaying audioPlaying;
 
-    private final Runnable successNotification;
+        private final Runnable successNotification;
     private final Runnable newBookNotification;
     private final Runnable errorNotification;
-    private StoredProperties storedProps = null;
+
+    private FutureTask task = null;
+        private final LinkedList<HistoryItem> history = new LinkedList();
+
     private UrlLoader.Result res = null;
+        private StoredProperties storedProps = null;
+        private Book.Section[] sections = new Book.Section[0];
+    private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
     private UrlLoader.Result errorRes = null;
-    private final LinkedList<HistoryItem> history = new LinkedList();
 
     Base(Luwrain luwrain, Strings strings,
 	 Runnable successNotification, Runnable newBookNotification, Runnable errorNotification)
@@ -63,9 +66,8 @@ final class Base
 	this.successNotification = successNotification;
 	this.newBookNotification = newBookNotification;
 	this.errorNotification = errorNotification;
-	this.audioPlaying = new AudioPlaying();
-	if (!audioPlaying.init(luwrain))
-	    audioPlaying = null;
+	final AudioPlaying a = new AudioPlaying(luwrain);
+		this.audioPlaying = a.isLoaded()?a:null;
     }
 
     boolean openInitial(URL url, String contentType)
@@ -341,8 +343,7 @@ successNotification.run();
     {
 	if (audioPlaying == null)
 	    return false;
-	audioPlaying.stop();
-	return true;
+	return audioPlaying.stop();
     }
 
     private URL getNotesUrl()

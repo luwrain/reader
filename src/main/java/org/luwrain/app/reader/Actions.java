@@ -128,14 +128,13 @@ luwrain.playSound(Sounds.DONE);
 	return true;
     }
 
-    static boolean onPlayAudio(Base base, DocumentArea area)
+    boolean onPlayAudio(DocumentArea area)
     {
-	NullCheck.notNull(base, "base");
 	NullCheck.notNull(area, "area");
 	if (!base.isInBookMode())
 	    return false;
 	final String[] ids = area.getHtmlIds();
-	if (ids == null || ids.length < 1)
+	if (ids == null || ids.length == 0)
 	    return false;
 	return base.playAudio(area, ids);
     }

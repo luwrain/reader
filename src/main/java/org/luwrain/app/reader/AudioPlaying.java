@@ -26,65 +26,72 @@ import org.luwrain.app.reader.books.*;
 
 class AudioPlaying  implements Listener
 {
-    private Luwrain luwrain;
-    private Player player;
+    static private final String LOG_COMPONENT = Base.LOG_COMPONENT;
 
-    private DocumentArea area;
-    private Run prevRun;
-    private Book book;
-    private Document doc;
+    private final Luwrain luwrain;
+    private final Player player;
+
+    private DocumentArea area = null;
+    private Run prevRun = null;
+    private Book book = null;
+    private Document doc = null;
     private Playlist currentPlaylist = null;
 
-    boolean init(Luwrain luwrain)
+    AudioPlaying(Luwrain luwrain)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	this.luwrain = luwrain;
 	this.player = luwrain.getPlayer();
-	if (player == null)
-	    return false;
+	if (player != null)
 	    player.addListener(this);
-					  return true;
     }
 
-    boolean playAudio(Book book, Document doc,
-		      DocumentArea area, String[] ids)
+    boolean isLoaded()
+    {
+	return player != null;
+    }
+
+    boolean playAudio(Book book, Document doc, DocumentArea area, String[] ids)
     {
 	NullCheck.notNull(book, "book");
 	NullCheck.notNull(doc, "doc");
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
-	if (doc.getUrl() == null)
+	final URL url = doc.getUrl();
+	if (url == null)
 	    return false;
-    final URL url = doc.getUrl();
-	    for(String id: ids)
+	for(String id: ids)
+	{
+	    final AudioFragment audioInfo = book.findAudioForId(url.toString() + "#" + id);
+	    if (audioInfo != null)
 	    {
-		final AudioFragment audioInfo = book.findAudioForId(url.toString() + "#" + id);
-		if (audioInfo != null)
-		{
-		    //Log.debug("reader", "audio info found:" + audioInfo.src() + " from " + audioInfo.beginPosMsec());
-		    URL audioFileUrl = null;
-		    try {
-			audioFileUrl = new URL(url, audioInfo.src);
-		    }
-		    catch(MalformedURLException e)
-		    {
-			//Log.error("reader", "unable to prepare the URL for player:" + audioInfo.src() + ":" + e.getMessage());
-			continue;
-		    }
-		    this.book = book;
-		    this.doc = doc;
-		    this.area = area;
-		    this.currentPlaylist = new Playlist(audioFileUrl.toString());
-		    player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS);
-		    return true;
+		URL audioFileUrl = null;
+		try {
+		    audioFileUrl = new URL(url, audioInfo.src);
 		}
+		catch(MalformedURLException e)
+		{
+		    continue;
+		}
+		this.book = book;
+		this.doc = doc;
+		this.area = area;
+		this.currentPlaylist = new Playlist(audioFileUrl.toString());
+		luwrain.playSound(Sounds.PLAYING);
+		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS);
+		return true;
 	    }
-	    return false;
+	}
+	return false;
     }
 
-    void stop()
+    boolean stop()
     {
+	if (player.getState() != Player.State.PLAYING || this.currentPlaylist != player.getPlaylist())
+	    return false;
 	player.stop();
+	luwrain.playSound(Sounds.PLAYING);
+	return true;
     }
 
     @Override public void onTrackTime(Playlist playlist, int trackNum,  long msec)
@@ -94,8 +101,8 @@ class AudioPlaying  implements Listener
 	    return;
 	if (doc.getUrl() == null)
 	    return;
-	    if (playlist != currentPlaylist)
-		return;
+	if (playlist != currentPlaylist)
+	    return;
 	if (playlist.getPlaylistUrls() == null || trackNum >= playlist.getPlaylistUrls().length)
 	    return;
 	final String track = playlist.getPlaylistUrls()[trackNum];
@@ -110,7 +117,7 @@ class AudioPlaying  implements Listener
 	}
 	catch(MalformedURLException e)
 	{
-	    Log.debug("reader", "unable to parse the URL to find the text for new playing time:" + link + ":" + e.getMessage());
+	    Log.debug(LOG_COMPONENT, "unable to parse the URL to find the text for new playing time:" + link + ":" + e.getMessage());
 	    return;
 	}
 	if (!doc.getUrl().equals(docUrl))
@@ -143,7 +150,7 @@ class AudioPlaying  implements Listener
 	    return;
 	if (state == org.luwrain.player.Player.State.STOPPED)
 	    onPlayerStop();
-	    }
+    }
 
     @Override public void onPlayingError(org.luwrain.player.Playlist playlist, Exception error )
     {
@@ -157,8 +164,8 @@ class AudioPlaying  implements Listener
 	area = null;
 	prevRun = null;
     }
-    
-    static private class  AudioFollowingVisitor implements Visitor
+
+    static private final class  AudioFollowingVisitor implements Visitor
     {
 	private String desiredId;
 	private Run resultingRun = null;
