@@ -1,5 +1,5 @@
 
-package org.luwrain.doc.builders;
+package org.luwrain.reader.builders.html;
 
 import java.io.*;
 import java.util.*;
