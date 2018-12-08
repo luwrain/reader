@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-package org.luwrain.doctree.view;
+package org.luwrain.reader.view;
 
 import org.luwrain.core.*;
 import org.luwrain.doctree.*;

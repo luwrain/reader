@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-package org.luwrain.doctree;
+package org.luwrain.reader;
 
 public class TextAttr
 {

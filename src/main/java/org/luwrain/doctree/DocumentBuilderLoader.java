@@ -16,7 +16,7 @@
 
 //LWR_API 1.0
 
-package org.luwrain.doctree;
+package org.luwrain.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;

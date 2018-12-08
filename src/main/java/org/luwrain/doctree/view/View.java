@@ -17,7 +17,7 @@
 
 //LWR_API 1.0
 
-package org.luwrain.doctree.view;
+package org.luwrain.reader.view;
 
 import java.net.*;
 import java.util.*;
