@@ -5,7 +5,7 @@ import java.util.*;
 import java.io.*;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.luwrain.util.*;
 
 public final class TextFiles

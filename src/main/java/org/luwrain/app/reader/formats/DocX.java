@@ -7,7 +7,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.*;
 
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.apache.poi.xwpf.usermodel.*;
 
 import org.luwrain.core.Log;
@@ -23,13 +23,13 @@ public class DocX
 	this.path = path;
     }
 
-    private  org.luwrain.doctree.Document process()
+    private  org.luwrain.reader.Document process()
     {
 	Log.debug("doctree-docx", "starting reading of " + path.toString());
     	try
     	{
 	    final InputStream s = Files.newInputStream(path);
-	    final org.luwrain .doctree.Document res;
+	    final org.luwrain .reader.Document res;
 	    try {
 		XWPFDocument doc = new XWPFDocument(s);
 		res = transform(doc);
@@ -49,14 +49,14 @@ public class DocX
 	}
     }
 
-    private org.luwrain.doctree.Document transform(XWPFDocument doc)
+    private org.luwrain.reader.Document transform(XWPFDocument doc)
     {
 	NullCheck.notNull(doc, "doc");
 	final LinkedList<Node> subnodes = new LinkedList<Node>();
 	transformNodes(subnodes, doc.getBodyElements());
 	final Node root = NodeFactory.newNode(Node.Type.ROOT);
 	root.setSubnodes(subnodes.toArray(new Node[subnodes.size()]));
-	return new org.luwrain.doctree.Document(root);
+	return new org.luwrain.reader.Document(root);
     }
 
     private void transformNodes(LinkedList<Node> subnodes, List<IBodyElement> range)
@@ -120,7 +120,7 @@ public class DocX
 		throw new NullPointerException("nodes[" + i + "] is null");
     }
 
-    static public org.luwrain.doctree.Document read(Path path)
+    static public org.luwrain.reader.Document read(Path path)
     {
 	NullCheck.notNull(path, "path");
 	return new DocX(path).process();

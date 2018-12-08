@@ -17,7 +17,7 @@
 package org.luwrain.app.reader;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 final class HistoryItem
 {

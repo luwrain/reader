@@ -16,8 +16,8 @@
 
 package org.luwrain.app.reader;
 
-import org.luwrain.doctree.*;
-import org.luwrain.doctree.view.*;
+import org.luwrain.reader.*;
+import org.luwrain.reader.view.*;
 
 class NarratorTextVisitor implements Visitor
 {
@@ -36,7 +36,7 @@ class NarratorTextVisitor implements Visitor
 
     @Override public void visit(Paragraph para)
     {
-	final String[] lines = org.luwrain.doctree.view.View.getParagraphLines(para, 80);
+	final String[] lines = org.luwrain.reader.view.View.getParagraphLines(para, 80);
 	if (lines.length < 1)
 	    return;
 	for(String s: lines)

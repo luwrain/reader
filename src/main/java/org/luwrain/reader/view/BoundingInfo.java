@@ -18,7 +18,7 @@
 package org.luwrain.reader.view;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 class BoundingInfo
 {

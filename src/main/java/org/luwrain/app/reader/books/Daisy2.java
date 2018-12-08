@@ -22,7 +22,7 @@ import java.io.*;
 import java.nio.file.*;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
 

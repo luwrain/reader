@@ -13,7 +13,7 @@ import org.jsoup.select.Elements;
 
 import org.luwrain.core.Log;
 import org.luwrain.core.NullCheck;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public class Fb2
 {
@@ -42,7 +42,7 @@ public class Fb2
     }
 
 
-    public org.luwrain.doctree.Document createDoc()
+    public org.luwrain.reader.Document createDoc()
     {
 	try {
 	    final Node root = NodeFactory.newNode(Node.Type.ROOT);
@@ -108,7 +108,7 @@ public class Fb2
 			     });
 	    }
 	    root.setSubnodes ( subnodes.toArray(new Node[subnodes.size()]));
-	    return new org.luwrain.doctree.Document(root);
+	    return new org.luwrain.reader.Document(root);
 	} catch (Exception e)
 	{
 	    e.printStackTrace();

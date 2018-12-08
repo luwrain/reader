@@ -23,7 +23,7 @@ import java.net.*;
 import java.util.*;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public class View
 {
@@ -153,12 +153,12 @@ public class View
     }
 
 
-    public org.luwrain.doctree.view.Iterator getIterator()
+    public org.luwrain.reader.view.Iterator getIterator()
     {
 	return new Iterator(this);
     }
 
-    public org.luwrain.doctree.view.Iterator getIterator(int startingIndex)
+    public org.luwrain.reader.view.Iterator getIterator(int startingIndex)
     {
 	return new Iterator(this, startingIndex);
     }
@@ -173,7 +173,7 @@ public class View
 		if (id.isEmpty())
 	    return;
 	Log.debug("doctree", "preparing default iterator index for " + id);
-	final org.luwrain.doctree.view.Iterator it = getIterator();
+	final org.luwrain.reader.view.Iterator it = getIterator();
 	while (it.canMoveNext())
 	{
 	    //	    if (!it.isEmptyRow())

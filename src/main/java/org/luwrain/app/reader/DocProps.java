@@ -20,7 +20,7 @@ import java.util.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 final class DocProps
 {

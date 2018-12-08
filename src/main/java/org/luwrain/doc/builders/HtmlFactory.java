@@ -2,7 +2,7 @@
 package org.luwrain.doc.builders;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public final class HtmlFactory implements DocumentBuilderFactory
 {

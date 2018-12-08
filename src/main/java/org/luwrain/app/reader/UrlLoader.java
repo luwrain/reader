@@ -10,7 +10,7 @@ import java.util.zip.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.luwrain.app.reader.formats.*;
 import org.luwrain.app.reader.books.*;
 

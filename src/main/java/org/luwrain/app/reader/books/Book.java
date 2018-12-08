@@ -20,7 +20,7 @@ import java.util.*;
 import java.net.*;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public interface Book
 {

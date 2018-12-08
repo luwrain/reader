@@ -7,11 +7,11 @@ import java.io.*;
 import java.nio.file.*;
 
 import org.luwrain.core.NullCheck;
-import org.luwrain.doctree.Document;
-import org.luwrain.doctree.Node;
-import org.luwrain.doctree.Node;
-import org.luwrain.doctree.NodeFactory;
-import org.luwrain.doctree.Paragraph;
+import org.luwrain.reader.Document;
+import org.luwrain.reader.Node;
+import org.luwrain.reader.Node;
+import org.luwrain.reader.NodeFactory;
+import org.luwrain.reader.Paragraph;
 
 import org.apache.poi.hwpf.*;
 import org.apache.poi.hwpf.usermodel.*;
@@ -195,7 +195,7 @@ private void parseParagraph(LinkedList<Node> subnodes, org.apache.poi.hwpf.userm
     }
     */
 
-    static public org.luwrain.doctree.Document read(Path path)
+    static public org.luwrain.reader.Document read(Path path)
     {
 	NullCheck.notNull(path, "path");
 	return new Doc(path).process();

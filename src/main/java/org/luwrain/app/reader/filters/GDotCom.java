@@ -19,7 +19,7 @@ package org.luwrain.app.reader.filters;
 import java.util.*;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public class GDotCom implements Visitor
 {

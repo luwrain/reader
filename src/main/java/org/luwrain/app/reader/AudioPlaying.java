@@ -20,7 +20,7 @@ import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.player.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.luwrain.controls.doc.*;
 import org.luwrain.app.reader.books.*;
 

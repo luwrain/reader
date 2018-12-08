@@ -7,7 +7,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.luwrain.core.*;
 
 public class Zip

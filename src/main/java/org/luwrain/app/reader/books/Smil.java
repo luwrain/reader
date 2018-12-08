@@ -197,7 +197,7 @@ final class Smil
     {
 	NullCheck.notNull(node, "node");
 	final LinkedList<Entry> res = new LinkedList<Entry>();
-	final LinkedList<org.luwrain.doctree.Run> runs = new LinkedList<org.luwrain.doctree.Run>();
+	final LinkedList<org.luwrain.reader.Run> runs = new LinkedList<org.luwrain.reader.Run>();
 	final List<Node> childNodes = node.childNodes();
 	for(Node n: childNodes)
 	{

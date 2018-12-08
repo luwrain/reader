@@ -20,7 +20,7 @@
 package org.luwrain.reader.view;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public final class Iterator
 {
@@ -90,7 +90,7 @@ NullCheck.notNullItems(paragraphs, "paragraphs");
 	return current == it.current;
     }
 
-    @Override public org.luwrain.doctree.view.Iterator clone()
+    @Override public org.luwrain.reader.view.Iterator clone()
     {
 	return new Iterator(view, current);
     }

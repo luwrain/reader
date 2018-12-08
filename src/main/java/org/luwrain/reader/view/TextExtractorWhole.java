@@ -20,7 +20,7 @@ package org.luwrain.reader.view;
 import java.util.*;
 
 import org.luwrain.core.*;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 
 public final class TextExtractorWhole extends TextExtractor
 {

@@ -11,8 +11,8 @@ import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 
-import org.luwrain.doctree.NodeFactory;
-import org.luwrain.doctree.ExtraInfo;
+import org.luwrain.reader.NodeFactory;
+import org.luwrain.reader.ExtraInfo;
 import org.luwrain.core.NullCheck;
 import org.luwrain.core.Log;
 
@@ -57,13 +57,13 @@ public class Html
 	this.docUrl = docUrl;
     }
 
-    public org.luwrain.doctree.Document constructDocument()
+    public org.luwrain.reader.Document constructDocument()
     {
-	final org.luwrain.doctree.Node res = NodeFactory.newNode(org.luwrain.doctree.Node.Type.ROOT);
+	final org.luwrain.reader.Node res = NodeFactory.newNode(org.luwrain.reader.Node.Type.ROOT);
 	final HashMap<String, String> meta = new HashMap<String, String>();
 	collectMeta(jsoupDoc.head(), meta);
 	res.setSubnodes(onNode(jsoupDoc.body()));
-	final org.luwrain.doctree.Document doc = new org.luwrain.doctree.Document(jsoupDoc.title(), res);
+	final org.luwrain.reader.Document doc = new org.luwrain.reader.Document(jsoupDoc.title(), res);
 	doc.setProperty("url", docUrl.toString());
 	doc.setHrefs(allHrefs.toArray(new String[allHrefs.size()]));
 	return doc;
@@ -84,11 +84,11 @@ public class Html
 		    collectMeta((Element)n, meta);
     }
 
-    private org.luwrain.doctree.Node[] onNode(org.jsoup.nodes.Node node)
+    private org.luwrain.reader.Node[] onNode(org.jsoup.nodes.Node node)
     {
 	NullCheck.notNull(node, "node");
-	final LinkedList<org.luwrain.doctree.Node> resNodes = new LinkedList<org.luwrain.doctree.Node>();
-	final LinkedList<org.luwrain.doctree.Run> runs = new LinkedList<org.luwrain.doctree.Run>();
+	final LinkedList<org.luwrain.reader.Node> resNodes = new LinkedList<org.luwrain.reader.Node>();
+	final LinkedList<org.luwrain.reader.Run> runs = new LinkedList<org.luwrain.reader.Run>();
 	final List<Node> nodes = node.childNodes();
 	for(Node n: nodes)
 	{
@@ -98,7 +98,7 @@ public class Html
 		final TextNode textNode = (TextNode)n;
 		final String text = textNode.text();
 		if (text != null && !text.isEmpty())
-		    runs.add(new org.luwrain.doctree.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+		    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
 		continue;
 	    }
 	    if (n instanceof Element)
@@ -111,11 +111,11 @@ public class Html
 	    }
 	}
 	commitPara(resNodes, runs);
-	return resNodes.toArray(new org.luwrain.doctree.Node[resNodes.size()]);
+	return resNodes.toArray(new org.luwrain.reader.Node[resNodes.size()]);
     }
 
     private void onElementInPara(Element el,
-				 LinkedList<org.luwrain.doctree.Node> nodes, LinkedList<org.luwrain.doctree.Run> runs)
+				 LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
     {
 	NullCheck.notNull(el, "el");
 	final String tagName = el.nodeName();
@@ -125,7 +125,7 @@ public class Html
 	{
 	    final String value = el.attr("alt");
 	    if (value != null && !value.isEmpty())
-		runs.add(new org.luwrain.doctree.TextRun("[" + value + "]", !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+		runs.add(new org.luwrain.reader.TextRun("[" + value + "]", !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
 	    //Do nothing else here	    
 	    return;
 	}
@@ -178,7 +178,7 @@ public class Html
     }
 
     private void onElement(Element el,
-			   LinkedList<org.luwrain.doctree.Node> nodes, LinkedList<org.luwrain.doctree.Run> runs)
+			   LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
     {
 	final String name = el.nodeName();
 	if (name == null || name.trim().isEmpty())
@@ -198,8 +198,8 @@ public class Html
 	case "map":
 	    return;
 	}
-	org.luwrain.doctree.Node n = null;
-	org.luwrain.doctree.Node[] nn = null;
+	org.luwrain.reader.Node n = null;
+	org.luwrain.reader.Node[] nn = null;
 	switch(name.toLowerCase().trim())
 	{
 	case "br":
@@ -232,7 +232,7 @@ public class Html
 	addExtraInfo(el);
 	nn = onNode(el);
 	releaseExtraInfo();
-	for(org.luwrain.doctree.Node i: nn)
+	for(org.luwrain.reader.Node i: nn)
 	    nodes.add(i);
 	break;
 
@@ -295,42 +295,42 @@ public class Html
 	}
     }
 
-    private void onTextNode(TextNode textNode, LinkedList<org.luwrain.doctree.Run> runs)
+    private void onTextNode(TextNode textNode, LinkedList<org.luwrain.reader.Run> runs)
     {
 	final String text = textNode.text();
 	if (text != null && !text.isEmpty())
-	    runs.add(new org.luwrain.doctree.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+	    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
     }
 
-    private void commitPara(LinkedList<org.luwrain.doctree.Node> nodes, LinkedList<org.luwrain.doctree.Run> runs)
+    private void commitPara(LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
     {
 	if (runs.isEmpty())
 	    return;
-	final org.luwrain.doctree.Paragraph para = NodeFactory.newPara();
-	para.runs = runs.toArray(new org.luwrain.doctree.Run[runs.size()]);
+	final org.luwrain.reader.Paragraph para = NodeFactory.newPara();
+	para.runs = runs.toArray(new org.luwrain.reader.Run[runs.size()]);
 	para.extraInfo = getCurrentExtraInfo();
 	nodes.add(para);
 	runs.clear();
     }
 
-    private org.luwrain.doctree.Node.Type getNodeType(String tagName)
+    private org.luwrain.reader.Node.Type getNodeType(String tagName)
     {
 	NullCheck.notEmpty(tagName, "tagName");
 	switch(tagName)
 	{
 	case "ul":
-	    return org.luwrain.doctree.Node.Type.UNORDERED_LIST;
+	    return org.luwrain.reader.Node.Type.UNORDERED_LIST;
 	case "ol":
-	    return org.luwrain.doctree.Node.Type.ORDERED_LIST;
+	    return org.luwrain.reader.Node.Type.ORDERED_LIST;
 	case "li":
-	    return org.luwrain.doctree.Node.Type.LIST_ITEM;
+	    return org.luwrain.reader.Node.Type.LIST_ITEM;
 	case "table":
-	    return org.luwrain.doctree.Node.Type.TABLE;
+	    return org.luwrain.reader.Node.Type.TABLE;
 	case "tr":
-	    return org.luwrain.doctree.Node.Type.TABLE_ROW;
+	    return org.luwrain.reader.Node.Type.TABLE_ROW;
 	case "th":
 	case "td":
-	    return org.luwrain.doctree.Node.Type.TABLE_CELL;
+	    return org.luwrain.reader.Node.Type.TABLE_CELL;
 	default:
 	    Log.warning("doctree-html", "unable to create the node for tag \'" + tagName + "\'");
 	    return null;

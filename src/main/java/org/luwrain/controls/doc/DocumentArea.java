@@ -27,8 +27,8 @@ import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.WordIterator;
-import org.luwrain.doctree.*;
-import org.luwrain.doctree.view.*;
+import org.luwrain.reader.*;
+import org.luwrain.reader.view.*;
 
 public class DocumentArea implements Area, ClipboardTranslator.Provider
 {
@@ -43,7 +43,7 @@ public class DocumentArea implements Area, ClipboardTranslator.Provider
     protected Document document = null;
     protected View view = null;
     protected Layout layout = null;
-    protected org.luwrain.doctree.view.Iterator iterator = null;
+    protected org.luwrain.reader.view.Iterator iterator = null;
     protected int hotPointX = 0;
 
         public DocumentArea(ControlEnvironment context, Announcement announcement, Document document, int width)
@@ -371,7 +371,7 @@ public class DocumentArea implements Area, ClipboardTranslator.Provider
 	    return false;
 	Run run1 = null;
 	Run run2 = null;
-	final Iterator it = new org.luwrain.doctree.view.Iterator(view);
+	final Iterator it = new org.luwrain.reader.view.Iterator(view);
 	if (it.noContent())
 	    return false;
 	do {

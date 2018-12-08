@@ -5,11 +5,11 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.io.*;
 
-import org.luwrain.doctree.Document;
-import org.luwrain.doctree.Node;
-import org.luwrain.doctree.Node;
-import org.luwrain.doctree.NodeFactory;
-import org.luwrain.doctree.Paragraph;
+import org.luwrain.reader.Document;
+import org.luwrain.reader.Node;
+import org.luwrain.reader.Node;
+import org.luwrain.reader.NodeFactory;
+import org.luwrain.reader.Paragraph;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;

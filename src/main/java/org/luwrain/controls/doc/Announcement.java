@@ -21,8 +21,8 @@ package org.luwrain.controls.doc;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.doctree.*;
-import org.luwrain.doctree.view.Iterator;
+import org.luwrain.reader.*;
+import org.luwrain.reader.view.Iterator;
 //import org.luwrain.doctree.view.Layout;
 
 public class Announcement

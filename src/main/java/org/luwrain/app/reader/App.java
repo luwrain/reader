@@ -24,7 +24,7 @@ import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
-import org.luwrain.doctree.*;
+import org.luwrain.reader.*;
 import org.luwrain.controls.doc.*;
 import org.luwrain.app.reader.books.*;
 
@@ -240,7 +240,7 @@ class App implements Application
 			return strings.appName();
 		    return base.getDocument().getTitle();
 		}
-		@Override protected void announceRow(org.luwrain.doctree.view.Iterator it, boolean briefAnnouncement)
+		@Override protected void announceRow(org.luwrain.reader.view.Iterator it, boolean briefAnnouncement)
 		{
 		    NullCheck.notNull(it, "it");
 		    announcement.announce(it, briefAnnouncement);

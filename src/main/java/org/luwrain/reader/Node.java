@@ -21,7 +21,7 @@ import java.util.*;
 
 import org.luwrain.core.*;
 
-public class Node extends org.luwrain.doctree.view.NodeBase
+public class Node extends org.luwrain.reader.view.NodeBase
 {
     public enum Type {
 	ROOT, SECTION, PARAGRAPH,
