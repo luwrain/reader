@@ -26,7 +26,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.reader.*;
-import org.luwrain.controls.doc.*;
+import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 import org.luwrain.app.reader.formats.*;

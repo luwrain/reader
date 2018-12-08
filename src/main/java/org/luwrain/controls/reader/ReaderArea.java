@@ -17,7 +17,7 @@
 
 //LWR_API 1.0
 
-package org.luwrain.controls.doc;
+package org.luwrain.controls.reader;
 
 import java.util.LinkedList;
 import java.util.EnumSet;
@@ -30,7 +30,7 @@ import org.luwrain.util.WordIterator;
 import org.luwrain.reader.*;
 import org.luwrain.reader.view.*;
 
-public class DocumentArea implements Area, ClipboardTranslator.Provider
+public class ReaderArea implements Area, ClipboardTranslator.Provider
 {
     public enum State {LOADING, READY};
 
@@ -46,7 +46,7 @@ public class DocumentArea implements Area, ClipboardTranslator.Provider
     protected org.luwrain.reader.view.Iterator iterator = null;
     protected int hotPointX = 0;
 
-        public DocumentArea(ControlEnvironment context, Announcement announcement, Document document, int width)
+        public ReaderArea(ControlEnvironment context, Announcement announcement, Document document, int width)
     {
 	NullCheck.notNull(context, "context");
 	NullCheck.notNull(announcement, "announcement");
@@ -60,7 +60,7 @@ public class DocumentArea implements Area, ClipboardTranslator.Provider
 	    }
     }
 
-    public DocumentArea(ControlEnvironment context, Announcement announcement)
+    public ReaderArea(ControlEnvironment context, Announcement announcement)
     {
 	this(context, announcement, null, 0);
     }

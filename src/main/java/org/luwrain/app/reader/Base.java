@@ -26,7 +26,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.reader.*;
-import org.luwrain.controls.doc.*;
+import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 import org.luwrain.app.reader.formats.*;
@@ -328,7 +328,7 @@ successNotification.run();
 	return true;
     }
 
-    boolean playAudio(DocumentArea area, String[] ids)
+    boolean playAudio(ReaderArea area, String[] ids)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
@@ -442,7 +442,7 @@ ListArea.Model getNotesModel()
 	return errorRes;
     }
 
-    static String getHref(DocumentArea area)
+    static String getHref(ReaderArea area)
     {
 	NullCheck.notNull(area, "area");
 	final Run run = area.getCurrentRun();
@@ -451,7 +451,7 @@ ListArea.Model getNotesModel()
 	return run.href();//Never returns null
     }
 
-    static boolean hasHref(DocumentArea area)
+    static boolean hasHref(ReaderArea area)
     {
 	NullCheck.notNull(area, "area");
 	return !getHref(area).isEmpty();

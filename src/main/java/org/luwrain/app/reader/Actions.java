@@ -27,7 +27,7 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.util.*;
 import org.luwrain.popups.Popups;
-import org.luwrain.controls.doc.*;
+import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.formats.*;
 
 final class Actions
@@ -84,7 +84,7 @@ boolean onOpenUrl(String currentHref)
 	return true;
     }
 
-    boolean onSaveBookmark(DocumentArea area)
+    boolean onSaveBookmark(ReaderArea area)
     {
 	NullCheck.notNull(area, "area");
 	if (base.isBusy() || !base.hasDocument())
@@ -101,7 +101,7 @@ luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
 	return true;
     }
 
-    boolean onRestoreBookmark(DocumentArea area)
+    boolean onRestoreBookmark(ReaderArea area)
     {
 	NullCheck.notNull(area, "area");
 	final URL url = area.getUrl();
@@ -128,7 +128,7 @@ luwrain.playSound(Sounds.DONE);
 	return true;
     }
 
-    boolean onPlayAudio(DocumentArea area)
+    boolean onPlayAudio(ReaderArea area)
     {
 	NullCheck.notNull(area, "area");
 	if (!base.isInBookMode())

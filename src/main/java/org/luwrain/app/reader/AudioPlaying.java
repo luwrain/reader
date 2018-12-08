@@ -21,7 +21,7 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.player.*;
 import org.luwrain.reader.*;
-import org.luwrain.controls.doc.*;
+import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 
 class AudioPlaying  implements Listener
@@ -31,7 +31,7 @@ class AudioPlaying  implements Listener
     private final Luwrain luwrain;
     private final Player player;
 
-    private DocumentArea area = null;
+    private ReaderArea area = null;
     private Run prevRun = null;
     private Book book = null;
     private Document doc = null;
@@ -51,7 +51,7 @@ class AudioPlaying  implements Listener
 	return player != null;
     }
 
-    boolean playAudio(Book book, Document doc, DocumentArea area, String[] ids)
+    boolean playAudio(Book book, Document doc, ReaderArea area, String[] ids)
     {
 	NullCheck.notNull(book, "book");
 	NullCheck.notNull(doc, "doc");

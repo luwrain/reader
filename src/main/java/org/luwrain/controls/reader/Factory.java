@@ -17,18 +17,18 @@
 
 //LWR_API 1.0
 
-package org.luwrain.controls.doc;
+package org.luwrain.controls.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 
 public final class Factory
 {
-    public DocumentArea newDocumentArea(Luwrain luwrain, ControlEnvironment context)
+    public ReaderArea newDocumentArea(Luwrain luwrain, ControlEnvironment context)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(context, "context");
-	return new DocumentArea(context, newAnnouncement(luwrain, context));
+	return new ReaderArea(context, newAnnouncement(luwrain, context));
     }
 
     public Strings newStrings(Luwrain luwrain)

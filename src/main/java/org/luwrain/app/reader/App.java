@@ -25,7 +25,7 @@ import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.reader.*;
-import org.luwrain.controls.doc.*;
+import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 
 class App implements Application
@@ -38,7 +38,7 @@ class App implements Application
     private ActionLists actionLists = null;
     private Strings strings = null;
 
-    private DocumentArea readerArea = null;
+    private ReaderArea readerArea = null;
     private TreeArea treeArea = null;
     private ListArea notesArea = null;
     private AreaLayoutHelper layout = null;
@@ -94,7 +94,7 @@ class App implements Application
 
     private void createAreas()
     {
-	final org.luwrain.controls.doc.Strings announcementStrings = (org.luwrain.controls.doc.Strings)luwrain.i18n().getStrings("luwrain.doctree");
+	final org.luwrain.controls.reader.Strings announcementStrings = (org.luwrain.controls.reader.Strings)luwrain.i18n().getStrings("luwrain.doctree");
 	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
 	final TreeArea.Params treeParams = new TreeArea.Params();
 	treeParams.environment = new DefaultControlEnvironment(luwrain);
@@ -146,7 +146,7 @@ class App implements Application
 		}
 	    };
 
-	readerArea = new DocumentArea(new DefaultControlEnvironment(luwrain), announcement){
+	readerArea = new ReaderArea(new DefaultControlEnvironment(luwrain), announcement){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");

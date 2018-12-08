@@ -17,7 +17,7 @@
 
 //LWR_API 1.0
 
-package org.luwrain.controls.doc;
+package org.luwrain.controls.reader;
 
 public interface Strings
 {
