@@ -23,8 +23,8 @@ import org.luwrain.util.*;
 
 public final class DocumentBuilderLoader
 {
-    static private final String LOG_COMPONENT = "doc";
-    static private String PROP_PREFIX = "luwrain.ext.doc.builder.";
+    static private final String LOG_COMPONENT = "reader";
+    static private String PROP_PREFIX = "luwrain.ext.reader.doc.builder.";
 
     public DocumentBuilder newDocumentBuilder(Luwrain luwrain, String contentType)
     {
