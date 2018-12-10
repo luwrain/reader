@@ -138,7 +138,8 @@ public final class UrlLoader
 		    res.setProperty("url", responseUrl.toString());
 		    return res;
 		}
-		res = null;
+		res = new Result(Result.Type.OK);
+		res.doc = builder.buildDoc(tmpFile.toFile(), new Properties());
 	    } else
 	    {
 		selectCharset(format);

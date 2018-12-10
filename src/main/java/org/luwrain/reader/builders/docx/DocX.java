@@ -1,3 +1,19 @@
+/*
+   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
+o
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.reader.builders.docx;
 
@@ -15,56 +31,38 @@ import org.luwrain.core.NullCheck;
 
 final class DocX implements DocumentBuilder
 {
-    private Path path;
-
-    DocX()
+    @Override public org.luwrain.reader.Document buildDoc(File file, Properties props) throws IOException
     {
-	this.path = null;
-    }
-
-        @Override public org.luwrain.reader.Document buildDoc(File file, Properties props) throws IOException
-    {
-	return null;
-    }
-
-    @Override public org.luwrain.reader.Document buildDoc(String text, Properties props) /*throws IOException*/
-    {
-	return null;
-    }
-
-            @Override public org.luwrain.reader.Document buildDoc(InputStream is, Properties props) throws IOException
-    {
-	return null;
-    }
-
-
-
-    
-
-    private  org.luwrain.reader.Document process()
-    {
-	Log.debug("doctree-docx", "starting reading of " + path.toString());
-    	try
-    	{
-	    final InputStream s = Files.newInputStream(path);
-	    final org.luwrain .reader.Document res;
-	    try {
-		XWPFDocument doc = new XWPFDocument(s);
-		res = transform(doc);
-		res.setProperty("format", "DOCX");
-		res.setProperty("url", path.toUri().toURL().toString());
-	    }
-	    finally {
-		s.close();
-	    }
-	    Log.debug("doctree-docx", "reading of " + path.toString() + " finished");
-	    return res;
-    	} catch (IOException e)
-    	{
-	    Log.error("doctree-docx", "unable to parse " + path.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
-	    e.printStackTrace();
-	    return null;
+	NullCheck.notNull(file, "file");
+	NullCheck.notNull(props, "props");
+	final FileInputStream is = new FileInputStream(file);
+	try {
+	    return process(is);
 	}
+	finally {
+	    is.close();
+	}
+    }
+
+    @Override public org.luwrain.reader.Document buildDoc(String text, Properties props)
+    {
+	return null;
+    }
+
+    @Override public org.luwrain.reader.Document buildDoc(InputStream is, Properties props) throws IOException
+    {
+	NullCheck.notNull(is, "is");
+	NullCheck.notNull(props, "props");
+	return process(is);
+    }
+
+    private  org.luwrain.reader.Document process(InputStream is) throws IOException
+    {
+	NullCheck.notNull(is, "is");
+	final org.luwrain .reader.Document res;
+	XWPFDocument doc = new XWPFDocument(is);
+	res = transform(doc);
+	return res;
     }
 
     private org.luwrain.reader.Document transform(XWPFDocument doc)
