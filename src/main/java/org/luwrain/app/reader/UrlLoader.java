@@ -22,8 +22,6 @@ public final class UrlLoader
 	TXT,
 	HTML,
 	XML,
-	DOC,
-	DOCX,
 	FB2,
 	FB2_ZIP,
 	//	EPUB,
@@ -127,16 +125,25 @@ public final class UrlLoader
 		return new Result(Result.Type.UNDETERMINED_CONTENT_TYPE);
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
 	    final Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
+	    final Result res;
 	    if (format == null)
 	    {
-		Log.error(LOG_COMPONENT, "unable to choose the suitable filter for " + requestedUrl.toString());
-		final Result res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
-		res.setProperty("contenttype", selectedContentType);
-		res.setProperty("url", responseUrl.toString());
-		return res;
+		Log.debug(LOG_COMPONENT, "trying to use extensible document builders");
+		final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, selectedContentType);
+		if (builder == null)
+		{
+		    Log.error(LOG_COMPONENT, "unable to choose the suitable document builder for " + requestedUrl.toString());
+		    res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
+		    res.setProperty("contenttype", selectedContentType);
+		    res.setProperty("url", responseUrl.toString());
+		    return res;
+		}
+		res = null;
+	    } else
+	    {
+		selectCharset(format);
+		res = parse(format);
 	    }
-	    selectCharset(format);
-	    final Result res = parse(format);
 	    if (res.doc == null)
 	    {
 		final Result r = new Result(Result.Type.UNRECOGNIZED_FORMAT);
@@ -237,12 +244,6 @@ public final class UrlLoader
 	    case XML:
 		res.doc = readXml();
 		return res;
-	    case DOCX:
-		res.doc = DocX.read(tmpFile);
-		return res;
-	    case DOC:
-		res.doc = Doc.read(tmpFile);
-		return res;
 	    case FB2:
 res.doc = new Fb2(tmpFile, selectedCharset).createDoc();
 return res;
@@ -306,10 +307,6 @@ return new Fb2(is, selectedCharset).createDoc();
     static public Format chooseFilterByContentType(String contentType)
     {
 	NullCheck.notEmpty(contentType, "contentType");
-	if (ContentTypes.isAppDoc(contentType))
-	    return Format.DOC;
-	if (ContentTypes.isAppDocX(contentType))
-	    return Format.DOCX;
 	switch(contentType.toLowerCase().trim())
 	{
 	case ContentTypes.TEXT_HTML_DEFAULT:
