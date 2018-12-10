@@ -8,7 +8,7 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 
-public final class Html implements DocumentBuilder
+final class Html implements DocumentBuilder
 {
     static private final String LOG_COMPONENT = "docbuilders";
 
