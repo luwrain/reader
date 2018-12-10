@@ -35,7 +35,7 @@ final class DocX implements DocumentBuilder
     {
 	NullCheck.notNull(file, "file");
 	NullCheck.notNull(props, "props");
-	final FileInputStream is = new FileInputStream(file);
+		final FileInputStream is = new FileInputStream(file);
 	try {
 	    return process(is);
 	}
@@ -59,6 +59,7 @@ final class DocX implements DocumentBuilder
     private  org.luwrain.reader.Document process(InputStream is) throws IOException
     {
 	NullCheck.notNull(is, "is");
+		org.apache.poi.openxml4j.util.ZipSecureFile.setMinInflateRatio(0.0009);
 	final org.luwrain .reader.Document res;
 	XWPFDocument doc = new XWPFDocument(is);
 	res = transform(doc);
