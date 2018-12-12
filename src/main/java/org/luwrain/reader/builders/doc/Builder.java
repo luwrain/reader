@@ -1,48 +1,56 @@
 
-package org.luwrain.app.reader.formats;
+package org.luwrain.reader.builders.doc;
 
 import java.util.*;
 import java.util.Map.Entry;
 import java.io.*;
 import java.nio.file.*;
 
-import org.luwrain.core.NullCheck;
+import org.luwrain.core.*;
 import org.luwrain.reader.Document;
-import org.luwrain.reader.Node;
 import org.luwrain.reader.Node;
 import org.luwrain.reader.NodeFactory;
 import org.luwrain.reader.Paragraph;
+import org.luwrain.reader.DocumentBuilder;
 
 import org.apache.poi.hwpf.*;
 import org.apache.poi.hwpf.usermodel.*;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 
-public class Doc
+final class Builder implements DocumentBuilder
 {
-    private final Path path;
     private String wholeText;
 
-    private Doc(Path path)
+        @Override public org.luwrain.reader.Document buildDoc(File file, Properties props) throws IOException
     {
-	NullCheck.notNull(path, "path");
-	this.path = path;
+	NullCheck.notNull(file, "file");
+	NullCheck.notNull(props, "props");
+		final FileInputStream is = new FileInputStream(file);
+	try {
+	    return process(is);
+	}
+	finally {
+	    is.close();
+	}
     }
 
-    public Document process()
+    @Override public org.luwrain.reader.Document buildDoc(String text, Properties props)
     {
-	try {
-	    final InputStream s = Files.newInputStream(path);
-	    final HWPFDocument doc = new HWPFDocument(s);
-	    final Document res = transform(doc);
-	    res.setProperty("format", "DOC");
-	    res.setProperty("url", path.toUri().toURL().toString());
-	    s.close();
-	    return res;
-	} catch (IOException e)
-	{
-	    e.printStackTrace();
-	    return null;
-	}
+	return null;
+    }
+
+    @Override public org.luwrain.reader.Document buildDoc(InputStream is, Properties props) throws IOException
+    {
+	NullCheck.notNull(is, "is");
+	NullCheck.notNull(props, "props");
+	return process(is);
+    }
+
+    private Document process(InputStream is) throws IOException
+    {
+	NullCheck.notNull(is, "is");
+	    final HWPFDocument doc = new HWPFDocument(is);
+return transform(doc);
     }
 
     private Document transform(HWPFDocument doc)
@@ -194,12 +202,4 @@ private void parseParagraph(LinkedList<Node> subnodes, org.apache.poi.hwpf.userm
 		throw new NullPointerException("nodes[" + i + "] is null");
     }
     */
-
-    static public org.luwrain.reader.Document read(Path path)
-    {
-	NullCheck.notNull(path, "path");
-	return new Doc(path).process();
-    }
-
-
 }

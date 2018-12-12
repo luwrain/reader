@@ -36,8 +36,8 @@
   </target>
   <target name="compile-tests" depends="jar">
     <mkdir dir="build"/>
-    <mkdir dir="build/tests"/>
-    <javac srcdir="src/tests/java" destdir="build/tests" source="1.8" target="1.8">
+    <mkdir dir="build/test"/>
+    <javac srcdir="src/test/java" destdir="build/test" source="1.8" target="1.8">
       <classpath>
         <path refid="classpath"/>
         <path refid="mainjar"/>
@@ -59,7 +59,7 @@
       </classpath>
       <formatter type="xml" usefile="true" />
       <batchtest fork="yes">
-        <fileset dir="build/tests">
+        <fileset dir="build/test">
           <include name="**/*Test.class"/>
         </fileset>
       </batchtest>
