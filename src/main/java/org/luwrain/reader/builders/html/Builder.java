@@ -1,7 +1,7 @@
 /*
    Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
    Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-o
+
    This file is part of LUWRAIN.
 
    LUWRAIN is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 
-final class Html implements DocumentBuilder
+final class Builder implements DocumentBuilder
 {
     static private final String LOG_COMPONENT = "docbuilders";
 
