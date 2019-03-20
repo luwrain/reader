@@ -1,7 +1,7 @@
 
 # Documents reader
 
-This repository contains basic components for reading structured text documents
+This repository contains basic components for reading hypertext documents
 in the most comfortable way for  the blind and partially-sighted.
 The support of any particular format  can be implemented in additional extensions,
 including written in JavaScript.
