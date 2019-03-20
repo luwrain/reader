@@ -97,7 +97,7 @@ class App implements Application
 	final org.luwrain.controls.reader.Strings announcementStrings = (org.luwrain.controls.reader.Strings)luwrain.i18n().getStrings(org.luwrain.controls.reader.Strings.NAME);
 	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
 	final TreeArea.Params treeParams = new TreeArea.Params();
-	treeParams.environment = new DefaultControlEnvironment(luwrain);
+	treeParams.context = new DefaultControlEnvironment(luwrain);
 	treeParams.model = base.getTreeModel();
 	treeParams.name = strings.treeAreaName();
 	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
@@ -252,7 +252,7 @@ class App implements Application
 	    };
 
 	final ListArea.Params listParams = new ListArea.Params();
-	listParams.context = treeParams.environment;
+	listParams.context = treeParams.context;
 	listParams.model = base.getNotesModel();
 	listParams.appearance = new ListUtils.DefaultAppearance(listParams.context, Suggestions.LIST_ITEM);
 	listParams.clickHandler = (area, index, obj)->onNotesClick(obj);
