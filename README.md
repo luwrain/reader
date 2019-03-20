@@ -1,25 +1,13 @@
 
-# The applications for documents preview
+# Documents reader
 
-A set of applications from this repository provides accessible preview of documents in various formats
-(TXT,
-HTML,
-DOC,
-DOCX,
-FB2,
-EPUB,
-DAISY,
-etc).
-The navigation features are implemented in a way, which makes work comfortable for blind and visually impaired people.
-This set includes applications for:
+This repository contains basic components for reading structured text documents
+in the most comfortable way for  the blind and partially-sighted.
+The support of any particular format  can be implemented in additional extensions,
+including written in JavaScript.
+Usually such filters are created using popular Java libraries for reading office documents, like [Apache POI](https://poi.apache.org/) and others.
+One of the most important of the reader features is the support of [the Daisy format](https://en.wikipedia.org/wiki/DAISY_Digital_Talking_Book)
 
-* General navigation over structured documents
-* Creating of "speaking books" using various TTS-engines
-* Easy access to [Wikipedia](http://wikipedia.org) API
-* Access to catalogs in [OPDS format](https://en.wikipedia.org/wiki/OPDS)
-
-This repository is an extension of [LUWRAIN environment](https://github.com/luwrain/luwrain).
-
-
-* [Our website](http://luwrain.org/?lang=en)
-* [Our Twitter](http://twitter.com/luwrain)
+This repository is a part of the LUWRAIN project.
+LUWRAIN is a platform for the creation of apps for the blind and partially-sighted.
+Please visit [luwrain.org](http://luwrain.org/?lang=en) for further information.
