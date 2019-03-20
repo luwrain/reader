@@ -19,15 +19,24 @@ package org.luwrain.reader;
 
 import java.util.*;
 
+import org.luwrain.core.*;
+
 public class Paragraph extends Node
 {
     public Run[] runs = new Run[0];
-
 
     Paragraph()
     {
 	super(Node.Type.PARAGRAPH);
     }
+
+        Paragraph(Run[] runs)
+    {
+	super(Node.Type.PARAGRAPH);
+	NullCheck.notNullItems(runs, "runs");
+	this.runs = runs;
+    }
+
 
     @Override void preprocess()
     {

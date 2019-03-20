@@ -59,18 +59,58 @@ public final class HookObjectDocumentBuilder
 	final NodeBuilder nodeBuilder = new NodeBuilder();
 	for(Object subnodeObj: nodes)
 	{
+	    if (subnodeObj == null)
+		return null;
 	    final Node node = onNode(subnodeObj);
 	    if (node == null)
 		continue;
 	    nodeBuilder.addSubnode(node);
 	}
-	return null;
+	switch(type)
+	{
+	case "section":
+	    return nodeBuilder.newSection(1);
+	default:
+	    return null;
+	}
     }
-
 
     private Paragraph onParagraph(Object paraObj)
     {
 	NullCheck.notNull(paraObj, "paraObj");
-	return null;
+	final Object runsObj = ScriptUtils.getMember(paraObj, "runs");
+	if (runsObj == null)
+	    return null;
+	final List runs = ScriptUtils.getArray(runsObj);
+	if (runs == null)
+	    return null;
+	final List<Run> res = new LinkedList();
+	for(Object runObj: runs)
+	{
+	    if (runObj == null)
+		continue;
+	    final Run run = onRun(runObj);
+	    if (run != null)
+		res.add(run);
+	}
+	return new Paragraph(res.toArray(new Run[res.size()]));
+    }
+
+    private Run onRun(Object runObj)
+    {
+	NullCheck.notNull(runObj, "runObj");
+	final Object textObj = ScriptUtils.getMember(runObj, "text");
+	if (textObj == null)
+	    return null;
+	final String text = ScriptUtils.getStringValue(textObj);
+	if (text == null || text.isEmpty())
+	    return null;
+	final Object hrefObj = ScriptUtils.getMember(runObj, "href");
+	if (hrefObj == null)
+	    return new TextRun(text);
+	final String href = ScriptUtils.getStringValue(hrefObj);
+	if (href == null || href.isEmpty())
+	    return new TextRun(text);
+	return new TextRun(text, href);
     }
 }
