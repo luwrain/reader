@@ -24,7 +24,7 @@ import org.luwrain.controls.*;
 
 public final class Factory
 {
-    public ReaderArea newDocumentArea(Luwrain luwrain, ControlEnvironment context)
+    public ReaderArea newDocumentArea(Luwrain luwrain, ControlContext context)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(context, "context");

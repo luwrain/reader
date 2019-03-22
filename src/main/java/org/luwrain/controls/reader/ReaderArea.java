@@ -1,6 +1,6 @@
 /*
    Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
+c   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
 
@@ -34,11 +34,27 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 {
     public enum State {LOADING, READY};
 
-    protected final ControlEnvironment context;
+    public interface ClickHandler
+    {
+	boolean onReaderClick(ReaderArea area, Run run);
+    }
+
+    public final class Params
+    {
+	public ControlContext context = null;
+	public String name = "";
+	public Announcement announcement = null;
+	public ClickHandler clickHandler = null;
+	public Document doc = null;
+		public int width = 100;
+    }
+
+    protected final ControlContext context;
     protected final RegionPoint regionPoint = new RegionPoint();
     protected final ClipboardTranslator clipboardTranslator = new ClipboardTranslator(this, regionPoint, EnumSet.noneOf(ClipboardTranslator.Flags.class));
     private String areaName = null;//FIXME:No corresponding constructor;
     protected final Announcement announcement;
+    protected ClickHandler clickHandler = null;
 
     protected Document document = null;
     protected View view = null;
@@ -46,7 +62,24 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     protected org.luwrain.reader.view.Iterator iterator = null;
     protected int hotPointX = 0;
 
-        public ReaderArea(ControlEnvironment context, Announcement announcement, Document document, int width)
+            public ReaderArea(Params params)
+    {
+	NullCheck.notNull(params, "params");
+	NullCheck.notNull(params.context, "params.context");
+	NullCheck.notNull(params.announcement, "params.announcement");
+	this.context = params.context;
+	this.announcement = params.announcement;
+	this.clickHandler = params.clickHandler;
+	    if (params.doc != null)
+	    {
+		if (params.width < 0)
+		    throw new IllegalArgumentException("width (" + params.width + ") may not be negative");
+		setDocument(params.doc, params.width);
+	    }
+    }
+
+
+        public ReaderArea(ControlContext context, Announcement announcement, Document document, int width)
     {
 	NullCheck.notNull(context, "context");
 	NullCheck.notNull(announcement, "announcement");
@@ -60,7 +93,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    }
     }
 
-    public ReaderArea(ControlEnvironment context, Announcement announcement)
+    public ReaderArea(ControlContext context, Announcement announcement)
     {
 	this(context, announcement, null, 0);
     }
@@ -235,10 +268,8 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	if (event.isSpecial() && !event.isModified())
 	    switch(event.getSpecial())
 	    {
-		/*
-	    case TAB:
-		return onTab(event, false);
-		*/
+	    case ENTER:
+		return onClick();
 	    case ARROW_DOWN:
 		return onMoveDown(event, false);
 	    case ARROW_UP:
@@ -308,7 +339,6 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 		return false;
 	    ((UniRefAreaQuery)query).answer("url:" + document.getUrl().toString());
 	    return true;
-
 	    	case AreaQuery.UNIREF_HOT_POINT:
 		    {
 			final Run run = getCurrentRun();
@@ -320,8 +350,6 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    ((UniRefHotPointQuery)query).answer("url:" + res);
 	    return true;
 		    }
-
-	    
 	case AreaQuery.BEGIN_LISTENING:
 	    return onBeginListeningQuery((BeginListeningQuery)query);
 	default:
@@ -458,6 +486,16 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	    return true;
 	}
 	return false;
+    }
+
+    protected boolean onClick()
+    {
+	if (clickHandler == null)
+	    return false;
+	final Run run = getCurrentRun();
+	if (run == null)
+	    return false;
+	return clickHandler.onReaderClick(this, run);
     }
 
     protected boolean onMoveDown(KeyboardEvent event, boolean quickNav)
