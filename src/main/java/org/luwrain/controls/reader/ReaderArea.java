@@ -83,10 +83,11 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     {
 	NullCheck.notNull(params, "params");
 	NullCheck.notNull(params.context, "params.context");
-	NullCheck.notNull(params.announcement, "params.announcement");
 	NullCheck.notNull(params.transition, "params.transition");
 	this.context = params.context;
-	this.announcement = params.announcement;
+	if (params.announcement != null)
+	this.announcement = params.announcement; else
+	    this.announcement = new DefaultAnnouncement(params.context, (Strings)params.context.getI18n().getStrings(Strings.NAME));
 	this.transition = params.transition;
 	this.clickHandler = params.clickHandler;
 	    if (params.doc != null)

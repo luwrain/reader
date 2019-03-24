@@ -78,7 +78,6 @@ class App implements Application
 	this.actions = new Actions(luwrain, base, strings);
 	this.actionLists = new ActionLists(luwrain, base, strings);
 	createAreas();
-
 		this.layout = new AreaLayoutHelper(()->{
 		luwrain.onNewAreaLayout();
 		//luwrain.announceActiveArea();
@@ -94,14 +93,12 @@ class App implements Application
 
     private void createAreas()
     {
-	final org.luwrain.controls.reader.Strings announcementStrings = (org.luwrain.controls.reader.Strings)luwrain.i18n().getStrings(org.luwrain.controls.reader.Strings.NAME);
-	final ReaderArea.Announcement announcement = new DefaultAnnouncement(new DefaultControlEnvironment(luwrain), announcementStrings);
 	final TreeArea.Params treeParams = new TreeArea.Params();
 	treeParams.context = new DefaultControlEnvironment(luwrain);
 	treeParams.model = base.getTreeModel();
 	treeParams.name = strings.treeAreaName();
 	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
-	treeArea = new TreeArea(treeParams){
+	this.treeArea = new TreeArea(treeParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -148,15 +145,13 @@ class App implements Application
 
 	final ReaderArea.Params readerParams = new ReaderArea.Params();
 	readerParams.context = new DefaultControlContext(luwrain);
-	readerParams.announcement = announcement;
 	readerParams.clickHandler = (area,run)->{
 	    NullCheck.notNull(area, "area");
 	    NullCheck.notNull(run, "run");
-				if (!run.href().isEmpty())
-				    return jumpByHref(run.href(), luwrain.getAreaVisibleWidth(area));
-			    return actions.onPlayAudio(area);
+	    if (!run.href().isEmpty())
+		return jumpByHref(run.href(), luwrain.getAreaVisibleWidth(area));
+	    return actions.onPlayAudio(area);
 	};
-
 	this.readerArea = new ReaderArea(readerParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
@@ -193,10 +188,10 @@ class App implements Application
 		    {
 		    case SAVE:
 			return actions.onSaveBookmark(readerArea);
-					    case HELP:
+		    case HELP:
 			luwrain.openHelp("luwrain.reader");
 			return true;
-					    case ACTION:
+		    case ACTION:
 			return onAction(event);
 		    case CLOSE:
 			closeApp();
@@ -264,7 +259,7 @@ class App implements Application
 	listParams.appearance = new ListUtils.DefaultAppearance(listParams.context, Suggestions.LIST_ITEM);
 	listParams.clickHandler = (area, index, obj)->onNotesClick(obj);
 	listParams.name = strings.notesAreaName();
-	notesArea = new ListArea(listParams){
+	this.notesArea = new ListArea(listParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -286,10 +281,10 @@ class App implements Application
 		    {
 		    case ACTION:
 			return onAction(event);
-					    case HELP:
+		    case HELP:
 			luwrain.openHelp("luwrain.reader");
 			return true;
-					    case CLOSE:
+		    case CLOSE:
 			closeApp();
 			return true;
 		    default:

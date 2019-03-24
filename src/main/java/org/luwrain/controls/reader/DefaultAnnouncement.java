@@ -26,15 +26,28 @@ import org.luwrain.reader.view.Iterator;
 
 public class DefaultAnnouncement implements ReaderArea.Announcement
 {
+    public interface TextPreprocessor
+    {
+	String preprocess(String text);
+    }
+    
     protected final ControlContext context;
+    protected final TextPreprocessor textPreprocessor;
     protected final Strings strings;
+
+    public DefaultAnnouncement(ControlContext context, TextPreprocessor textPreprocessor, Strings strings)
+    {
+	NullCheck.notNull(context, "context");
+	NullCheck.notNull(textPreprocessor, "textPreprocessor");
+	NullCheck.notNull(strings, "strings");
+	this.context = context;
+	this.textPreprocessor = textPreprocessor;
+	this.strings = strings;
+    }
 
     public DefaultAnnouncement(ControlContext context, Strings strings)
     {
-	NullCheck.notNull(context, "context");
-	NullCheck.notNull(strings, "strings");
-	this.context = context;
-	this.strings = strings;
+	this(context, (text)->{return context.getSpokenText(text, Luwrain.SpokenTextType.NATURAL);}, strings);
     }
 
     @Override public void announce(Iterator it, boolean briefIntroduction)
@@ -68,17 +81,7 @@ Node node = getDominantNode(it);
     protected void onTitle(Iterator it)
     {
 	context.say("title");
-	/*
-	final Node node = it.getNode();
-		    if (node instanceof TableCell)
-			onTableCell((TableCell)node); else
-		    {
-			context.say("title");
-		    }
-	*/
     }
-
-    
 
 protected void onTableCell(TableCell cell)
     {
@@ -88,12 +91,12 @@ protected void onTableCell(TableCell cell)
 	final int colIndex = cell.getColIndex();
 	if (rowIndex == 0 && colIndex == 0)
 	{
-	    context.say(row.getCompleteText() + " Начало таблицы", Sounds.TABLE_CELL);
+	    context.say(textPreprocessor.preprocess(row.getCompleteText()) + " Начало таблицы", Sounds.TABLE_CELL);
 	    return;
 }
 	if (colIndex == 0)
 	{
-	    context.say(row.getCompleteText() + " строка " + (rowIndex + 1) , Sounds.TABLE_CELL);
+	    context.say(textPreprocessor.preprocess(row.getCompleteText()) + " строка " + (rowIndex + 1) , Sounds.TABLE_CELL);
 	    return;
 	}
 	context.say("столбец " + (colIndex + 1), Sounds.TABLE_CELL);
@@ -128,14 +131,13 @@ final Sounds sound;
 	//Speaking with sound if we have chosen any
 	if (sound != null)
 	{
-	    context.say(it.getText(), sound);
+	    context.say(textPreprocessor.preprocess(it.getText()), sound);
 	    return;
 	}
 	//Speaking with paragraph sound if it is a first row
-
 	if (it.getIndexInParagraph() == 0)
-	    context.say(it.getText(), Sounds.PARAGRAPH); else
-		context.say(it.getText());
+	    context.say(textPreprocessor.preprocess(it.getText()), Sounds.PARAGRAPH); else
+	    context.say(textPreprocessor.preprocess(it.getText()));
     }
 
     protected Node getDominantNode(Iterator it)
