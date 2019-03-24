@@ -10,28 +10,28 @@ import org.luwrain.reader.view.Iterator;
 
 public class DefaultAnnouncement implements ReaderArea.Announcement
 {
-    protected final ControlContext environment;
+    protected final ControlContext context;
     protected final Strings strings;
 
-    public DefaultAnnouncement(ControlContext environment, Strings strings)
+    public DefaultAnnouncement(ControlContext context, Strings strings)
     {
-	NullCheck.notNull(environment, "environment");
+	NullCheck.notNull(context, "context");
 	NullCheck.notNull(strings, "strings");
-	this.environment = environment;
+	this.context = context;
 	this.strings = strings;
     }
 
-    public void announce(Iterator it, boolean briefIntroduction)
+    @Override public void announce(Iterator it, boolean briefIntroduction)
     {
 	NullCheck.notNull(it, "it");
 	if (it.noContent())
 	{
-	    environment.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
 	    return;
 	}
 	if (it.getNode() == null)
 	{
-	environment.say(it.getText());
+	context.say(it.getText());
 	return;
 	}
 	if (it.isTitleRow())
@@ -39,36 +39,48 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	    onTitle(it);
 	    return;
 	}
+Node node = getDominantNode(it);
+	if (node != null)
+	{
+	    if (node instanceof TableCell)
+		onTableCell((TableCell)node);
+	    return;
+	}
 	announceText(it);
     }
 
     protected void onTitle(Iterator it)
     {
+	context.say("title");
+	/*
 	final Node node = it.getNode();
 		    if (node instanceof TableCell)
-			onTableCell(it); else
+			onTableCell((TableCell)node); else
 		    {
-			environment.say("title");
+			context.say("title");
 		    }
+	*/
     }
 
-protected void onTableCell(Iterator it)
+    
+
+protected void onTableCell(TableCell cell)
     {
-	final TableCell cell = (TableCell)it.getNode();
+	NullCheck.notNull(cell, "cell");
 	final TableRow row = (TableRow)cell.getParentNode();
 	final int rowIndex = cell.getRowIndex();
 	final int colIndex = cell.getColIndex();
 	if (rowIndex == 0 && colIndex == 0)
 	{
-	    environment.say("Начало таблицы " + row.getCompleteText(), Sounds.TABLE_CELL);
+	    context.say(row.getCompleteText() + " Начало таблицы", Sounds.TABLE_CELL);
 	    return;
 }
 	if (colIndex == 0)
 	{
-	    environment.say("строка " + (rowIndex + 1) + row.getCompleteText(), Sounds.TABLE_CELL);
+	    context.say(row.getCompleteText() + " строка " + (rowIndex + 1) , Sounds.TABLE_CELL);
 	    return;
 	}
-	environment.say("столбец " + (colIndex + 1), Sounds.TABLE_CELL);
+	context.say("столбец " + (colIndex + 1), Sounds.TABLE_CELL);
     }
 
     private void announceText(Iterator it)
@@ -77,7 +89,7 @@ protected void onTableCell(Iterator it)
 	//Checking if there is nothing to say
 	if (it.getText().trim().isEmpty())
 	{
-	    environment.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
 	    return;
 	}
 	//Checking should we use any specific sound
@@ -100,13 +112,61 @@ final Sounds sound;
 	//Speaking with sound if we have chosen any
 	if (sound != null)
 	{
-	    environment.say(it.getText(), sound);
+	    context.say(it.getText(), sound);
 	    return;
 	}
 	//Speaking with paragraph sound if it is a first row
 
 	if (it.getIndexInParagraph() == 0)
-	    environment.say(it.getText(), Sounds.PARAGRAPH); else
-		environment.say(it.getText());
+	    context.say(it.getText(), Sounds.PARAGRAPH); else
+		context.say(it.getText());
+    }
+
+    protected Node getDominantNode(Iterator it)
+    {
+	NullCheck.notNull(it, "it");
+	final Node res = findDominantNode(it);
+	if (res == null)
+	    return null;
+	if (res instanceof TableRow)
+	{
+	    if (!res.noSubnodes())
+		return res.getSubnode(0);
+	    return res;
+	}
+	if (res instanceof Table)
+	{
+	    if (!res.noSubnodes() &&!res.getSubnode(0).noSubnodes())
+		return res.getSubnode(0).getSubnode(0);
+	return res;
+	}
+	/*
+    if (res instanceof OrderedList || res instanceof UnorderedList)
+    {
+	if (!res.noContent())
+	    return res.getSubnode(0);
+	return res;
+    }
+	*/
+    return res;
+    }
+
+    protected Node findDominantNode(Iterator it)
+    {
+	NullCheck.notNull(it, "it");
+	if (it.getIndexInParagraph() != 0)
+	    return null;
+	Node node = it.getNode();
+	if (node.getIndexInParentSubnodes() != 0)
+	    return null;
+	node = node.getParentNode();
+	while (node != null)
+	{
+	    if (node.getIndexInParentSubnodes() != 0)
+		return node;
+	    node = node.getParentNode();
+	}
+	
+	return null;
     }
 }

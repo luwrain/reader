@@ -51,8 +51,16 @@ public class Node extends org.luwrain.reader.view.NodeBase
 
     public final Node[] getSubnodes()
     {
-	return subnodes != null?subnodes:new Node[0];
+	return subnodes != null?subnodes.clone():new Node[0];
     }
+
+        public final Node getSubnode(int index)
+    {
+	if (subnodes == null)
+	    throw new RuntimeException("No subnodes");
+	return subnodes[index];
+}
+
 
     public final int getSubnodeCount()
     {
