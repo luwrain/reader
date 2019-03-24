@@ -1,6 +1,6 @@
 /*
-   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
-c   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
+   Copyright 2012-2019 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
 
@@ -30,6 +30,9 @@ import org.luwrain.util.WordIterator;
 import org.luwrain.reader.*;
 import org.luwrain.reader.view.*;
 
+
+// Transition tries to iteratate over inner objects
+// while announcing tries to announce greater objects
 public class ReaderArea implements Area, ClipboardTranslator.Provider
 {
     public enum State {LOADING, READY};
@@ -519,62 +522,19 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	/*
-	//If we at a title row in a first column in a table, we must jump on the next row
-	if (iterator.isTitleRow() && iterator.getNode() instanceof TableCell)
-	{
-	    final TableCell cell = (TableCell)iterator.getNode();
-	    final int rowIndex = cell.getRowIndex();
-	    if (cell.getColIndex() == 0)
-		if (iterator.searchForward((node,para,row)->{
-			    //Checking if we already left the required table
-			    if (!node.hasNodeInAllParents(cell.getTable()))
-				return true;
-			    if (para != null)
-				return false;
-			    if (!(node instanceof TableCell))
-				return false;
-			    final TableCell cellToCheck = (TableCell)node;
-			    //Checking if we found a cell of a inclosed table
-			    if (cellToCheck.getTable() != cell.getTable())
-				return false;
-			    return cellToCheck.getRowIndex() == rowIndex + 1 && cellToCheck.getColIndex() == 0;			
-			}, iterator.getIndex()))
-		{
-		    onNewHotPointY( quickNav);
-		    return true;
-		}
-	}
-
-	if (!iterator.moveNext())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
-	    return true;
-	}
-	if (quickNav)
-	    while(iterator.canMoveNext() && iterator.isTitleRow())
-		iterator.moveNext();
-	onNewHotPointY( quickNav);
-	return true;
-	*/
 	if (transition.transition(Transition.Type.NEXT, iterator))
-	{
-	    		    onNewHotPointY( quickNav);
-	} else
-	    	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
+	    onNewHotPointY( quickNav); else
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	return true;
     }
 
-    protected boolean onMoveUp(KeyboardEvent event, boolean briefAnnouncement)
+    protected boolean onMoveUp(KeyboardEvent event, boolean quickNav)
     {
 	if (noContentCheck())
 	    return true;
-	if (!iterator.movePrev())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_ABOVE));
-	    return true;
-	}
-	onNewHotPointY( briefAnnouncement);
+	if (transition.transition(Transition.Type.PREV, iterator))
+	    onNewHotPointY( quickNav); else
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	return true;
     }
 

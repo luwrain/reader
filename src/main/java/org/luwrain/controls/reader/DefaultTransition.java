@@ -1,4 +1,21 @@
+/*
+   Copyright 2012-2019 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
+
+//LWR_API 1.0
 
 package org.luwrain.controls.reader;
 
@@ -16,21 +33,35 @@ public class DefaultTransition implements ReaderArea.Transition
 	{
 	case NEXT:
 	    return onNext(it);
+	    	case PREV:
+	    return onPrev(it);
 	default:
 	return false;
 	}
     }
-    
+
     boolean onNext(Iterator it)
     {
-     NullCheck.notNull(it, "it");
-     final TableCell tableCell = isTableCellIntroRow(it);
-     if (tableCell != null && onTableDown(tableCell, it))
-	 return true;
-     return it.moveNext();
+	NullCheck.notNull(it, "it");
+	final TableCell tableCell = isTableCellIntroRow(it);
+	if (tableCell != null && onTableDown(tableCell, it))
+	    return true;
+	return it.moveNext();
     }
 
-    boolean onTableDown(TableCell tableCell, Iterator it)
+        boolean onPrev(Iterator it)
+    {
+	NullCheck.notNull(it, "it");
+	final TableCell tableCell = isTableCellIntroRow(it);
+	if (tableCell != null && onTableUp(tableCell, it))
+	    return true;
+	return it.movePrev();
+    }
+
+
+
+
+     boolean onTableDown(TableCell tableCell, Iterator it)
     {
 	     NullCheck.notNull(tableCell, "tableCell");
      NullCheck.notNull(it, "it");
@@ -45,6 +76,22 @@ public class DefaultTransition implements ReaderArea.Transition
      return findTableCellForward(newCell, it);
 	}
 
+             boolean onTableUp(TableCell tableCell, Iterator it)
+    {
+	     NullCheck.notNull(tableCell, "tableCell");
+     NullCheck.notNull(it, "it");
+     final Table table = tableCell.getTable();
+     final int rowIndex = tableCell.getRowIndex();
+     final int colIndex = tableCell.getColIndex();
+     if (rowIndex == 0)
+	 return false;
+     final TableCell newCell = table.getCell(colIndex, rowIndex - 1);
+     if (newCell == null)
+	 return false;
+     return findTableCellBackward(newCell, it);
+	}
+
+
 
     protected boolean findTableCellForward(TableCell tableCell, Iterator it)
     {
@@ -56,6 +103,18 @@ public class DefaultTransition implements ReaderArea.Transition
 		return isIntroRowFor(row, para, tableCell);
 	    });
     }
+
+        protected boolean findTableCellBackward(TableCell tableCell, Iterator it)
+    {
+	NullCheck.notNull(tableCell, "tableCell");
+	NullCheck.notNull(it, "it");
+	return it.searchBackward((node,para,row)->{
+		if (para == null)//title row
+		    return false;
+		return isIntroRowFor(row, para, tableCell);
+	    });
+    }
+
 
 
     //Returns the closest one, but there can be more
