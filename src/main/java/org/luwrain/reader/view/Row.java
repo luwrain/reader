@@ -24,7 +24,7 @@ import java.util.*;
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 
-public class Row
+public final class Row
 {
     /** Absolute horizontal position in the area*/
 int x = 0;

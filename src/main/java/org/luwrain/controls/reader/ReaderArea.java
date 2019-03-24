@@ -39,7 +39,14 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	boolean onReaderClick(ReaderArea area, Run run);
     }
 
-    public final class Params
+    public interface Transition
+    {
+	public enum Type{NEXT, PREV};
+
+	boolean transition(Type type, Iterator it);
+    }
+
+    static public final class Params
     {
 	public ControlContext context = null;
 	public String name = "";

@@ -146,7 +146,18 @@ class App implements Application
 		}
 	    };
 
-	readerArea = new ReaderArea(new DefaultControlEnvironment(luwrain), announcement){
+	final ReaderArea.Params readerParams = new ReaderArea.Params();
+	readerParams.context = new DefaultControlContext(luwrain);
+	readerParams.announcement = announcement;
+	readerParams.clickHandler = (area,run)->{
+	    NullCheck.notNull(area, "area");
+	    NullCheck.notNull(run, "run");
+				if (!run.href().isEmpty())
+				    return jumpByHref(run.href(), luwrain.getAreaVisibleWidth(area));
+			    return actions.onPlayAudio(area);
+	};
+
+	this.readerArea = new ReaderArea(readerParams){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -170,10 +181,6 @@ class App implements Application
 				return true;
 			    closeApp();
 			    return true;
-			case ENTER:
-			    if (Base.hasHref(this))
-				return jumpByHref(Base.getHref(this), luwrain.getAreaVisibleWidth(readerArea));
-			    return actions.onPlayAudio(readerArea);
 			case BACKSPACE:
 			    return base.onPrevDoc();
 			}
