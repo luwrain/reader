@@ -33,10 +33,10 @@ public class DefaultTransition implements ReaderArea.Transition
 	{
 	case NEXT:
 	    return onNext(it);
-	    	case PREV:
+	case PREV:
 	    return onPrev(it);
 	default:
-	return false;
+	    return false;
 	}
     }
 
@@ -49,7 +49,7 @@ public class DefaultTransition implements ReaderArea.Transition
 	return it.moveNext();
     }
 
-        boolean onPrev(Iterator it)
+    boolean onPrev(Iterator it)
     {
 	NullCheck.notNull(it, "it");
 	final TableCell tableCell = isTableCellIntroRow(it);
@@ -58,40 +58,35 @@ public class DefaultTransition implements ReaderArea.Transition
 	return it.movePrev();
     }
 
-
-
-
-     boolean onTableDown(TableCell tableCell, Iterator it)
+    boolean onTableDown(TableCell tableCell, Iterator it)
     {
-	     NullCheck.notNull(tableCell, "tableCell");
-     NullCheck.notNull(it, "it");
-     final Table table = tableCell.getTable();
-     final int rowIndex = tableCell.getRowIndex();
-     final int colIndex = tableCell.getColIndex();
-     if (rowIndex + 1 >= table.getRowCount())
-	 return false;
-     final TableCell newCell = table.getCell(colIndex, rowIndex + 1);
-     if (newCell == null)
-	 return false;
-     return findTableCellForward(newCell, it);
-	}
+	NullCheck.notNull(tableCell, "tableCell");
+	NullCheck.notNull(it, "it");
+	final Table table = tableCell.getTable();
+	final int rowIndex = tableCell.getRowIndex();
+	final int colIndex = tableCell.getColIndex();
+	if (rowIndex + 1 >= table.getRowCount())
+	    return false;
+	final TableCell newCell = table.getCell(colIndex, rowIndex + 1);
+	if (newCell == null)
+	    return false;
+	return findTableCellForward(newCell, it);
+    }
 
-             boolean onTableUp(TableCell tableCell, Iterator it)
+    boolean onTableUp(TableCell tableCell, Iterator it)
     {
-	     NullCheck.notNull(tableCell, "tableCell");
-     NullCheck.notNull(it, "it");
-     final Table table = tableCell.getTable();
-     final int rowIndex = tableCell.getRowIndex();
-     final int colIndex = tableCell.getColIndex();
-     if (rowIndex == 0)
-	 return false;
-     final TableCell newCell = table.getCell(colIndex, rowIndex - 1);
-     if (newCell == null)
-	 return false;
-     return findTableCellBackward(newCell, it);
-	}
-
-
+	NullCheck.notNull(tableCell, "tableCell");
+	NullCheck.notNull(it, "it");
+	final Table table = tableCell.getTable();
+	final int rowIndex = tableCell.getRowIndex();
+	final int colIndex = tableCell.getColIndex();
+	if (rowIndex == 0)
+	    return false;
+	final TableCell newCell = table.getCell(colIndex, rowIndex - 1);
+	if (newCell == null)
+	    return false;
+	return findTableCellBackward(newCell, it);
+    }
 
     protected boolean findTableCellForward(TableCell tableCell, Iterator it)
     {
@@ -104,7 +99,7 @@ public class DefaultTransition implements ReaderArea.Transition
 	    });
     }
 
-        protected boolean findTableCellBackward(TableCell tableCell, Iterator it)
+    protected boolean findTableCellBackward(TableCell tableCell, Iterator it)
     {
 	NullCheck.notNull(tableCell, "tableCell");
 	NullCheck.notNull(it, "it");
@@ -114,8 +109,6 @@ public class DefaultTransition implements ReaderArea.Transition
 		return isIntroRowFor(row, para, tableCell);
 	    });
     }
-
-
 
     //Returns the closest one, but there can be more
     protected TableCell isTableCellIntroRow(Iterator it)
