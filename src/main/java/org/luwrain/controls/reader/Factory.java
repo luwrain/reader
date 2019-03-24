@@ -37,10 +37,10 @@ public final class Factory
 	return (Strings)luwrain.i18n().getStrings(Strings.NAME);
     }
 
-    public Announcement newAnnouncement(Luwrain luwrain, ControlEnvironment context)
+    public DefaultAnnouncement newAnnouncement(Luwrain luwrain, ControlContext context)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(context, "context");
-	return new Announcement(context, newStrings(luwrain));
+	return new DefaultAnnouncement(context, newStrings(luwrain));
     }
 }

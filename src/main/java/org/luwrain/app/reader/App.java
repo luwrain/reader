@@ -95,7 +95,7 @@ class App implements Application
     private void createAreas()
     {
 	final org.luwrain.controls.reader.Strings announcementStrings = (org.luwrain.controls.reader.Strings)luwrain.i18n().getStrings(org.luwrain.controls.reader.Strings.NAME);
-	final Announcement announcement = new Announcement(new DefaultControlEnvironment(luwrain), announcementStrings);
+	final ReaderArea.Announcement announcement = new DefaultAnnouncement(new DefaultControlEnvironment(luwrain), announcementStrings);
 	final TreeArea.Params treeParams = new TreeArea.Params();
 	treeParams.context = new DefaultControlEnvironment(luwrain);
 	treeParams.model = base.getTreeModel();

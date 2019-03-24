@@ -39,6 +39,11 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	boolean onReaderClick(ReaderArea area, Run run);
     }
 
+    public interface Announcement
+    {
+	void announce(Iterator it, boolean brief);
+	    }
+
     public interface Transition
     {
 	public enum Type{NEXT, PREV};
@@ -50,8 +55,9 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     {
 	public ControlContext context = null;
 	public String name = "";
+		public ClickHandler clickHandler = null;
 	public Announcement announcement = null;
-	public ClickHandler clickHandler = null;
+	public Transition transition = new DefaultTransition();
 	public Document doc = null;
 		public int width = 100;
     }
@@ -61,6 +67,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     protected final ClipboardTranslator clipboardTranslator = new ClipboardTranslator(this, regionPoint, EnumSet.noneOf(ClipboardTranslator.Flags.class));
     private String areaName = null;//FIXME:No corresponding constructor;
     protected final Announcement announcement;
+    protected final Transition transition;
     protected ClickHandler clickHandler = null;
 
     protected Document document = null;
@@ -74,8 +81,10 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	NullCheck.notNull(params, "params");
 	NullCheck.notNull(params.context, "params.context");
 	NullCheck.notNull(params.announcement, "params.announcement");
+	NullCheck.notNull(params.transition, "params.transition");
 	this.context = params.context;
 	this.announcement = params.announcement;
+	this.transition = params.transition;
 	this.clickHandler = params.clickHandler;
 	    if (params.doc != null)
 	    {
@@ -98,6 +107,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 		    throw new IllegalArgumentException("width (" + width + ") may not be negative");
 		setDocument(document, width);
 	    }
+	    this.transition = new DefaultTransition();
     }
 
     public ReaderArea(ControlContext context, Announcement announcement)
@@ -509,7 +519,7 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
     {
 	if (noContentCheck())
 	    return true;
-
+	/*
 	//If we at a title row in a first column in a table, we must jump on the next row
 	if (iterator.isTitleRow() && iterator.getNode() instanceof TableCell)
 	{
@@ -545,6 +555,13 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	    while(iterator.canMoveNext() && iterator.isTitleRow())
 		iterator.moveNext();
 	onNewHotPointY( quickNav);
+	return true;
+	*/
+	if (transition.transition(Transition.Type.NEXT, iterator))
+	{
+	    		    onNewHotPointY( quickNav);
+	} else
+	    	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	return true;
     }
 
