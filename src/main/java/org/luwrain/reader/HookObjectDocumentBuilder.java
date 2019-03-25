@@ -35,19 +35,31 @@ public final class HookObjectDocumentBuilder
 	final List nodes = ScriptUtils.getArray(nodesObj);
 	if (nodes == null)
 	    return null;
+	Log.debug("proba", "" + nodes.size() + " root nodes");
 	final NodeBuilder nodeBuilder = new NodeBuilder();
 	for(Object nodeObj: nodes)
 	{
+	    if (nodeObj == null)
+		continue;
+	    final Node node = onNode(nodeObj);
+	    if (node != null)
+		nodeBuilder.addSubnode(node);
 	}
-	return new Document(nodeBuilder.newRoot());
+	final Document doc = new Document(nodeBuilder.newRoot());
+	doc.commit();
+	return doc;
     }
 
     private Node onNode(Object nodeObj)
     {
 	NullCheck.notNull(nodeObj, "nodeObj");
-	final String type = ScriptUtils.getStringValue("type");
+	final Object typeObj = ScriptUtils.getMember(nodeObj, "type");
+	if (typeObj == null)
+	    return null;
+	final String type = ScriptUtils.getStringValue(typeObj);
 	if (type == null || type.isEmpty())
 	    return null;
+	Log.debug("proba", "node of type " + type);
 	if (type.equals("paragraph"))
 	    return onParagraph(nodeObj);
 	final Object nodesObj = ScriptUtils.getMember(nodeObj, "nodes");
@@ -62,8 +74,7 @@ public final class HookObjectDocumentBuilder
 	    if (subnodeObj == null)
 		return null;
 	    final Node node = onNode(subnodeObj);
-	    if (node == null)
-		continue;
+	    if (node != null)
 	    nodeBuilder.addSubnode(node);
 	}
 	switch(type)
@@ -77,6 +88,7 @@ public final class HookObjectDocumentBuilder
 
     private Paragraph onParagraph(Object paraObj)
     {
+	Log.debug("proba", "processing a paragraph");
 	NullCheck.notNull(paraObj, "paraObj");
 	final Object runsObj = ScriptUtils.getMember(paraObj, "runs");
 	if (runsObj == null)
@@ -93,6 +105,7 @@ public final class HookObjectDocumentBuilder
 	    if (run != null)
 		res.add(run);
 	}
+	Log.debug("proba", "" + res.size() + " runs");
 	return new Paragraph(res.toArray(new Run[res.size()]));
     }
 
