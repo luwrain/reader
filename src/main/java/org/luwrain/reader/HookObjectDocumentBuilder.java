@@ -26,7 +26,7 @@ import org.luwrain.script.*;
 
 public final class HookObjectDocumentBuilder
 {
-    Document build(Object hookObj)
+    public Document build(Object hookObj)
     {
 	NullCheck.notNull(hookObj, "hookObj");
 	final Object nodesObj = ScriptUtils.getMember(hookObj, "nodes");

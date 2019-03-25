@@ -94,7 +94,7 @@ class App implements Application
     private void createAreas()
     {
 	final TreeArea.Params treeParams = new TreeArea.Params();
-	treeParams.context = new DefaultControlEnvironment(luwrain);
+	treeParams.context = new DefaultControlContext(luwrain);
 	treeParams.model = base.getTreeModel();
 	treeParams.name = strings.treeAreaName();
 	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
@@ -452,7 +452,7 @@ class App implements Application
     {
 	if (!base.hasDocument())
 	    return false;
-	final SimpleArea propsArea = new SimpleArea(new DefaultControlEnvironment(luwrain), strings.propertiesAreaName()) {
+	final SimpleArea propsArea = new SimpleArea(new DefaultControlContext(luwrain), strings.propertiesAreaName()) {
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
