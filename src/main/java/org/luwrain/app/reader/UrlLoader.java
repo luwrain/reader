@@ -145,17 +145,28 @@ public final class UrlLoader
 	    if (format == null)
 	    {
 		Log.debug(LOG_COMPONENT, "trying to use extensible document builders");
-		final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, selectedContentType);
-		if (builder == null)
+		final DocumentBuilderHook builderHook = new DocumentBuilderHook(luwrain);
+		final Document hookDoc = builderHook.build(selectedContentType, new Properties(), tmpFile.toFile());
+		if (hookDoc != null)
 		{
-		    Log.error(LOG_COMPONENT, "unable to choose the suitable document builder for " + requestedUrl.toString());
-		    res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
-		    res.setProperty("contenttype", selectedContentType);
-		    res.setProperty("url", responseUrl.toString());
-		    return res;
+		    Log.debug(LOG_COMPONENT, "the builder hook  has constructed the document");
+		    res = new Result(Result.Type.OK);
+		    res.doc = hookDoc;
+		} else
+		{
+		    Log.debug(LOG_COMPONENT, "the builder hook failed");
+		    final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, selectedContentType);
+		    if (builder == null)
+		    {
+			Log.error(LOG_COMPONENT, "unable to choose the suitable document builder for " + requestedUrl.toString());
+			res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
+			res.setProperty("contenttype", selectedContentType);
+			res.setProperty("url", responseUrl.toString());
+			return res;
+		    }
+		    res = new Result(Result.Type.OK);
+		    res.doc = builder.buildDoc(tmpFile.toFile(), new Properties());
 		}
-		res = new Result(Result.Type.OK);
-		res.doc = builder.buildDoc(tmpFile.toFile(), new Properties());
 	    } else
 	    {
 		selectCharset(format);
