@@ -75,7 +75,7 @@ class App implements Application
 	this.base = new Base(luwrain, strings,
 			     ()->onNewDocument(),
 			     ()->onNewBook(),
-			     ()->showErrorPage());
+			     (props, throwable)->showErrorPage(props, throwable));
 	this.actions = new Actions(luwrain, base, strings);
 	this.actionLists = new ActionLists(luwrain, base, strings);
 	createAreas();
@@ -417,10 +417,48 @@ class App implements Application
 	return false;
     }
 
-    //Handles the error notification
-    private void showErrorPage()
+    private void showErrorPage(Object propsObj, Object throwableObj)
     {
-	//FIXME:
+	NullCheck.notNull(propsObj, "propsobj");
+	final Properties props = (Properties)propsObj;
+	final Throwable throwable = (Throwable)throwableObj;
+	final SimpleArea area = new SimpleArea(new DefaultControlContext(luwrain), strings.errorAreaName()) {
+		@Override public boolean onInputEvent(KeyboardEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && !event.isModified())
+			switch(event.getSpecial())
+			{
+			case ESCAPE:
+			    layout.closeTempLayout();
+			    return true;
+			}
+		    return super.onInputEvent(event);
+		}
+		@Override public boolean onSystemEvent(EnvironmentEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
+			return super.onSystemEvent(event);
+		    switch(event.getCode())
+		    {
+		    case CLOSE:
+			closeApp();
+			return true;
+		    default:
+			return super.onSystemEvent(event);
+		    }
+		}
+	    };
+	area.beginLinesTrans();
+	area.addLine("");
+	final ErrorHook errorHook = new ErrorHook(luwrain);
+	for(String s: errorHook.run(props, throwable))
+	    area.addLine(s);
+	area.addLine("");
+	area.endLinesTrans();
+	layout.openTempArea(area);
+	luwrain.say(strings.errorAreaName(), Sounds.ERROR);
     }
 
     private void updateMode()

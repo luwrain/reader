@@ -19,6 +19,7 @@ package org.luwrain.app.reader;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.*;
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
@@ -43,7 +44,7 @@ final class Base
 
         private final Runnable successNotification;
     private final Runnable newBookNotification;
-    private final Runnable errorNotification;
+    private final BiConsumer errorHandler;
 
     private FutureTask task = null;
         private final LinkedList<HistoryItem> history = new LinkedList();
@@ -52,21 +53,20 @@ final class Base
         private StoredProperties storedProps = null;
         private Book.Section[] sections = new Book.Section[0];
     private final ListUtils.FixedModel notesModel = new ListUtils.FixedModel();
-    private UrlLoader.Result errorRes = null;
 
     Base(Luwrain luwrain, Strings strings,
-	 Runnable successNotification, Runnable newBookNotification, Runnable errorNotification)
+	 Runnable successNotification, Runnable newBookNotification, BiConsumer errorHandler)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
 	NullCheck.notNull(successNotification, "successNotification");
 	NullCheck.notNull(newBookNotification, "newBookNotification");
-	NullCheck.notNull(errorNotification, "errorNotification");
+	NullCheck.notNull(errorHandler, "errorHandler");
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.successNotification = successNotification;
 	this.newBookNotification = newBookNotification;
-	this.errorNotification = errorNotification;
+	this.errorHandler = errorHandler;
 	final AudioPlaying a = new AudioPlaying(luwrain);
 		this.audioPlaying = a.isLoaded()?a:null;
     }
@@ -224,23 +224,23 @@ successNotification.run();
 		    final UrlLoader.Result r = urlLoader.load();
 		if (r != null)
 		    luwrain.runUiSafely(()->{
-			    task = null; //Strong mark that the work is mostly done
+			    task = null; //the Strong mark that the work is done
 			    if (r.type == UrlLoader.Result.Type.OK)
 			    {
 				onNewLoadingRes(r);
 				successNotification.run();
 			    }else
 			    {
-				Base.this.errorRes = r;
-				errorNotification.run();
+				final Properties props = new Properties();
+				errorHandler.accept(props, null);
 			    }
 			    });
 		}
 		catch(Throwable e)
 		{
 		    Log.error("reader", "unable to fetch:" + e.getClass().getName() + ":" + e.getMessage());
-		    if (e instanceof Exception)//FIXME:
-			luwrain.crash((Exception)e);
+		    final Properties props = new Properties();
+		    luwrain.runUiSafely(()->errorHandler.accept(props, e));
 		}
 	}, null);
     }
@@ -434,13 +434,6 @@ ListArea.Model getNotesModel()
     UrlLoader.Result getResult()
     {
 	return res;
-    }
-
-    
-
-    UrlLoader.Result getErrorRes()
-    {
-	return errorRes;
     }
 
     static String getHref(ReaderArea area)

@@ -78,4 +78,6 @@ public interface Strings
     String notesShown();
     String notesHidden();
     String actionChangeTextParaStyle();
+
+    String errorAreaName();
 }

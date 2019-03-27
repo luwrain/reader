@@ -22,46 +22,47 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 
 import org.luwrain.core.*;
-import org.luwrain.reader.*;
+import org.luwrain.script.*;
+//import org.luwrain.reader.*;
 
-final class DocumentBuilderHook
+final class ErrorHook
 {
     static private final String LOG_COMPONENT = "reader";
-    static private final String HOOK_NAME = "luwrain.reader.doc.builder";
+    static private final String HOOK_NAME = "luwrain.reader.doc.error";
 
     private final Luwrain luwrain;
 
-    DocumentBuilderHook(Luwrain luwrain)
+    ErrorHook(Luwrain luwrain)
     {
 	NullCheck.notNull(luwrain, "luwrain ");
 	this.luwrain = luwrain;
     }
 
-    Document build(String contentType, Properties props, File file)
+    String[] run(Properties props, Throwable throwable)
     {
-	NullCheck.notEmpty(contentType, "contentType");
 	NullCheck.notNull(props, "props");
-	NullCheck.notNull(file, "file");
+	final PropertiesHookObject propsHookObj = new PropertiesHookObject(props);//FIXME:read only
+	final Object[] args = new Object[]{propsHookObj, throwable};
 	final AtomicReference res = new AtomicReference();
 	luwrain.xRunHooks(HOOK_NAME, (hook)->{
 		try {
-		    final Object obj = hook.run(new Object[]{contentType, null, file.getAbsolutePath()});
+		    final Object obj = hook.run(args);
 		    if (obj == null)
 			return Luwrain.HookResult.CONTINUE;
-		    res.set(obj);
+		    final List<String> lines = ScriptUtils.getStringArray(obj);
+		    if (lines == null)
+			return Luwrain.HookResult.CONTINUE;
+		    res.set(lines.toArray(new String[lines.size()]));
 		    return Luwrain.HookResult.BREAK;
 		}
 		catch(RuntimeException e)
 		{
 		    Log.error(LOG_COMPONENT, "unable to run the hook " + HOOK_NAME + ":" + e.getClass().getName() + ":" + e.getMessage());
-		    res.set(e);
-		    return Luwrain.HookResult.BREAK;
+		    return Luwrain.HookResult.CONTINUE;
 		}
 	    });
 	if (res.get() == null)
-	    return null;
-	if (res.get() instanceof RuntimeException)
-	    throw (RuntimeException)res.get();
-	return new HookObjectDocumentBuilder().build(res.get());
+	    return new String[0];
+	return (String[])res.get();
     }
 }
