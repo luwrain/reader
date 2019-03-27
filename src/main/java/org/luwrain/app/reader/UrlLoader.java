@@ -122,39 +122,13 @@ public final class UrlLoader
     public Result load() throws IOException
     {
 	try {
-	    try {
-		Log.debug(LOG_COMPONENT, "fetching " + requestedUrl.toString());
-		fetch();
-	    }
-	    catch(Connections.InvalidHttpResponseCodeException e)
-	    {
-		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
-		final Result res = new Result(Result.Type.HTTP_ERROR);
-		res.setProperty("url", requestedUrl.toString());
-		res.setProperty("httpcode", "" + e.getHttpCode());
-		return res;
-	    }
-	    catch (UnknownHostException  e)
-	    {
-		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
-		final Result res = new Result(Result.Type.UNKNOWN_HOST);
-		res.setProperty("url", requestedUrl.toString());
-		res.setProperty("host", e.getMessage());
-		return res;
-	    }
-	    catch (IOException e)
-	    {
-		Log.error(LOG_COMPONENT, e.getClass().getName() + ":" + e.getMessage());
-		final Result res = new Result(Result.Type.FETCHING_ERROR);
-		res.setProperty("url", requestedUrl.toString());
-		res.setProperty("descr", e.getClass().getName() + ":" + e.getMessage());
-		return res;
-	    }
+	    Log.debug(LOG_COMPONENT, "fetching " + requestedUrl.toString());
+	    fetch();
 	    this.selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
 	    if (selectedContentType.isEmpty() || ContentTypes.isUnknown(selectedContentType))
 		this.selectedContentType = luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
 	    if (selectedContentType.isEmpty())
-		return new Result(Result.Type.UNDETERMINED_CONTENT_TYPE);
+		throw new IOException("Unable to understand the content type");
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
 	    final Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
 	    final Result res;
@@ -166,21 +140,15 @@ public final class UrlLoader
 		if (hookDoc != null)
 		{
 		    Log.debug(LOG_COMPONENT, "the builder hook  has constructed the document");
-		    res = new Result(Result.Type.OK);
+		    res = new Result();
 		    res.doc = hookDoc;
 		} else
 		{
 		    Log.debug(LOG_COMPONENT, "the builder hook failed");
 		    final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, selectedContentType);
 		    if (builder == null)
-		    {
-			Log.error(LOG_COMPONENT, "unable to choose the suitable document builder for " + requestedUrl.toString());
-			res = new Result(Result.Type.UNRECOGNIZED_FORMAT);
-			res.setProperty("contenttype", selectedContentType);
-			res.setProperty("url", responseUrl.toString());
-			return res;
-		    }
-		    res = new Result(Result.Type.OK);
+			throw new IOException("No suitable handler for the content type: " + selectedContentType);
+		    res = new Result();
 		    res.doc = builder.buildDoc(tmpFile.toFile(), new Properties());
 		}
 	    } else
@@ -189,12 +157,7 @@ public final class UrlLoader
 		res = parse(format);
 	    }
 	    if (res.doc == null)
-	    {
-		final Result r = new Result(Result.Type.UNRECOGNIZED_FORMAT);
-		r.setProperty("contenttype", selectedContentType);
-		r.setProperty("url", responseUrl.toString());
-		return r;
-	    }
+		throw new IOException("No suitable handler for the content type: " + selectedContentType);
 	    res.doc.setProperty("url", responseUrl.toString());
 	    res.doc.setProperty("contenttype", selectedContentType);
 	    if (format == Format.TXT)
@@ -220,7 +183,14 @@ public final class UrlLoader
 
     private void fetch() throws IOException
     {
-	final URLConnection con = Connections.connect(requestedUrl, 0);
+	final URLConnection con;
+	try {
+	    con = Connections.connect(requestedUrl.toURI(), 0);
+	}
+	catch(URISyntaxException e)
+	{
+	    throw new IOException(e);
+	}
 	final InputStream responseStream = con.getInputStream();
 	try {
 	    this.responseUrl = con.getURL();
@@ -277,7 +247,7 @@ public final class UrlLoader
     private Result parse(Format format) throws IOException
     {
 	NullCheck.notNull(format, "format");
-	final Result res = new Result(Result.Type.OK);
+	final Result res = new Result();
 	final InputStream 	    stream = Files.newInputStream(tmpFile);
 	try {
 	    switch(format)
@@ -307,7 +277,7 @@ return new Fb2(is, selectedCharset).createDoc();
 		res.doc = new TextFiles(tmpFile.toFile(), makeTitleFromUrl(), selectedCharset, requestedTxtParaStyle).makeDoc();
 		    return res;
 	    default:
-		return new Result(Result.Type.UNRECOGNIZED_FORMAT);
+			throw new IOException("No suitable handler for the content type: " + selectedContentType);
 	    }
 	}
 	finally {
@@ -380,28 +350,9 @@ return new Fb2(is, selectedCharset).createDoc();
 
     static public final class Result
     {
-	public enum Type {
-	    OK,
-	    UNKNOWN_HOST,  //See "host" property
-	    HTTP_ERROR, //See "httpcode" property
-	    FETCHING_ERROR, //See "descr" property
-	    UNDETERMINED_CONTENT_TYPE,
-	    UNRECOGNIZED_FORMAT, //See "contenttype" property
-	};
-
-	public final Type type;
 		public Book book = null;
 	public Document doc = null;
 	public final Properties props = new Properties();
-	Result()
-	{
-	    this.type = Type.OK;
-	}
-	Result(Type type)
-	{
-	    NullCheck.notNull(type, "type");
-	    this.type = type;
-	}
 	public String getProperty(String propName)
 	{
 	    NullCheck.notNull(propName, "propName");

@@ -253,11 +253,6 @@ res = loadDoc(url);
 	    e.printStackTrace();
 	    return;
 	}
-	if (res.type != UrlLoader.Result.Type.OK)
-	{
-	    Log.warning("doctree-daisy", "unable to load a document by URL " + url + ":" + res.toString());
-	    return;
-	}
 	if (res.book != null)
 	{
 	    Log.debug("doctree-daisy", "the URL " + url + "references a book, not including to current one");
