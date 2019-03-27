@@ -58,9 +58,8 @@ public final class UrlLoader
 
     static private final String DEFAULT_CHARSET = "UTF-8";
 
-
     private final Luwrain luwrain;
-    private final URL requestedUrl;
+    final URL requestedUrl;
     private String requestedContentType = "";
     private String requestedTagRef = "";
     private String requestedCharset = "";
@@ -91,11 +90,28 @@ public final class UrlLoader
 	this.requestedContentType = contentType;
     }
 
+    public String getContentType()
+    {
+	if (selectedContentType != null && !selectedContentType.isEmpty())
+	    return selectedContentType;
+	return requestedContentType != null?requestedContentType:"";
+    }
+
+    
+
     public void setCharset(String charset)
     {
 	NullCheck.notEmpty(charset, "charset");
 	this.requestedCharset = charset;
     }
+
+        public String getCharset()
+    {
+	if (selectedCharset != null && !selectedCharset.isEmpty())
+	    return selectedCharset;
+	return requestedCharset != null?requestedCharset:"";
+    }
+
 
     void setTxtParaStyle(TextFiles.ParaStyle paraStyle)
     {

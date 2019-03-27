@@ -232,6 +232,10 @@ successNotification.run();
 			    }else
 			    {
 				final Properties props = new Properties();
+						    props.setProperty("url", urlLoader.requestedUrl.toString());
+		    props.setProperty("contentType", urlLoader.getContentType());
+		    props.setProperty("charset", urlLoader.getCharset());
+
 				errorHandler.accept(props, null);
 			    }
 			    });
@@ -240,6 +244,9 @@ successNotification.run();
 		{
 		    Log.error("reader", "unable to fetch:" + e.getClass().getName() + ":" + e.getMessage());
 		    final Properties props = new Properties();
+		    props.setProperty("url", urlLoader.requestedUrl.toString());
+		    props.setProperty("contentType", urlLoader.getContentType());
+		    props.setProperty("charset", urlLoader.getCharset());
 		    luwrain.runUiSafely(()->errorHandler.accept(props, e));
 		}
 	}, null);
@@ -248,7 +255,6 @@ successNotification.run();
         private void onNewLoadingRes(UrlLoader.Result newRes)
     {
 	NullCheck.notNull(newRes, "newRes");
-
 	if (isInBookMode() && res.book != null)
 	    throw new RuntimeException("Cannot open the new book being in book mode");
 	this.res = newRes;
@@ -282,35 +288,6 @@ successNotification.run();
 	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
 	storedProps.sett.setBookmarkPos(pos);
 	return true;
-    }
-
-    void prepareErrorText(UrlLoader.Result res, MutableLines lines)
-    {
-	lines.addLine(strings.errorAreaIntro());
-	switch(res.type)
-	{
-	case UNKNOWN_HOST:
-	    lines.addLine(strings.unknownHost(res.getProperty("host")));
-	    break;
-	case HTTP_ERROR:
-	    lines.addLine(strings.httpError(res.getProperty("httpcode")));
-	    break;
-	case FETCHING_ERROR:
-	    lines.addLine(strings.fetchingError(res.getProperty("descr")));
-	    break;
-	case UNDETERMINED_CONTENT_TYPE:
-	    lines.addLine(strings.undeterminedContentType());
-	    break;
-	case UNRECOGNIZED_FORMAT:
-	    lines.addLine(strings.unrecognizedFormat(res.getProperty("contenttype")));
-	    break;
-	}
-	if (!res.getProperty("url").isEmpty())
-	    lines.addLine(strings.propertiesAreaUrl(res.getProperty("url")));
-	if (!res.getProperty("format").isEmpty())
-	    lines.addLine(strings.propertiesAreaFormat(res.getProperty("format")));
-	if (!res.getProperty("charset").isEmpty())
-	    lines.addLine(strings.propertiesAreaCharset(res.getProperty("charset")));
     }
 
     boolean fillDocProperties(MutableLines lines)
