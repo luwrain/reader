@@ -222,22 +222,21 @@ successNotification.run();
 	return new FutureTask(()->{
 		try {
 		    final UrlLoader.Result r = urlLoader.load();
-		if (r != null)
-		    luwrain.runUiSafely(()->{
-			    task = null; //the Strong mark that the work is done
-			    if (r.type == UrlLoader.Result.Type.OK)
-			    {
-				onNewLoadingRes(r);
-				successNotification.run();
-			    }else
-			    {
-				final Properties props = new Properties();
-						    props.setProperty("url", urlLoader.requestedUrl.toString());
-		    props.setProperty("contentType", urlLoader.getContentType());
-		    props.setProperty("charset", urlLoader.getCharset());
-
-				errorHandler.accept(props, null);
-			    }
+		    if (r != null)
+			luwrain.runUiSafely(()->{
+				task = null; //the Strong mark that the work is done
+				if (r.type == UrlLoader.Result.Type.OK)
+				{
+				    onNewLoadingRes(r);
+				    successNotification.run();
+				}else
+				{
+				    final Properties props = new Properties();
+				    props.setProperty("url", urlLoader.requestedUrl.toString());
+				    props.setProperty("contentType", urlLoader.getContentType());
+				    props.setProperty("charset", urlLoader.getCharset());
+				    errorHandler.accept(props, null);
+				}
 			    });
 		}
 		catch(Throwable e)
