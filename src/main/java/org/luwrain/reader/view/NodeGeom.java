@@ -81,8 +81,6 @@ class NodeGeom
 	    for(Node n: subnodes)
 		if (tableRow.getNodeHeight() < n.getNodeHeight())
 		    tableRow.setNodeHeight(n.getNodeHeight());
-	    if (hasTitleRun(node))
-		node.setNodeHeight(node.getNodeHeight() + 1);//For title run
 	    return;
 	}
 	for(Node n: subnodes)
@@ -90,8 +88,6 @@ class NodeGeom
 	node.setNodeHeight(0);
 	for(Node n: subnodes)
 	    node.setNodeHeight(node.getNodeHeight() + n.getNodeHeight());
-	if (hasTitleRun(node))
-	    node.setNodeHeight(node.getNodeHeight() + 1);//For title run
     }
 
     static void calcPosition(Node node)
@@ -108,8 +104,6 @@ class NodeGeom
 		n.setNodeX(tableRow.getNodeX() + offset);
 		offset += (n.width + 1);
 		n.setNodeY(node.getNodeY());
-		if (hasTitleRun(node))
-		    n.setNodeY(n.getNodeY());
 		calcPosition(n);
 	    }
 	    return;
@@ -120,7 +114,7 @@ class NodeGeom
 	    node.setNodeY(0);
 	}
 	//Assuming node.x and node.y already set appropriately
-	int offset = hasTitleRun(node)?1:0;//1 for title run
+	int offset = 0;//1 for title run
 	if (node.getType() == Node.Type.PARAGRAPH && ((Paragraph)node).getRowParts().length > 0)
 	    offset = 1;
 	for(Node n: subnodes)
@@ -133,24 +127,4 @@ class NodeGeom
     }
 
         //May be called after width calculation only
-    static boolean hasTitleRun(Node node)
-    {
-	NullCheck.notNull(node, "node");
-	switch(node.getType())
-	{
-	case LIST_ITEM:
-	case SECTION:
-	case ROOT:
-	case TABLE:
-	case TABLE_ROW:
-	    return false;
-	      case ORDERED_LIST:
-	      case UNORDERED_LIST:
-		  return false;
-	case TABLE_CELL:
-	    return !((TableCell)node).getTable().isSingleCellTable();
-	default:
-	    return true;
-	}
-    }
 }

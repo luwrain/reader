@@ -51,8 +51,6 @@ void onNode(Node node, int width)
 	    onParagraph((Paragraph)node, width);
 	    return;
 	}
-	if (NodeGeom.hasTitleRun(node))
-	parts.add(makeTitlePart(node.getTitleRun()));
 	for(Node n: node.getSubnodes())
 		onNode(n);
     }

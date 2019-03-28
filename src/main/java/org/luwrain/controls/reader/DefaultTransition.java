@@ -120,8 +120,6 @@ public class DefaultTransition implements ReaderArea.Transition
     protected TableCell isTableCellIntroRow(Iterator it)
     {
 	NullCheck.notNull(it, "it");
-	if (it.isTitleRow())
-	    return null;
 	if (it.getIndexInParagraph() != 0)
 	    return null;
 	Node node = it.getParagraph();

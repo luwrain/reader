@@ -63,11 +63,6 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	context.say(it.getText());
 	return;
 	}
-	if (it.isTitleRow())
-	{
-	    onTitle(it);
-	    return;
-	}
 Node node = getDominantNode(it);
 	if (node != null)
 	{
@@ -76,11 +71,6 @@ Node node = getDominantNode(it);
 	    return;
 	}
 	announceText(it);
-    }
-
-    protected void onTitle(Iterator it)
-    {
-	context.say("title");
     }
 
 protected void onTableCell(TableCell cell)

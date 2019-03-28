@@ -36,7 +36,6 @@ public class Node extends org.luwrain.reader.view.NodeBase
     protected int importance = IMPORTANCE_REGULAR;
     protected Node[] subnodes = new Node[0];
     Node parentNode;
-    protected final TitleRun titleRun = new TitleRun(this.getClass().getName());
     protected Object associatedObject = null;
 
     /** The exact meaning of a level depends on the node type*/
@@ -85,8 +84,6 @@ public class Node extends org.luwrain.reader.view.NodeBase
 		subnodes[subnodes.length - 1] = new EmptyLine();
 	    }
 	}
-	if (titleRun != null)
-	    titleRun.setParentNode(this);
 	for(Node n: subnodes)
 	{
 	    n.parentNode = this;
@@ -207,11 +204,6 @@ void setEmptyMark()
     public Node getParentNode()
     {
 	return parentNode;
-    }
-
-    public TitleRun getTitleRun()
-    {
-	return titleRun;
     }
 
     public Type getType()

@@ -185,17 +185,10 @@ NullCheck.notNullItems(paragraphs, "paragraphs");
 	    final Run firstRun = row.getFirstRun();
 	    final Paragraph para;
 	    final Node node;
-	    if (firstRun instanceof TitleRun)
-	    {
-		para = null;
-		node = firstRun.getParentNode();
-	    } else
-	    {
 		if (!(firstRun.getParentNode() instanceof Paragraph))
 		    throw new RuntimeException("Row " + i + " isn\'t a title row, but its parent isn\'t a paragraph");
 		para = (Paragraph)firstRun.getParentNode();
 		node = para.getParentNode();
-	    }
 	    if (matching.isRowMatching(node, para, row))
 	    {
 		current = i;
@@ -263,18 +256,8 @@ NullCheck.notNullItems(paragraphs, "paragraphs");
 	return getRow().y;
     }
 
-    public boolean isTitleRow()
-    {
-	final Row row = getRow();
-	if (row == null)
-	    return false;
-	return row.getFirstRun() instanceof TitleRun;
-    }
-
     public Node getNode()
     {
-	if (isTitleRow())
-	    return getTitleParentNode();
 	return getParaContainer();
     }
 
@@ -289,7 +272,7 @@ NullCheck.notNullItems(paragraphs, "paragraphs");
     //Returns null if is at title row
     protected Node getParaContainer()
     {
-	if (noContent() || isTitleRow())
+	if (noContent())
 	    return null;
 	final Paragraph para = getParagraph();
 	return para != null?para.getParentNode():null;
@@ -333,12 +316,5 @@ public Row getRow()
 	if (noContent())
 	    return null;
 	return rows[current].getFirstRun();
-    }
-
-    protected Node getTitleParentNode()
-    {
-	if (!isTitleRow())
-	    return null;
-	return getRow().getFirstRun().getParentNode();
     }
 }

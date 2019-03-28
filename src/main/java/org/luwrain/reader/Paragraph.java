@@ -43,8 +43,6 @@ public class Paragraph extends Node
 	subnodes = null;
 	if (runs == null)
 	    runs = new Run[0];
-	if (titleRun != null)
-	    titleRun.setParentNode(this);
 	for(Run r: runs)
 	{
 	    r.setParentNode(this);
