@@ -22,7 +22,7 @@ import org.luwrain.reader.*;
 
 final class NodeGeom
 {
-    static void calcWidth(Node node, int recommended)
+    void calcWidth(Node node, int recommended)
     {
 	NullCheck.notNull(node, "node");
 	final Node[] subnodes = node.getSubnodes();
@@ -50,7 +50,7 @@ final class NodeGeom
 	}
     }
 
-    static void calcHeight(Node node)
+    void calcHeight(Node node)
     {
 	NullCheck.notNull(node, "node");
 	if (node instanceof Paragraph)
@@ -93,7 +93,7 @@ final class NodeGeom
     node.setNodeHeight(height);
     }
 
-    static void calcPosition(Node node)
+    void calcPosition(Node node)
     {
 	NullCheck.notNull(node, "node");
 	final Node[] subnodes = node.getSubnodes();

@@ -41,7 +41,8 @@ public class View
 	NullCheck.notNull(doc, "doc");
 	this.doc = doc;
 	this.root = doc.getRoot();
-	NodeGeom.calcWidth(root, width);
+	final NodeGeom geom = new NodeGeom();
+	geom.calcWidth(root, width);
 	final DefaultRowPartsBuilder rowPartsBuilder = new DefaultRowPartsBuilder();
 	rowPartsBuilder.onNode(root);
 	rowParts = rowPartsBuilder.getRowParts();
@@ -54,8 +55,8 @@ public class View
 	    return;
 	}
 	paragraphs = rowPartsBuilder.getParagraphs();
-	NodeGeom.calcHeight(root);
-		NodeGeom.calcPosition(root);
+	geom.calcHeight(root);
+	geom.calcPosition(root);
 	calcAbsRowNums(rowParts);
 	rows = buildRows(rowParts);
 	lineCount = calcRowsPosition(rows);
@@ -66,7 +67,7 @@ public class View
     {
 	final Layout layout = new Layout(doc, root, rows, rowParts, paragraphs, lineCount);
 	/*
-	try {
+	  try {
 	    org.luwrain.util.LinesSaver.saveLines(new java.io.File("/tmp/lines"), layout);
 	}
 	catch(Exception e)
@@ -76,7 +77,7 @@ public class View
 	return layout;
     }
 
-        static protected void calcAbsRowNums(RowPart[] parts)
+    protected void calcAbsRowNums(RowPart[] parts)
     {
 	NullCheck.notNullItems(parts, "parts");
 	if (parts.length < 1)
@@ -119,13 +120,13 @@ public class View
 	    if (fromParts[i] >= 0 && toParts[i] >= 0)
 		rows[i] = new Row(parts, fromParts[i], toParts[i]); else
 		throw new RuntimeException("Trying to create an empty row");
-		//		rows[i] = new Row();
+	//		rows[i] = new Row();
 	return rows;
     }
 
-    static protected int calcRowsPosition(Row[] rows)
+    protected int calcRowsPosition(Row[] rows)
     {
-		NullCheck.notNullItems(rows, "rows");
+	NullCheck.notNullItems(rows, "rows");
 	int maxLineNum = 0;
 	int lastX = 0;
 	int lastY = 0;
@@ -161,7 +162,6 @@ public class View
 	return maxLineNum + 1;
     }
 
-
     public org.luwrain.reader.view.Iterator getIterator()
     {
 	return new Iterator(this);
@@ -172,14 +172,22 @@ public class View
 	return new Iterator(this, startingIndex);
     }
 
-    public Paragraph[] getParagraphs() { return paragraphs; }
-    public Row[] getRows() { return rows; }
-    public RowPart[] getRowParts() { return rowParts; }
+    Paragraph[] getParagraphs() {
+	return paragraphs.clone();
+    }
+
+    Row[] getRows() {
+	return rows.clone();
+    }
+
+    RowPart[] getRowParts() {
+	return rowParts.clone();
+    }
 
     private void setDefaultIteratorIndex()
     {
 	final String id = doc.getProperty("startingref");
-		if (id.isEmpty())
+	if (id.isEmpty())
 	    return;
 	Log.debug("doctree", "preparing default iterator index for " + id);
 	final org.luwrain.reader.view.Iterator it = getIterator();
