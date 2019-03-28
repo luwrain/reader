@@ -171,7 +171,6 @@ NullCheck.notNullItems(paragraphs, "paragraphs");
 	return search(matching, searchFrom, -1);
 	    }
 
-
     //do not changes the position of failure
     protected boolean search(Matching matching, int searchFrom, int step)
     {

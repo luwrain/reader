@@ -46,16 +46,22 @@ public class DefaultTransition implements ReaderArea.Transition
 	final TableCell tableCell = isTableCellIntroRow(it);
 	if (tableCell != null && onTableDown(tableCell, it))
 	    return true;
-	return it.moveNext();
+		return it.searchForward((node,para,row)->{
+			return para != null;
+		    }, it.getIndex() + 1);
     }
 
     boolean onPrev(Iterator it)
     {
+	if (it.getIndex() == 0)
+	    return false;
 	NullCheck.notNull(it, "it");
 	final TableCell tableCell = isTableCellIntroRow(it);
 	if (tableCell != null && onTableUp(tableCell, it))
 	    return true;
-	return it.movePrev();
+			return it.searchBackward((node,para,row)->{
+			return para != null;
+		    }, it.getIndex() - 1);
     }
 
     boolean onTableDown(TableCell tableCell, Iterator it)

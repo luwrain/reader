@@ -352,18 +352,5 @@ return new Fb2(is, selectedCharset).createDoc();
     {
 		public Book book = null;
 	public Document doc = null;
-	public final Properties props = new Properties();
-	public String getProperty(String propName)
-	{
-	    NullCheck.notNull(propName, "propName");
-	    final String res = props.getProperty(propName);
-	    return res != null?res:"";
-	}
-	void setProperty(String propName, String value)
-	{
-	    NullCheck.notEmpty(propName, "propName");
-	    NullCheck.notNull(value, "value");
-	    props.setProperty(propName, value);
-	}
     }
 }

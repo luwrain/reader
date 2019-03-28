@@ -535,7 +535,7 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	    return true;
 	if (transition.transition(Transition.Type.PREV, iterator))
 	    onNewHotPointY( quickNav); else
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_ABOVE));
 	return true;
     }
 
