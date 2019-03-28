@@ -22,7 +22,7 @@ import java.util.*;
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 
-public class Layout
+public final class Layout implements Lines
 {
     protected final Document document;
     protected final Node root;
@@ -57,12 +57,12 @@ public class Layout
 	}
     }
 
-    public int getLineCount()
+    @Override public int getLineCount()
     {
 	return lines.length;
     }
 
-    public String getLine(int index)
+    @Override public String getLine(int index)
     {
 	if (index < 0)
 	    throw new IllegalArgumentException("index (" + index + ") may not be negative");

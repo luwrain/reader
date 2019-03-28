@@ -64,7 +64,16 @@ public class View
 
     public Layout createLayout()
     {
-	return 	new Layout(doc, root, rows, rowParts, paragraphs, lineCount);
+	final Layout layout = new Layout(doc, root, rows, rowParts, paragraphs, lineCount);
+	/*
+	try {
+	    org.luwrain.util.LinesSaver.saveLines(new java.io.File("/tmp/lines"), layout);
+	}
+	catch(Exception e)
+	{
+	}
+	*/
+	return layout;
     }
 
         static protected void calcAbsRowNums(RowPart[] parts)

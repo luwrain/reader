@@ -20,9 +20,8 @@ package org.luwrain.reader.view;
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 
-class NodeGeom
+final class NodeGeom
 {
-    
     static void calcWidth(Node node, int recommended)
     {
 	NullCheck.notNull(node, "node");
@@ -67,7 +66,7 @@ class NodeGeom
 	    for(RowPart p: (RowPart[])para.getRowParts())
 		if (p.relRowNum > maxRelRowNum)
 		    maxRelRowNum = p.relRowNum;
-	    para.setNodeHeight(maxRelRowNum + (para.withEmptyLine()?2:1));
+	    para.setNodeHeight(maxRelRowNum + 1);
 	    return;
 	}
 	final Node[] subnodes = node.getSubnodes();
@@ -83,11 +82,15 @@ class NodeGeom
 		    tableRow.setNodeHeight(n.getNodeHeight());
 	    return;
 	}
+	//Not a paragraph and not a table row
 	for(Node n: subnodes)
 	    calcHeight(n);
-	node.setNodeHeight(0);
+	int height = 0;
 	for(Node n: subnodes)
-	    node.setNodeHeight(node.getNodeHeight() + n.getNodeHeight());
+	    height += n.getNodeHeight();
+    if (subnodes.length > 0)
+	height += (subnodes.length - 1);
+    node.setNodeHeight(height);
     }
 
     static void calcPosition(Node node)
@@ -95,36 +98,38 @@ class NodeGeom
 	NullCheck.notNull(node, "node");
 	final Node[] subnodes = node.getSubnodes();
 	NullCheck.notNullItems(subnodes, "subnodes");
+		if  (node.getType() == Node.Type.ROOT)
+	{
+	    node.setNodeX(0);
+	    node.setNodeY(0);
+	}
+	//Assuming node.x and node.y already set appropriately
+		    final int baseX = node.getNodeX();
+		    		    final int baseY = node.getNodeY();
 	if (node instanceof TableRow)
 	{
 	    final TableRow tableRow = (TableRow)node;
 	    int offset = 0;
 	    for(Node n: subnodes)
 	    {
-		n.setNodeX(tableRow.getNodeX() + offset);
+		n.setNodeX(baseX + offset);
 		offset += (n.width + 1);
-		n.setNodeY(node.getNodeY());
+		n.setNodeY(baseY);
 		calcPosition(n);
 	    }
 	    return;
 	} //table row
-	if  (node.getType() == Node.Type.ROOT)
-	{
-	    node.setNodeX(0);
-	    node.setNodeY(0);
-	}
-	//Assuming node.x and node.y already set appropriately
-	int offset = 0;//1 for title run
-	if (node.getType() == Node.Type.PARAGRAPH && ((Paragraph)node).getRowParts().length > 0)
+	int offset = 0;
+	/*
+	if (node instanceof Paragraph && ((Paragraph)node).getRowParts().length > 0)
 	    offset = 1;
+	*/
 	for(Node n: subnodes)
 	{
-	    n.setNodeX(node.getNodeX());
-	    n.setNodeY(node.getNodeY() + offset);
-	    offset += n.getNodeHeight();
+	    n.setNodeX(baseX);
+	    n.setNodeY(baseY + offset);
+	    offset += n.getNodeHeight() + 1;
 	    calcPosition(n);
 	}
     }
-
-        //May be called after width calculation only
 }
