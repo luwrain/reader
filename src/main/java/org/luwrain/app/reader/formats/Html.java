@@ -323,7 +323,7 @@ public class Html
 	if (runs.isEmpty())
 	    return;
 	final org.luwrain.reader.Paragraph para = NodeFactory.newPara();
-	para.runs = runs.toArray(new org.luwrain.reader.Run[runs.size()]);
+	para.setRuns(runs.toArray(new org.luwrain.reader.Run[runs.size()]));
 	para.extraInfo = getCurrentExtraInfo();
 	nodes.add(para);
 	runs.clear();

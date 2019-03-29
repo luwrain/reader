@@ -56,7 +56,7 @@ final class TextExtractorFragment
 	if (node instanceof EmptyLine)
 	{
 	    final Paragraph para = (Paragraph)node;
-	    final RowPart part = new RowPart(para.runs[0]);
+	    final RowPart part = new RowPart(para.getRuns()[0]);
 	    para.setRowParts(new RowPart[]{part});
 	    parts.add(part);
 	    return;
@@ -73,14 +73,14 @@ final class TextExtractorFragment
     private void onParagraph(Paragraph para)
     {
 	NullCheck.notNull(para, "para");
-	final Run boundingRun1 = searchForRun(runFrom, para.runs());
-	final Run boundingRun2 = searchForRun(runTo, para.runs());
+	final Run boundingRun1 = searchForRun(runFrom, para.getRuns());
+	final Run boundingRun2 = searchForRun(runTo, para.getRuns());
 	if (!accepting && boundingRun1 == null && boundingRun2 == null)
 	    return;
 	final RowPartsSplitter splitter = new RowPartsSplitter();
 	if (boundingRun1 == null && boundingRun2 == null)
 	{
-	    for(Run r: para.runs())
+	    for(Run r: para.getRuns())
 	    {
 		final String text = r.text();
 		NullCheck.notNull(text, "text");
@@ -89,7 +89,7 @@ final class TextExtractorFragment
 	} else
 	{
 	    final BoundingInfo boundingInfo = prepareBoundingInfo(para, boundingRun1, boundingRun2);
-	    boundingInfo.filter(para.runs(), (run, fromChar,toChar)->{
+	    boundingInfo.filter(para.getRuns(), (run, fromChar,toChar)->{
 		    final String text = run.text();
 		    NullCheck.notNull(text, "text");
 		    if (fromChar < 0 || fromChar >= text.length())

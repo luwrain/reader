@@ -58,7 +58,7 @@ public final class TextExtractorWhole extends TextExtractor
     {
 	NullCheck.notNull(para, "para");
 	final RowPartsSplitter splitter = new RowPartsSplitter();
-	for(Run r: para.runs())
+	for(Run r: para.getRuns())
 	{
 	    final String text = r.text();
 	    NullCheck.notNull(text, "text");

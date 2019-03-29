@@ -182,8 +182,7 @@ class AudioPlaying  implements Listener
 	    NullCheck.notNull(para, "para");
 	    if (resultingRun != null)
 		return;
-	    if (para.runs != null)
-		for(Run r: para.runs)
+	    for(Run r: para.getRuns())
 		    checkRun(r);
 	}
 

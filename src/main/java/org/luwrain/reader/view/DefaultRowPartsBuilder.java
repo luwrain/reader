@@ -41,7 +41,7 @@ void onNode(Node node, int width)
 	if (node instanceof EmptyLine)
 	{
 	    final Paragraph para = (Paragraph)node;
-	    final RowPart part = new RowPart(para.runs[0]);
+	    final RowPart part = new RowPart(para.getRuns()[0]);
 	    para.setRowParts(new RowPart[]{part});
 	    parts.add(part);
 	    return;
@@ -59,7 +59,7 @@ void onNode(Node node, int width)
     {
 	NullCheck.notNull(para, "para");
 	final RowPartsSplitter splitter = new RowPartsSplitter();
-	for(Run r: para.runs())
+	for(Run r: para.getRuns())
 	{
 	    final String text = r.text();
 	    NullCheck.notNull(text, "text");

@@ -23,7 +23,7 @@ import org.luwrain.core.*;
 
 public class Paragraph extends Node
 {
-    public Run[] runs = new Run[0];
+    Run[] runs = new Run[0];
 
     Paragraph()
     {
@@ -91,9 +91,15 @@ public class Paragraph extends Node
 	return sb.toString();
     }
 
-    public Run[] runs()
+    public Run[] getRuns()
     {
-	return runs != null?runs:new Run[0];
+	return runs != null?runs.clone():new Run[0];
+    }
+
+    public void setRuns(Run[] runs)
+    {
+	NullCheck.notNullItems(runs, "runs");
+	this.runs = runs.clone();
     }
 
     @Override public String getCompleteText()

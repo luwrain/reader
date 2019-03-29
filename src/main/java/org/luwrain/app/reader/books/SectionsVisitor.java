@@ -55,8 +55,7 @@ class SectionsVisitor implements Visitor
 	if (node instanceof Paragraph)
 	{
 	    final Paragraph para = (Paragraph)node;
-	    if (para.runs != null)
-		for(Run r: para.runs)
+	    for(Run r: para.getRuns())
 		    if (r.href() != null && !r.href().isEmpty())
 			hrefs.add(r.href());
 	} else
