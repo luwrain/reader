@@ -23,20 +23,30 @@ import org.luwrain.core.*;
 
 public class Paragraph extends Node
 {
-    Run[] runs = new Run[0];
+    protected Run[] runs = new Run[0];
 
     Paragraph()
     {
 	super(Node.Type.PARAGRAPH);
     }
 
-        Paragraph(Run[] runs)
+    Paragraph(Run[] runs)
     {
 	super(Node.Type.PARAGRAPH);
 	NullCheck.notNullItems(runs, "runs");
-	this.runs = runs;
+	this.runs = runs.clone();
     }
 
+    public Run[] getRuns()
+    {
+	return runs != null?runs.clone():new Run[0];
+    }
+
+    public void setRuns(Run[] runs)
+    {
+	NullCheck.notNullItems(runs, "runs");
+	this.runs = runs.clone();
+    }
 
     @Override void preprocess()
     {
@@ -91,17 +101,6 @@ public class Paragraph extends Node
 	return sb.toString();
     }
 
-    public Run[] getRuns()
-    {
-	return runs != null?runs.clone():new Run[0];
-    }
-
-    public void setRuns(Run[] runs)
-    {
-	NullCheck.notNullItems(runs, "runs");
-	this.runs = runs.clone();
-    }
-
     @Override public String getCompleteText()
     {
 	if (runs == null)
@@ -119,10 +118,5 @@ public class Paragraph extends Node
 	    b.append(value);
 	}
 	return new String(b);
-    }
-
-    public boolean withEmptyLine()
-    {
-	return parentNode.getType() == Type.ROOT;
     }
 }
