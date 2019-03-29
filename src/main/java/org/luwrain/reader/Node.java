@@ -48,9 +48,31 @@ public class Node extends org.luwrain.reader.view.NodeBase
 	this.type = type;
     }
 
+	    public Type getType()
+    {
+	return type;
+    }
+
+	    public Node getParentNode()
+    {
+	return parentNode;
+    }
+
+    protected void setParentNode(Node node)
+    {
+	NullCheck.notNull(node, "node");
+	this.parentNode = node;
+    }
+
     public final Node[] getSubnodes()
     {
 	return subnodes != null?subnodes.clone():new Node[0];
+    }
+
+        public void setSubnodes(Node[] subnodes)
+    {
+	NullCheck.notNullItems(subnodes, "subnodes");
+	this.subnodes = subnodes.clone();
     }
 
         public final Node getSubnode(int index)
@@ -59,7 +81,6 @@ public class Node extends org.luwrain.reader.view.NodeBase
 	    throw new RuntimeException("No subnodes");
 	return subnodes[index];
 }
-
 
     public final int getSubnodeCount()
     {
@@ -86,7 +107,7 @@ public class Node extends org.luwrain.reader.view.NodeBase
 	}
 	for(Node n: subnodes)
 	{
-	    n.parentNode = this;
+	    n.setParentNode(this);
 	    n.preprocess();
 	}
 	if (type == Type.ORDERED_LIST || type == Type.UNORDERED_LIST)
@@ -201,21 +222,6 @@ void setEmptyMark()
 	return -1;
     }
 
-    public Node getParentNode()
-    {
-	return parentNode;
-    }
-
-    public Type getType()
-    {
-	return type;
-    }
-
-    public void setSubnodes(Node[] subnodes)
-    {
-	NullCheck.notNullItems(subnodes, "subnodes");
-	this.subnodes = subnodes.clone();
-    }
 
     public int getImportance()
     {
