@@ -66,14 +66,14 @@ public class View
     public Layout createLayout()
     {
 	final Layout layout = new Layout(doc, root, rows, rowParts, paragraphs, lineCount);
-	/*
+
 	  try {
 	    org.luwrain.util.LinesSaver.saveLines(new java.io.File("/tmp/lines"), layout);
 	}
 	catch(Exception e)
 	{
 	}
-	*/
+
 	return layout;
     }
 

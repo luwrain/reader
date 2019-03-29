@@ -88,6 +88,7 @@ final class NodeGeom
 	int height = 0;
 	for(Node n: subnodes)
 	    height += n.getNodeHeight();
+	if (!node.allSubnodesSingleLine())
     if (subnodes.length > 0)
 	height += (subnodes.length - 1);
     node.setNodeHeight(height);
@@ -128,7 +129,9 @@ final class NodeGeom
 	{
 	    n.setNodeX(baseX);
 	    n.setNodeY(baseY + offset);
-	    offset += n.getNodeHeight() + 1;
+	    offset += n.getNodeHeight();
+	    if (!node.allSubnodesSingleLine())
+		offset++;
 	    calcPosition(n);
 	}
     }

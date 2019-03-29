@@ -23,24 +23,24 @@ import org.luwrain.core.*;
 
 public class Node extends org.luwrain.reader.view.NodeBase
 {
+            static public final int IMPORTANCE_REGULAR = 0;
+
     public enum Type {
 	ROOT, SECTION, PARAGRAPH,
 	TABLE, TABLE_ROW, TABLE_CELL,
 	UNORDERED_LIST, ORDERED_LIST, LIST_ITEM,
     };
-
-    static public final int IMPORTANCE_REGULAR = 0;
-
-    protected Type type;
-    public ExtraInfo extraInfo = null;
-    protected int importance = IMPORTANCE_REGULAR;
-    protected Node[] subnodes = new Node[0];
-    Node parentNode;
-    protected Object associatedObject = null;
-
-    /** The exact meaning of a level depends on the node type*/
+    
+        protected final Type type;
+        protected Node[] subnodes = new Node[0];
+    protected Node parentNode = null;
+        /** The exact meaning of a level depends on the node type*/
     int level = 0;
 
+    private Boolean allSubnodesSingleLineCache = null;
+
+    public ExtraInfo extraInfo = null;
+    protected int importance = IMPORTANCE_REGULAR;
     protected boolean empty = false;
 
 	Node(Type type)
@@ -214,7 +214,7 @@ void setEmptyMark()
     public void setSubnodes(Node[] subnodes)
     {
 	NullCheck.notNullItems(subnodes, "subnodes");
-	this.subnodes = subnodes;
+	this.subnodes = subnodes.clone();
     }
 
     public int getImportance()
@@ -225,16 +225,6 @@ void setEmptyMark()
     public void setImportance(int importance)
     {
 	this.importance = importance;
-    }
-
-    public boolean hasNonParagraphs()
-    {
-	if (subnodes == null)
-	    return false;
-	for(Node n: subnodes)
-	    if (!(n instanceof Paragraph))
-		return true;
-	return false;
     }
 
     public void addSubnode(Node subnode)
@@ -290,13 +280,17 @@ void setEmptyMark()
 	    n.preprocess();
     }
 
-    public Object getAssociatedObject()
+    public boolean allSubnodesSingleLine()
     {
-	return associatedObject;
-    }
-
-    public void setAssociatedObject(Object associatedObject)
-    {
-	this.associatedObject = associatedObject;
+	if (allSubnodesSingleLineCache != null)
+	    return allSubnodesSingleLineCache.booleanValue();
+	for(Node n: getSubnodes())
+	    if (n.getNodeHeight() > 1)
+	    {
+		this.allSubnodesSingleLineCache = new Boolean(false);
+		return false;
+	    }
+			this.allSubnodesSingleLineCache = new Boolean(true);
+	return true;
     }
 }
