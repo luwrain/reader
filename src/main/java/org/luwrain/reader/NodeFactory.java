@@ -56,9 +56,4 @@ public class NodeFactory
 	para.runs = new Run[]{new TextRun(text)};
 	return para;
     }
-
-    static public EmptyLine newEmptyLine()
-    {
-	return new EmptyLine();
-    }
 }

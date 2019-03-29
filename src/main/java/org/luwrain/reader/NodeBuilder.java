@@ -49,13 +49,6 @@ public final class NodeBuilder
 	return para;
     }
 
-    public EmptyLine addEmptyLine()
-    {
-	final EmptyLine emptyLine = new EmptyLine();
-	nodes.add(emptyLine);
-	return emptyLine;
-    }
-
     public Node newRoot()
     {
 	final Node  node = new Node(Node.Type.ROOT);

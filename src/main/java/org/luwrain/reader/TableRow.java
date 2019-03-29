@@ -53,7 +53,7 @@ public class TableRow extends Node
 	for(int i = subnodes.length;i < newNodes.length;++i)
 	{
 	    final TableCell cell = new TableCell();
-	    cell.subnodes = new Node[]{NodeFactory.newEmptyLine()};
+	    cell.subnodes = new Node[]{new EmptyLine()};
 	    cell.subnodes[0].parentNode = cell;
 	    cell.parentNode = this;
 	    newNodes[i] = cell;

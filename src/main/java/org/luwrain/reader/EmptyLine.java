@@ -19,7 +19,7 @@ package org.luwrain.reader;
 
 import java.util.*;
 
-public class EmptyLine extends Paragraph
+public final class EmptyLine extends Paragraph
 {
     EmptyLine()
     {
