@@ -56,7 +56,7 @@ ExtraInfo extraInfo)
 	return text != null?text:"";
     }
 
-    public boolean isEmpty()
+    @Override public boolean isEmpty()
     {
 	return text == null || text.isEmpty();
     }
