@@ -43,9 +43,9 @@ public class TableCell extends Node
 
     public Table getTable()
     {
-	if (parentNode == null || parentNode.parentNode == null)
+	if (getParentNode() == null || getParentNode().getParentNode() == null)
 	    return null;
-	final Node tableNode = parentNode.parentNode;
+	final Node tableNode = getParentNode().getParentNode();
 	if (!(tableNode instanceof Table))
 	{
 	    Log.warning("doctree", "table node has a wrong class " + tableNode.getClass().getName());
@@ -61,6 +61,6 @@ public class TableCell extends Node
 
     public int getRowIndex()
     {
-	return parentNode.getIndexInParentSubnodes();
+	return getParentNode().getIndexInParentSubnodes();
     }
 }

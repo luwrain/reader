@@ -31,13 +31,13 @@ public class ListItem extends Node
 
     public boolean isListOrdered()
     {
-	return parentNode.type == Node.Type.ORDERED_LIST;
+	return getParentType() == Node.Type.ORDERED_LIST;
     }
 
     public int getListTotalItemCount()
     {
-	if (parentNode == null || parentNode.subnodes == null)
+	if (getParentNode() == null)
 	    return 0;
-	return parentNode.subnodes.length;
+	return getParentNode().getSubnodeCount();
     }
 }

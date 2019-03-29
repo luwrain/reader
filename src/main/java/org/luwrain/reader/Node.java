@@ -33,7 +33,7 @@ public class Node extends org.luwrain.reader.view.NodeBase
     
         protected final Type type;
         protected Node[] subnodes = new Node[0];
-    protected Node parentNode = null;
+    private Node parentNode = null;
         /** The exact meaning of a level depends on the node type*/
     int level = 0;
 

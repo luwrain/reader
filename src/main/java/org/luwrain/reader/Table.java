@@ -37,8 +37,8 @@ public class Table extends Node
 		Log.warning("doctree", "table has a subnode of class " + subnodes[i].getClass().getName() + ", it will be put into newly created table row");
 		final Node n = NodeFactory.newNode(Type.TABLE_ROW);
 		n.subnodes = new Node[]{subnodes[i]};
-		n.subnodes[0].parentNode = n;
-		n.parentNode = this;
+		n.subnodes[0].setParentNode(n);
+		n.setParentNode(this);
 		subnodes[i] = n;
 	    }
 	int maxCellCount = 0;
@@ -77,12 +77,12 @@ public class Table extends Node
     public int getTableLevel()
     {
 	int count = 1;
-	Node n = parentNode;
+	Node n = getParentNode();
 	while(n != null)
 	{
 	    if (n.type == Node.Type.TABLE)
 		++count;
-	    n = n.parentNode;
+	    n = n.getParentNode();
 	}
 	return count;
     }

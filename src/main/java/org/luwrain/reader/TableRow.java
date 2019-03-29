@@ -37,8 +37,8 @@ public class TableRow extends Node
 		Log.warning("doctree", "table row has a subnode of class " + subnodes[i].getClass().getName() + ", it will be put into newly created table cell");
 		final Node n = NodeFactory.newNode(Type.TABLE_CELL);
 		n.subnodes = new Node[]{subnodes[i]};
-		n.subnodes[0].parentNode = n;
-		n.parentNode = this;
+		n.subnodes[0].setParentNode(n);
+		n.setParentNode(this);
 		subnodes[i] = n;
 	    }
 	super.preprocess();
@@ -54,8 +54,8 @@ public class TableRow extends Node
 	{
 	    final TableCell cell = new TableCell();
 	    cell.subnodes = new Node[]{new EmptyLine()};
-	    cell.subnodes[0].parentNode = cell;
-	    cell.parentNode = this;
+	    cell.subnodes[0].setParentNode(cell);
+	    cell.setParentNode(this);
 	    newNodes[i] = cell;
 	}
 	subnodes = newNodes;
