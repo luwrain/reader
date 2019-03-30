@@ -26,20 +26,15 @@ import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 
 import org.luwrain.core.*;
-import org.luwrain.reader.NodeFactory;
 import org.luwrain.reader.NodeBuilder;
-
 
 final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 {
-    //    static private final String LOG_COMPONENT = "reader";
-
     private org.jsoup.nodes.Document jsoupDoc = null;
     private URL docUrl = null;
 
-    private final LinkedList<String> hrefStack = new LinkedList<String>();
-    //    private final LinkedList<ExtraInfo> extraInfoStack = new LinkedList<ExtraInfo>();
-    private final LinkedList<String> allHrefs = new LinkedList<String>();
+    private final LinkedList<String> hrefStack = new LinkedList();
+    private final List<String> allHrefs = new LinkedList();
 
     @Override public org.luwrain.reader.Document buildDoc(File file, Properties props) throws IOException
     {
@@ -92,18 +87,22 @@ doc.setProperty("charset", charset);
     private org.luwrain.reader.Node[] onNode(org.jsoup.nodes.Node node)
     {
 	NullCheck.notNull(node, "node");
-	final LinkedList<org.luwrain.reader.Node> resNodes = new LinkedList();
-	final LinkedList<org.luwrain.reader.Run> runs = new LinkedList();
+	final List<org.luwrain.reader.Node> resNodes = new LinkedList();
+	final List<org.luwrain.reader.Run> runs = new LinkedList();
 	final List<Node> nodes = node.childNodes();
+	if (nodes == null)
+	    return new org.luwrain.reader.Node[0];
 	for(Node n: nodes)
 	{
-	    final String name = n.nodeName();
 	    if (n instanceof TextNode)
 	    {
 		final TextNode textNode = (TextNode)n;
+		onTextNode(textNode, runs);
+		/*
 		final String text = textNode.text();
 		if (text != null && !text.isEmpty())
 		    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+		*/
 		continue;
 	    }
 	    if (n instanceof Element)
@@ -114,8 +113,14 @@ doc.setProperty("charset", charset);
 		    continue;
 		}
 	    }
+
+	    	    if (n instanceof Comment)
+			continue;
+			
+	    
+	    		Log.warning(LOG_COMPONENT, "unprocessed node of class " + n.getClass().getName());
 	}
-	commitPara(resNodes, runs);
+	commitParagraph(resNodes, runs);
 	return resNodes.toArray(new org.luwrain.reader.Node[resNodes.size()]);
     }
 
@@ -198,6 +203,7 @@ doc.setProperty("charset", charset);
 tagName = name.trim().toLowerCase();
 	}
 	if (tagName.startsWith("g:") ||
+	    tagName.startsWith("g-") ||
 	    tagName.startsWith("fb:"))
 	    return;
 	switch(tagName)
@@ -210,15 +216,17 @@ tagName = name.trim().toLowerCase();
 	case "nobr":
 	case "wbr":
 	case "map":
+	case "svg":
 	    return;
 	}
 	switch(tagName)
 	{
 	case "br":
-	    commitPara(nodes, runs);
+	    commitParagraph(nodes, runs);
 	    break;
 	case "p":
 	case "div":
+	case "main":
 	case "noscript":
 	case "header":
 	case "footer":
@@ -240,7 +248,7 @@ tagName = name.trim().toLowerCase();
 	case "time":
 	case "aside":
 	    {
-	    commitPara(nodes, runs);
+	    commitParagraph(nodes, runs);
 	addExtraInfo(el);
 	final org.luwrain.reader.Node[] nn = onNode(el);
 	releaseExtraInfo();
@@ -258,7 +266,7 @@ tagName = name.trim().toLowerCase();
 	case "h8":
 	case "h9":
 	    {
-	    commitPara(nodes, runs);
+	    commitParagraph(nodes, runs);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
 	builder.addSubnodes(onNode(el));
@@ -276,7 +284,7 @@ tagName = name.trim().toLowerCase();
 	case "tr":
 	case "td":
 	    {
-	    commitPara(nodes, runs);
+	    commitParagraph(nodes, runs);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
 	builder.addSubnodes(onNode(el));
@@ -320,16 +328,15 @@ tagName = name.trim().toLowerCase();
 	    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
     }
 
-    private void commitPara(List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
+    private void commitParagraph(List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
     {
 	NullCheck.notNull(nodes, "nodes");
 	NullCheck.notNull(runs, "runs");
 	if (runs.isEmpty())
 	    return;
-	final org.luwrain.reader.Paragraph para = NodeFactory.newPara();
-	para.setRuns(runs.toArray(new org.luwrain.reader.Run[runs.size()]));
-	para.extraInfo = getCurrentExtraInfo();
-	nodes.add(para);
+	final org.luwrain.reader.Paragraph p = NodeBuilder.newParagraph(runs.toArray(new org.luwrain.reader.Run[runs.size()]));
+	p.extraInfo = getCurrentExtraInfo();
+	nodes.add(p);
 	runs.clear();
     }
 

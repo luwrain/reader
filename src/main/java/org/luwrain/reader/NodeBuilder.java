@@ -53,6 +53,14 @@ public final class NodeBuilder
 	return para;
     }
 
+    static public Paragraph newParagraph(Run[] runs)
+    {
+	NullCheck.notNullItems(runs, "runs");
+	final Paragraph p = new Paragraph();
+	p.setRuns(runs);
+	return p;
+    }
+
     public Paragraph addPara(String text)
     {
 	NullCheck.notNull(text, "text");

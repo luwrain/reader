@@ -218,7 +218,7 @@ public final class UrlLoader
     private void downloadToTmpFile(InputStream s) throws IOException
     {
 	NullCheck.notNull(s, "s");
-	tmpFile = Files.createTempFile("lwrreader", "");
+	tmpFile = Files.createTempFile("tmplwr-reader-", ".dat");
 	Log.debug(LOG_COMPONENT, "creating temporary file " + tmpFile.toString());
 	Files.copy(s, tmpFile, StandardCopyOption.REPLACE_EXISTING);
     }
