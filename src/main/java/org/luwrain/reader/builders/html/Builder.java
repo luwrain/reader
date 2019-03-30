@@ -120,7 +120,7 @@ doc.setProperty("charset", charset);
     }
 
     private void onElementInPara(Element el,
-				 LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
+				 List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
     {
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(nodes, "nodes");
@@ -185,7 +185,7 @@ doc.setProperty("charset", charset);
     }
 
     private void onElement(Element el,
-			   LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
+			   List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
     {
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(nodes, "nodes");
@@ -195,7 +195,7 @@ doc.setProperty("charset", charset);
 	final String name = el.nodeName();
 	if (name == null || name.trim().isEmpty())
 	    return;
-	/*	final String */tagName = name.trim().toLowerCase();
+tagName = name.trim().toLowerCase();
 	}
 	if (tagName.startsWith("g:") ||
 	    tagName.startsWith("fb:"))
@@ -320,7 +320,7 @@ doc.setProperty("charset", charset);
 	    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
     }
 
-    private void commitPara(LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
+    private void commitPara(List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
     {
 	NullCheck.notNull(nodes, "nodes");
 	NullCheck.notNull(runs, "runs");
