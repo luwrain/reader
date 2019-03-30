@@ -35,15 +35,15 @@ import org.luwrain.core.Log;
 import org.luwrain.core.*;
 //import org.luwrain.reader.*;
 
-final class Builder implements org.luwrain.reader.DocumentBuilder
+final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 {
-    static private final String LOG_COMPONENT = "reader";
+    //    static private final String LOG_COMPONENT = "reader";
 
     private org.jsoup.nodes.Document jsoupDoc = null;
     private URL docUrl = null;
 
     private final LinkedList<String> hrefStack = new LinkedList<String>();
-    private final LinkedList<ExtraInfo> extraInfoStack = new LinkedList<ExtraInfo>();
+    //    private final LinkedList<ExtraInfo> extraInfoStack = new LinkedList<ExtraInfo>();
     private final LinkedList<String> allHrefs = new LinkedList<String>();
 
     @Override public org.luwrain.reader.Document buildDoc(File file, Properties props) throws IOException
@@ -357,6 +357,7 @@ doc.setProperty("charset", charset);
 	}
     }
 
+    /*
     private void addExtraInfo(Element el)
     {
 	NullCheck.notNull(el, "el");
@@ -409,4 +410,5 @@ doc.setProperty("charset", charset);
 
     
 
+    */
 }
