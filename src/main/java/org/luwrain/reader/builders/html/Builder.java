@@ -190,13 +190,17 @@ doc.setProperty("charset", charset);
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(nodes, "nodes");
 	NullCheck.notNull(runs, "runs");
+	final String tagName;
+	{
 	final String name = el.nodeName();
 	if (name == null || name.trim().isEmpty())
 	    return;
-	if (name.toLowerCase().trim().startsWith("g:") ||
-	    name.toLowerCase().trim().startsWith("fb:"))
+	/*	final String */tagName = name.trim().toLowerCase();
+	}
+	if (tagName.startsWith("g:") ||
+	    tagName.startsWith("fb:"))
 	    return;
-	switch(name.toLowerCase().trim())
+	switch(tagName)
 	{
 	case "script":
 	case "style":
@@ -208,14 +212,11 @@ doc.setProperty("charset", charset);
 	case "map":
 	    return;
 	}
-	org.luwrain.reader.Node n = null;
-	org.luwrain.reader.Node[] nn = null;
-	switch(name.toLowerCase().trim())
+	switch(tagName)
 	{
 	case "br":
 	    commitPara(nodes, runs);
 	    break;
-
 	case "p":
 	case "div":
 	case "noscript":
@@ -238,14 +239,15 @@ doc.setProperty("charset", charset);
 	case "dd":
 	case "time":
 	case "aside":
+	    {
 	    commitPara(nodes, runs);
 	addExtraInfo(el);
-	nn = onNode(el);
+	final org.luwrain.reader.Node[] nn = onNode(el);
 	releaseExtraInfo();
 	for(org.luwrain.reader.Node i: nn)
 	    nodes.add(i);
+	    }
 	break;
-
 	case "h1":
 	case "h2":
 	case "h3":
@@ -260,13 +262,12 @@ doc.setProperty("charset", charset);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
 	builder.addSubnodes(onNode(el));
-		n = builder.newSection(name.trim().charAt(1) - '0');
+		final org.luwrain.reader.Node n = builder.newSection(tagName.trim().charAt(1) - '0');
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
 	nodes.add(n);
 	    }
 	break;
-
 	case "ul":
 	case "ol":
 	case "li":
@@ -279,13 +280,12 @@ doc.setProperty("charset", charset);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
 	builder.addSubnodes(onNode(el));
-	n = createNode(name, builder);
+	final org.luwrain.reader.Node n = createNode(tagName, builder);
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
 	nodes.add(n);
 	    }
 	break;
-
 	case "img":
 	case "a":
 	case "b":
@@ -307,7 +307,7 @@ doc.setProperty("charset", charset);
 	releaseExtraInfo();
 	break;
 	default:
-	    Log.warning(LOG_COMPONENT, "unprocessed tag:" + name);
+	    Log.warning(LOG_COMPONENT, "unprocessed tag:" + tagName);
 	}
     }
 
