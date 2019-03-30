@@ -33,6 +33,19 @@ public final class NodeBuilder
 	nodes.add(node);
     }
 
+    public void addSubnodes(List<Node> nodes)
+    {
+	NullCheck.notNull(nodes, "nodes");
+	this.nodes.addAll(nodes);
+    }
+
+    public void addSubnodes(Node[] nodes)
+    {
+	NullCheck.notNullItems(nodes, "nodes");
+	for(Node n: nodes)
+	    this.nodes.add(n);
+    }
+
     public Paragraph addPara()
     {
 	final Paragraph para = new Paragraph();

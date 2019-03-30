@@ -26,6 +26,7 @@ import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 
 import org.luwrain.reader.NodeFactory;
+import org.luwrain.reader.NodeBuilder;
 import org.luwrain.reader.ExtraInfo;
 import org.luwrain.core.NullCheck;
 import org.luwrain.core.Log;
@@ -38,75 +39,29 @@ final class Builder implements org.luwrain.reader.DocumentBuilder
 {
     static private final String LOG_COMPONENT = "reader";
 
-        private org.jsoup.nodes.Document jsoupDoc = null;
+    private org.jsoup.nodes.Document jsoupDoc = null;
     private URL docUrl = null;
 
     private final LinkedList<String> hrefStack = new LinkedList<String>();
     private final LinkedList<ExtraInfo> extraInfoStack = new LinkedList<ExtraInfo>();
     private final LinkedList<String> allHrefs = new LinkedList<String>();
 
-
     @Override public org.luwrain.reader.Document buildDoc(File file, Properties props) throws IOException
     {
 	NullCheck.notNull(file, "file");
 	NullCheck.notNull(props, "props");
-	final String urlStr = props.getProperty("url");
-	if (urlStr == null || urlStr.isEmpty())
-	{
-	    Log.error(LOG_COMPONENT, "no \'url\' property");
-	    return null;
-	}
-	final URL url;
+	final InputStream is = new FileInputStream(file);
 	try {
-	    url = new URL(urlStr);
+	    return buildDoc(is, props);
 	}
-	catch(MalformedURLException e)
-	{
-	    Log.error(LOG_COMPONENT, "invalid URL: " + urlStr);
-	    return null;
+	finally {
+	    is.close();
 	}
-	final String charset = props.getProperty("charset");
-	if (charset == null || charset.isEmpty())
-	{
-	    Log.error(LOG_COMPONENT, "no \'charset\' property");
-	    return null;
-	}
-	/*
-	final Document doc = new org.luwrain.app.reader.formats.Html(file.toPath(), charset, url).constructDocument();
-doc.setProperty("url", url.toString());
-doc.setProperty("contenttype", ContentTypes.TEXT_HTML_DEFAULT);
-doc.setProperty("charset", charset);
-	return doc;
-	*/
-	return null;
     }
 
     @Override public org.luwrain.reader.Document buildDoc(String text, Properties props)
 {
-    NullCheck.notNull(text, "text");
-    NullCheck.notNull(props, "props");
-    	final String urlStr = props.getProperty("url");
-	if (urlStr == null || urlStr.isEmpty())
-	{
-	    Log.error(LOG_COMPONENT, "no \'url\' property");
-	    return null;
-	}
-	final URL url;
-	try {
-	    url = new URL(urlStr);
-	}
-	catch(MalformedURLException e)
-	{
-	    Log.error(LOG_COMPONENT, "invalid URL: " + urlStr);
-	    return null;
-	}
-	/*
-	final Document doc = new org.luwrain.app.reader.formats.Html(text, url).constructDocument();
-doc.setProperty("url", url.toString());
-doc.setProperty("contenttype", ContentTypes.TEXT_HTML_DEFAULT);
-	return doc;
-	*/
-	return null;
+    throw new RuntimeException("Not implemented");
         }
 
     @Override public org.luwrain.reader.Document buildDoc(InputStream is, Properties props) throws IOException
@@ -115,17 +70,11 @@ doc.setProperty("contenttype", ContentTypes.TEXT_HTML_DEFAULT);
 	NullCheck.notNull(props, "props");
 		final String urlStr = props.getProperty("url");
 	if (urlStr == null || urlStr.isEmpty())
-	{
-	    Log.error(LOG_COMPONENT, "no \'url\' property");
-	    return null;
-	}
+throw new IOException("no \'url\' property");
 	    this.docUrl = new URL(urlStr);
 	final String charset = props.getProperty("charset");
 	if (charset == null || charset.isEmpty())
-	{
-	    Log.error(LOG_COMPONENT, "no \'charset\' property");
-	    return null;
-	}
+	    throw new IOException("no \'charset\' property");
 	this.jsoupDoc = Jsoup.parse(is, charset, docUrl.toString());
 	final org.luwrain.reader.Document doc = constructDoc();
 doc.setProperty("url", docUrl.toString());
@@ -136,35 +85,20 @@ doc.setProperty("charset", charset);
 
 	    private org.luwrain.reader.Document constructDoc()
     {
-	final org.luwrain.reader.Node res = NodeFactory.newNode(org.luwrain.reader.Node.Type.ROOT);
-	final HashMap<String, String> meta = new HashMap<String, String>();
+	final NodeBuilder nodeBuilder = new NodeBuilder();
+	final Map<String, String> meta = new HashMap();
 	collectMeta(jsoupDoc.head(), meta);
-	res.setSubnodes(onNode(jsoupDoc.body()));
-	final org.luwrain.reader.Document doc = new org.luwrain.reader.Document(jsoupDoc.title(), res);
+	nodeBuilder.addSubnodes(onNode(jsoupDoc.body()));
+	final org.luwrain.reader.Document doc = new org.luwrain.reader.Document(jsoupDoc.title(), nodeBuilder.newRoot());
 	doc.setHrefs(allHrefs.toArray(new String[allHrefs.size()]));
 	return doc;
-    }
-
-    private void collectMeta(Element el, HashMap<String, String> meta)
-    {
-	if (el.nodeName().equals("meta"))
-	{
-	    final String name = el.attr("name");
-	    final String content = el.attr("content");
-	    if (name != null && !name.isEmpty() && content != null)
-		meta.put(name, content);
-	}
-	if (el.childNodes() != null)
-	    for(Node n: el.childNodes())
-		if (n instanceof Element)
-		    collectMeta((Element)n, meta);
     }
 
     private org.luwrain.reader.Node[] onNode(org.jsoup.nodes.Node node)
     {
 	NullCheck.notNull(node, "node");
-	final LinkedList<org.luwrain.reader.Node> resNodes = new LinkedList<org.luwrain.reader.Node>();
-	final LinkedList<org.luwrain.reader.Run> runs = new LinkedList<org.luwrain.reader.Run>();
+	final LinkedList<org.luwrain.reader.Node> resNodes = new LinkedList();
+	final LinkedList<org.luwrain.reader.Run> runs = new LinkedList();
 	final List<Node> nodes = node.childNodes();
 	for(Node n: nodes)
 	{
@@ -194,6 +128,8 @@ doc.setProperty("charset", charset);
 				 LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
     {
 	NullCheck.notNull(el, "el");
+	NullCheck.notNull(nodes, "nodes");
+	NullCheck.notNull(runs, "runs");
 	final String tagName = el.nodeName();
 	String href = null;
 	//img
@@ -243,7 +179,7 @@ doc.setProperty("charset", charset);
 		    onElement((Element)n, nodes, runs);
 		    continue;
 		}
-		Log.warning("doctree-html", "encountering unexpected node of class " + n.getClass().getName());
+		Log.warning(LOG_COMPONENT, "encountering unexpected node of class " + n.getClass().getName());
 	    }
 	}
 	finally
@@ -443,6 +379,24 @@ doc.setProperty("charset", charset);
     {
 	return extraInfoStack.isEmpty()?null:extraInfoStack.getLast();
     }
+
+        private void collectMeta(Element el, Map<String, String> meta)
+    {
+	NullCheck.notNull(el, "el");
+	NullCheck.notNull(meta, "meta");
+	if (el.nodeName().equals("meta"))
+	{
+	    final String name = el.attr("name");
+	    final String content = el.attr("content");
+	    if (name != null && !name.isEmpty() && content != null)
+		meta.put(name, content);
+	}
+	if (el.childNodes() != null)
+	    for(Node n: el.childNodes())
+		if (n instanceof Element)
+		    collectMeta((Element)n, meta);
+    }
+
 
 
     
