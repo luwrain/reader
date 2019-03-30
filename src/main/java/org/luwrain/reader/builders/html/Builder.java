@@ -27,6 +27,7 @@ import org.jsoup.select.*;
 
 import org.luwrain.core.*;
 import org.luwrain.reader.NodeBuilder;
+import org.luwrain.reader.Run;
 
 final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 {
@@ -124,48 +125,33 @@ doc.setProperty("charset", charset);
 	return resNodes.toArray(new org.luwrain.reader.Node[resNodes.size()]);
     }
 
-    private void onElementInPara(Element el,
-				 List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
+    private void onElementInPara(Element el, List<org.luwrain.reader.Node> nodes, List<Run> runs)
     {
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(nodes, "nodes");
 	NullCheck.notNull(runs, "runs");
-	final String tagName = el.nodeName();
-	String href = null;
-	//img
-	if (tagName.toLowerCase().trim().equals("img"))
+	final String tagName;
 	{
-	    final String value = el.attr("alt");
-	    if (value != null && !value.isEmpty())
-		runs.add(new org.luwrain.reader.TextRun("[" + value + "]", !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
-	    //Do nothing else here	    
+	    final String name = el.nodeName();
+	    if (name == null || name.isEmpty())
+		return;
+	    tagName = name.trim().toLowerCase();
+	}
+	if (tagName.equals("img"))
+	{
+	    onImg(el, runs);
 	    return;
 	}
-
-	//a
-	if (tagName.toLowerCase().trim().equals("a"))
-	{
-	    final String value = el.attr("href");
-	    if (value != null)
-	    {
-	    allHrefs.add(value);
-	    
-		try {
-		    href = new URL(docUrl, value).toString();
-		}
-		catch(MalformedURLException e)
-		{
-		    href = value;
-		}
-	    } else
-		href = value;
-	}
+	final String href;
+	if (tagName.equals("a"))
+	    href = extractHref(el); else
+	    href = null;
 	if (href != null)
-	{
 	    hrefStack.add(href);
-	}
 	try {
 	    final List<Node> nn = el.childNodes();
+	    if (nn == null)
+		return;
 	    for(Node n: nn)
 	    {
 		if (n instanceof TextNode)
@@ -365,6 +351,30 @@ tagName = name.trim().toLowerCase();
 	default:
 	    Log.warning(LOG_COMPONENT, "unable to create the node for tag \'" + tagName + "\'");
 	    return null;
+	}
+    }
+
+    private void onImg(Element el, List<Run> runs)
+    {
+	 NullCheck.notNull(el, "el");
+	 NullCheck.notNull(runs, "runs");
+	 final String value = el.attr("alt");
+	 if (value != null && !value.isEmpty())
+	     runs.add(new org.luwrain.reader.TextRun("[" + value + "]", !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+	 }
+
+    private String extractHref(Element el)
+    {
+	final String value = el.attr("href");
+	if (value == null)
+	    return null;
+	allHrefs.add(value);
+	try {
+	    return new URL(docUrl, value).toString();
+	}
+	catch(MalformedURLException e)
+	{
+	    return value;
 	}
     }
 }
