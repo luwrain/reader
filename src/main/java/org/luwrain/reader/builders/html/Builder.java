@@ -26,7 +26,7 @@ import org.luwrain.reader.*;
 
 final class Builder implements DocumentBuilder
 {
-    static private final String LOG_COMPONENT = "docbuilders";
+    static private final String LOG_COMPONENT = "reader";
 
     @Override public Document buildDoc(File file, Properties props) throws IOException
     {

@@ -97,8 +97,6 @@ public final class UrlLoader
 	return requestedContentType != null?requestedContentType:"";
     }
 
-    
-
     public void setCharset(String charset)
     {
 	NullCheck.notEmpty(charset, "charset");
@@ -111,7 +109,6 @@ public final class UrlLoader
 	    return selectedCharset;
 	return requestedCharset != null?requestedCharset:"";
     }
-
 
     void setTxtParaStyle(TextFiles.ParaStyle paraStyle)
     {
@@ -134,9 +131,13 @@ public final class UrlLoader
 	    final Result res;
 	    if (format == null)
 	    {
-		Log.debug(LOG_COMPONENT, "trying to use extensible document builders");
+
+		this.selectedCharset = Utils.extractCharset(selectedContentType);
+		if (this.selectedCharset.isEmpty())
+		    this.selectedCharset = requestedCharset;
+		Log.debug(LOG_COMPONENT, "trying to use extensible document builders, contentType=" + selectedContentType + ", charset=" + selectedCharset);
 		final DocumentBuilderHook builderHook = new DocumentBuilderHook(luwrain);
-		final Document hookDoc = builderHook.build(selectedContentType, new Properties(), tmpFile.toFile());
+		final Document hookDoc = builderHook.build(Utils.extractBaseContentType(selectedContentType), new Properties(), tmpFile.toFile());
 		if (hookDoc != null)
 		{
 		    Log.debug(LOG_COMPONENT, "the builder hook  has constructed the document");
@@ -145,11 +146,14 @@ public final class UrlLoader
 		} else
 		{
 		    Log.debug(LOG_COMPONENT, "the builder hook failed");
-		    final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, selectedContentType);
+		    final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, Utils.extractBaseContentType(selectedContentType));
 		    if (builder == null)
 			throw new IOException("No suitable handler for the content type: " + selectedContentType);
 		    res = new Result();
-		    res.doc = builder.buildDoc(tmpFile.toFile(), new Properties());
+		    final Properties props = new Properties();
+		    props.setProperty("url", responseUrl.toString());
+		    props.setProperty("charset", selectedCharset);
+		    res.doc = builder.buildDoc(tmpFile.toFile(), props);
 		}
 	    } else
 	    {
@@ -174,7 +178,7 @@ public final class UrlLoader
 	finally {
 	    if (tmpFile != null)
 	    {
-		Log.debug("doctree", "deleting temporary file " + tmpFile.toString());
+		Log.debug(LOG_COMPONENT, "deleting temporary file " + tmpFile.toString());
 		Files.delete(tmpFile);
 		tmpFile = null;
 	    }
@@ -214,8 +218,8 @@ public final class UrlLoader
     private void downloadToTmpFile(InputStream s) throws IOException
     {
 	NullCheck.notNull(s, "s");
-	tmpFile = Files.createTempFile("lwr-doctree", "");
-	Log.debug("doctree", "creating temporary file " + tmpFile.toString());
+	tmpFile = Files.createTempFile("lwrreader", "");
+	Log.debug(LOG_COMPONENT, "creating temporary file " + tmpFile.toString());
 	Files.copy(s, tmpFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
@@ -252,9 +256,11 @@ public final class UrlLoader
 	try {
 	    switch(format)
 	    {
+		/*
 	    case HTML:
 		res.doc = new Html(stream, selectedCharset, responseUrl).constructDocument();
 		return res;
+		*/
 	    case XML:
 		res.doc = readXml();
 		return res;
@@ -268,7 +274,7 @@ return new Fb2(is, selectedCharset).createDoc();
 			}
 			catch (IOException e)
 			{
-			    Log.error("doctree", "unable to read FB2 subdoc in ZIP:" + e.getClass().getName() + ":" + e.getMessage());
+			    Log.error(LOG_COMPONENT, "unable to read FB2 subdoc in ZIP:" + e.getClass().getName() + ":" + e.getMessage());
 			    return null;
 			}
 }).createDoc();
@@ -323,8 +329,10 @@ return new Fb2(is, selectedCharset).createDoc();
 	NullCheck.notEmpty(contentType, "contentType");
 	switch(contentType.toLowerCase().trim())
 	{
+	    /*
 	case ContentTypes.TEXT_HTML_DEFAULT:
 	    return Format.HTML;
+	    */
 	case CONTENT_TYPE_XML:
 	    return Format.XML;
 	case CONTENT_TYPE_FB2:

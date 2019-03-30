@@ -72,7 +72,6 @@ final class Utils
 	}
 	catch(MimeTypeParseException e)
 	{
-	    e.printStackTrace();
 	    return "";
 	}
     }

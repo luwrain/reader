@@ -28,4 +28,3 @@ public final class Factory implements DocumentBuilderFactory
 	return new Builder();
     }
 }
-    
