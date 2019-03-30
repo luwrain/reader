@@ -17,23 +17,12 @@
 
 package org.luwrain.reader.builders.html;
 
-import java.io.*;
 import java.util.*;
-import java.net.*;
 
-import org.jsoup.*;
 import org.jsoup.nodes.*;
-import org.jsoup.select.*;
-
-import org.luwrain.reader.NodeFactory;
-import org.luwrain.reader.NodeBuilder;
-import org.luwrain.reader.ExtraInfo;
-import org.luwrain.core.NullCheck;
-import org.luwrain.core.Log;
-
 
 import org.luwrain.core.*;
-//import org.luwrain.reader.*;
+import org.luwrain.reader.ExtraInfo;
 
 class Base
 {
@@ -41,7 +30,6 @@ class Base
 
     private final LinkedList<ExtraInfo> extraInfoStack = new LinkedList<ExtraInfo>();
 
-    
     protected void addExtraInfo(Element el)
     {
 	NullCheck.notNull(el, "el");
@@ -62,18 +50,18 @@ class Base
 	extraInfoStack.add(info);
     }
 
-protected void releaseExtraInfo()
+    protected void releaseExtraInfo()
     {
 	if (!extraInfoStack.isEmpty())
 	    extraInfoStack.pollLast();
     }
 
-protected ExtraInfo getCurrentExtraInfo()
+    protected ExtraInfo getCurrentExtraInfo()
     {
 	return extraInfoStack.isEmpty()?null:extraInfoStack.getLast();
     }
 
-        static protected void collectMeta(Element el, Map<String, String> meta)
+    static protected void collectMeta(Element el, Map<String, String> meta)
     {
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(meta, "meta");
@@ -89,9 +77,4 @@ protected ExtraInfo getCurrentExtraInfo()
 		if (n instanceof Element)
 		    collectMeta((Element)n, meta);
     }
-
-
-
-    
-
 }
