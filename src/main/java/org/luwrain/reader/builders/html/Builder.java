@@ -79,13 +79,13 @@ doc.setProperty("charset", charset);
 	final NodeBuilder nodeBuilder = new NodeBuilder();
 	final Map<String, String> meta = new HashMap();
 	collectMeta(jsoupDoc.head(), meta);
-	nodeBuilder.addSubnodes(onNode(jsoupDoc.body()));
+	nodeBuilder.addSubnodes(onNode(jsoupDoc.body(), false));
 	final org.luwrain.reader.Document doc = new org.luwrain.reader.Document(jsoupDoc.title(), nodeBuilder.newRoot());
 	doc.setHrefs(allHrefs.toArray(new String[allHrefs.size()]));
 	return doc;
     }
 
-    private org.luwrain.reader.Node[] onNode(org.jsoup.nodes.Node node)
+    private org.luwrain.reader.Node[] onNode(org.jsoup.nodes.Node node, boolean preMode)
     {
 	NullCheck.notNull(node, "node");
 	final List<org.luwrain.reader.Node> resNodes = new LinkedList();
@@ -98,7 +98,7 @@ doc.setProperty("charset", charset);
 	    if (n instanceof TextNode)
 	    {
 		final TextNode textNode = (TextNode)n;
-		onTextNode(textNode, runs);
+		onTextNode(textNode, resNodes, runs, preMode);
 		/*
 		final String text = textNode.text();
 		if (text != null && !text.isEmpty())
@@ -110,7 +110,7 @@ doc.setProperty("charset", charset);
 	    {
 		final Element el = (Element)n;
 		{
-		    onElement((Element)n, resNodes, runs);
+		    onElement((Element)n, resNodes, runs, preMode);
 		    continue;
 		}
 	    }
@@ -125,7 +125,7 @@ doc.setProperty("charset", charset);
 	return resNodes.toArray(new org.luwrain.reader.Node[resNodes.size()]);
     }
 
-    private void onElementInPara(Element el, List<org.luwrain.reader.Node> nodes, List<Run> runs)
+    private void onElementInPara(Element el, List<org.luwrain.reader.Node> nodes, List<Run> runs, boolean preMode)
     {
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(nodes, "nodes");
@@ -156,12 +156,12 @@ doc.setProperty("charset", charset);
 	    {
 		if (n instanceof TextNode)
 		{
-		    onTextNode((TextNode)n, runs);
+		    onTextNode((TextNode)n, nodes, runs, preMode);
 		    continue;
 		}
 		if (n instanceof Element)
 		{
-		    onElement((Element)n, nodes, runs);
+		    onElement((Element)n, nodes, runs, preMode);
 		    continue;
 		}
 		if (n instanceof Comment)
@@ -176,8 +176,7 @@ doc.setProperty("charset", charset);
 	}
     }
 
-    private void onElement(Element el,
-			   List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
+    private void onElement(Element el, List<org.luwrain.reader.Node> nodes, List<Run> runs, boolean preMode)
     {
 	NullCheck.notNull(el, "el");
 	NullCheck.notNull(nodes, "nodes");
@@ -205,9 +204,9 @@ tagName = name.trim().toLowerCase();
 	case "map":
 	case "svg":
 	    return;
-	}
-	switch(tagName)
-	{
+	case "pre":
+	    onPre(el, nodes, runs);
+	    break;
 	case "br":
 	    commitParagraph(nodes, runs);
 	    break;
@@ -238,7 +237,7 @@ tagName = name.trim().toLowerCase();
 	    {
 	    commitParagraph(nodes, runs);
 	addExtraInfo(el);
-	final org.luwrain.reader.Node[] nn = onNode(el);
+	final org.luwrain.reader.Node[] nn = onNode(el, preMode);
 	releaseExtraInfo();
 	for(org.luwrain.reader.Node i: nn)
 	    nodes.add(i);
@@ -257,7 +256,7 @@ tagName = name.trim().toLowerCase();
 	    commitParagraph(nodes, runs);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
-	builder.addSubnodes(onNode(el));
+	builder.addSubnodes(onNode(el, preMode));
 		final org.luwrain.reader.Node n = builder.newSection(tagName.trim().charAt(1) - '0');
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
@@ -275,7 +274,7 @@ tagName = name.trim().toLowerCase();
 	    commitParagraph(nodes, runs);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
-	builder.addSubnodes(onNode(el));
+	builder.addSubnodes(onNode(el, preMode));
 	final org.luwrain.reader.Node n = createNode(tagName, builder);
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
@@ -301,7 +300,7 @@ tagName = name.trim().toLowerCase();
 	case "sup":
 	case "label":
 	    addExtraInfo(el);
-	onElementInPara(el, nodes, runs);
+	onElementInPara(el, nodes, runs, preMode);
 	releaseExtraInfo();
 	break;
 	default:
@@ -309,13 +308,28 @@ tagName = name.trim().toLowerCase();
 	}
     }
 
-    private void onTextNode(TextNode textNode, List<org.luwrain.reader.Run> runs)
+    private void onTextNode(TextNode textNode, List<org.luwrain.reader.Node> nodes, List<Run> runs, boolean preMode)
     {
 	NullCheck.notNull(textNode, "textNode");
+	NullCheck.notNull(nodes, "nodes");
 	NullCheck.notNull(runs, "runs");
 	final String text = textNode.text();
-	if (text != null && !text.isEmpty())
+	if (text == null || text.isEmpty())
+	    return;
+	if (!preMode)
+	{
 	    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+	    return;
+	}
+	final String[] lines = text.split("\n", -1);
+	if (lines.length == 0)
+	    return;
+		    runs.add(new org.luwrain.reader.TextRun(lines[0], !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+		    for(int i = 1;i < lines.length;i++)
+		    {
+			commitParagraph(nodes, runs);
+					    runs.add(new org.luwrain.reader.TextRun(lines[i], !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
+		    }
     }
 
     private void commitParagraph(List<org.luwrain.reader.Node> nodes, List<org.luwrain.reader.Run> runs)
@@ -375,6 +389,23 @@ tagName = name.trim().toLowerCase();
 	catch(MalformedURLException e)
 	{
 	    return value;
+	}
+    }
+
+    private void onPre(Element el, List<org.luwrain.reader.Node> nodes, List<Run> runs)
+    {
+	NullCheck.notNull(el, "el");
+	NullCheck.notNull(nodes, "nodes");
+	NullCheck.notNull(runs, "runs");
+	commitParagraph(nodes, runs);
+	    	addExtraInfo(el);
+		try {
+		    for(org.luwrain.reader.Node n: onNode(el, true))
+			nodes.add(n);
+		    commitParagraph(nodes, runs);
+		}
+		finally {
+		    	releaseExtraInfo();
 	}
     }
 }
