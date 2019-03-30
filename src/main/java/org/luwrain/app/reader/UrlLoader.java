@@ -133,8 +133,10 @@ public final class UrlLoader
 	    {
 
 		this.selectedCharset = Utils.extractCharset(selectedContentType);
+		if (!this.requestedCharset.isEmpty())
+		    this.selectedCharset = this.requestedCharset;
 		if (this.selectedCharset.isEmpty())
-		    this.selectedCharset = requestedCharset;
+		    this.selectedCharset = DEFAULT_CHARSET;
 		Log.debug(LOG_COMPONENT, "trying to use extensible document builders, contentType=" + selectedContentType + ", charset=" + selectedCharset);
 		final DocumentBuilderHook builderHook = new DocumentBuilderHook(luwrain);
 		final Document hookDoc = builderHook.build(Utils.extractBaseContentType(selectedContentType), new Properties(), tmpFile.toFile());

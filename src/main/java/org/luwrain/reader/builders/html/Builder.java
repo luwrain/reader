@@ -155,7 +155,6 @@ doc.setProperty("charset", charset);
 		}
 		catch(MalformedURLException e)
 		{
-		    e.printStackTrace();
 		    href = value;
 		}
 	    } else
@@ -179,6 +178,8 @@ doc.setProperty("charset", charset);
 		    onElement((Element)n, nodes, runs);
 		    continue;
 		}
+		if (n instanceof Comment)
+		    continue;
 		Log.warning(LOG_COMPONENT, "encountering unexpected node of class " + n.getClass().getName());
 	    }
 	}
@@ -235,6 +236,7 @@ tagName = name.trim().toLowerCase();
 	case "tbody":
 	case "figure":
 	case "figcaption":
+	case "caption":
 	case "address":
 	case "nav":
 	case "article":
@@ -296,6 +298,8 @@ tagName = name.trim().toLowerCase();
 	break;
 	case "img":
 	case "a":
+	case "tt":
+	case "code":
 	case "b":
 	case "s":
 	case "ins":
