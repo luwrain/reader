@@ -192,6 +192,9 @@ doc.setProperty("charset", charset);
     private void onElement(Element el,
 			   LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
     {
+	NullCheck.notNull(el, "el");
+	NullCheck.notNull(nodes, "nodes");
+	NullCheck.notNull(runs, "runs");
 	final String name = el.nodeName();
 	if (name == null || name.trim().isEmpty())
 	    return;
@@ -259,8 +262,9 @@ doc.setProperty("charset", charset);
 	case "h9":
 	    commitPara(nodes, runs);
 	addExtraInfo(el);
-	n = NodeFactory.newSection(name.trim().charAt(1) - '0');
-	n.setSubnodes(onNode(el));
+	final NodeBuilder builder = new NodeBuilder();
+	builder.addSubnodes(onNode(el));
+		n = builder.newSection(name.trim().charAt(1) - '0');
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
 	nodes.add(n);
@@ -303,12 +307,14 @@ doc.setProperty("charset", charset);
 	releaseExtraInfo();
 	break;
 	default:
-	    Log.warning("doctree-html", "unprocessed tag:" + name);
+	    Log.warning(LOG_COMPONENT, "unprocessed tag:" + name);
 	}
     }
 
-    private void onTextNode(TextNode textNode, LinkedList<org.luwrain.reader.Run> runs)
+    private void onTextNode(TextNode textNode, List<org.luwrain.reader.Run> runs)
     {
+	NullCheck.notNull(textNode, "textNode");
+	NullCheck.notNull(runs, "runs");
 	final String text = textNode.text();
 	if (text != null && !text.isEmpty())
 	    runs.add(new org.luwrain.reader.TextRun(text, !hrefStack.isEmpty()?hrefStack.getLast():"", getCurrentExtraInfo()));
@@ -316,6 +322,8 @@ doc.setProperty("charset", charset);
 
     private void commitPara(LinkedList<org.luwrain.reader.Node> nodes, LinkedList<org.luwrain.reader.Run> runs)
     {
+	NullCheck.notNull(nodes, "nodes");
+	NullCheck.notNull(runs, "runs");
 	if (runs.isEmpty())
 	    return;
 	final org.luwrain.reader.Paragraph para = NodeFactory.newPara();
@@ -344,7 +352,7 @@ doc.setProperty("charset", charset);
 	case "td":
 	    return org.luwrain.reader.Node.Type.TABLE_CELL;
 	default:
-	    Log.warning("doctree-html", "unable to create the node for tag \'" + tagName + "\'");
+	    Log.warning(LOG_COMPONENT, "unable to create the node for tag \'" + tagName + "\'");
 	    return null;
 	}
     }
