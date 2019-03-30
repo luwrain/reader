@@ -27,8 +27,9 @@ import java.util.zip.*;
 import org.luwrain.core.*;
 import org.luwrain.util.*;
 import org.luwrain.reader.*;
-import org.luwrain.app.reader.formats.*;
 import org.luwrain.app.reader.books.*;
+
+import org.luwrain.app.reader.formats.TextFiles.ParaStyle;
 
 public final class UrlLoader
 {
@@ -63,7 +64,7 @@ public final class UrlLoader
     private String requestedContentType = "";
     private String requestedTagRef = "";
     private String requestedCharset = "";
-    private TextFiles.ParaStyle requestedTxtParaStyle = TextFiles.ParaStyle.EMPTY_LINES;
+    private ParaStyle requestedTxtParaStyle = ParaStyle.EMPTY_LINES;
 
     private URL responseUrl = null;
     private String responseContentType = "";
@@ -110,7 +111,7 @@ public final class UrlLoader
 	return requestedCharset != null?requestedCharset:"";
     }
 
-    void setTxtParaStyle(TextFiles.ParaStyle paraStyle)
+    void setTxtParaStyle(ParaStyle paraStyle)
     {
 	NullCheck.notNull(paraStyle, "paraStyle");
 	this.requestedTxtParaStyle = paraStyle;
@@ -266,6 +267,7 @@ public final class UrlLoader
 	    case XML:
 		res.doc = readXml();
 		return res;
+		/*
 	    case FB2:
 res.doc = new Fb2(tmpFile, selectedCharset).createDoc();
 return res;
@@ -284,6 +286,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	    case TXT:
 		res.doc = new TextFiles(tmpFile.toFile(), makeTitleFromUrl(), selectedCharset, requestedTxtParaStyle).makeDoc();
 		    return res;
+		*/
 	    default:
 			throw new IOException("No suitable handler for the content type: " + selectedContentType);
 	    }
@@ -302,12 +305,15 @@ return new Fb2(is, selectedCharset).createDoc();
 	    return null;
 	}
 	Log.debug(LOG_COMPONENT, "determined doctype is \'" + doctype + "\'");
+	/*
 	switch(doctype.trim().toLowerCase())
 	{
 	case DOCTYPE_FB2:
 	    return new Fb2(tmpFile, selectedCharset).createDoc();
 	}
+	*/
 	return null;
+
     }
 
     private String makeTitleFromUrl()

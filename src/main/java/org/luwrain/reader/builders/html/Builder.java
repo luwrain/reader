@@ -398,14 +398,14 @@ tagName = name.trim().toLowerCase();
 	NullCheck.notNull(nodes, "nodes");
 	NullCheck.notNull(runs, "runs");
 	commitParagraph(nodes, runs);
-	    	addExtraInfo(el);
-		try {
-		    for(org.luwrain.reader.Node n: onNode(el, true))
-			nodes.add(n);
-		    commitParagraph(nodes, runs);
-		}
-		finally {
-		    	releaseExtraInfo();
+	addExtraInfo(el);
+	try {
+	    for(org.luwrain.reader.Node n: onNode(el, true))
+		nodes.add(n);
+	    commitParagraph(nodes, runs);
+	}
+	finally {
+	    releaseExtraInfo();
 	}
     }
 }

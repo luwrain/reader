@@ -31,7 +31,8 @@ import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
-import org.luwrain.app.reader.formats.*;
+
+import org.luwrain.app.reader.formats.TextFiles.ParaStyle;
 
 final class Base
 {
@@ -96,7 +97,7 @@ final class Base
 	    final StoredProperties props = new StoredProperties(luwrain.getRegistry(), url.toString());
 	    if (!props.sett.getCharset("").isEmpty())
 		urlLoader.setCharset(props.sett.getCharset(""));
-	    	final TextFiles.ParaStyle paraStyle = translateParaStyle(props.sett.getParaStyle(""));
+	    	final ParaStyle paraStyle = translateParaStyle(props.sett.getParaStyle(""));
 		if (paraStyle != null)
 		    urlLoader.setTxtParaStyle(paraStyle);
 	}
@@ -125,7 +126,7 @@ final class Base
 	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
 		storedProps.sett.setCharset(newCharset);
 	urlLoader.setCharset(newCharset);
-	final TextFiles.ParaStyle paraStyle = translateParaStyle(storedProps.sett.getParaStyle(""));
+	final ParaStyle paraStyle = translateParaStyle(storedProps.sett.getParaStyle(""));
 	if (paraStyle != null)
 	    urlLoader.setTxtParaStyle(paraStyle);
 	task = createTask(urlLoader);
@@ -133,7 +134,7 @@ final class Base
 	return true;
     }
 
-    boolean changeTextParaStyle(TextFiles.ParaStyle newParaStyle)
+    boolean changeTextParaStyle(ParaStyle newParaStyle)
     {
 	NullCheck.notNull(newParaStyle, "newParaStyle");
 	if (isInBookMode() || isBusy() || !hasDocument())
@@ -417,17 +418,17 @@ ListArea.Model getNotesModel()
 	return !getHref(area).isEmpty();
     }
 
-    static private TextFiles.ParaStyle translateParaStyle(String str)
+    static private ParaStyle translateParaStyle(String str)
     {
 	NullCheck.notNull(str, "str");
 	switch(str)
 	{
 	case "EMPTY_LINES":
-	    return TextFiles.ParaStyle.EMPTY_LINES;
+	    return ParaStyle.EMPTY_LINES;
 	case "INDENT":
-	    return TextFiles.ParaStyle.INDENT;
+	    return ParaStyle.INDENT;
 	case "EACH_LINE":
-	    return TextFiles.ParaStyle.EACH_LINE;
+	    return ParaStyle.EACH_LINE;
 	default:
 	    return null;
 	}
