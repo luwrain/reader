@@ -128,10 +128,8 @@ public final class UrlLoader
 	    if (selectedContentType.isEmpty())
 		throw new IOException("Unable to understand the content type");
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
-	    final Format format = chooseFilterByContentType(Utils.extractBaseContentType(selectedContentType));
+
 	    final Result res;
-	    if (format == null)
-	    {
 
 		this.selectedCharset = Utils.extractCharset(selectedContentType);
 		if (!this.requestedCharset.isEmpty())
@@ -158,17 +156,11 @@ public final class UrlLoader
 		    props.setProperty("charset", selectedCharset);
 		    res.doc = builder.buildDoc(tmpFile.toFile(), props);
 		}
-	    } else
-	    {
-		selectCharset(format);
-		res = parse(format);
-	    }
+
 	    if (res.doc == null)
 		throw new IOException("No suitable handler for the content type: " + selectedContentType);
 	    res.doc.setProperty("url", responseUrl.toString());
 	    res.doc.setProperty("contenttype", selectedContentType);
-	    if (format == Format.TXT)
-		res.doc.setProperty("charset", selectedCharset);
 	    if (requestedTagRef != null)
 		res.doc.setProperty("startingref", requestedTagRef);
 	    if (responseUrl.getFile().toLowerCase().endsWith("/ncc.html"))
@@ -226,96 +218,6 @@ public final class UrlLoader
 	Files.copy(s, tmpFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private void selectCharset(Format format) throws IOException
-    {
-	NullCheck.notNull(format, "format");
-	NullCheck.notEmpty(selectedContentType, "selectedContentType");
-	if (!requestedCharset.isEmpty())
-	{
-	    this.selectedCharset = requestedCharset;
-	    return;
-	}
-	this.selectedCharset = Utils.extractCharset(selectedContentType);
-	if (!selectedCharset.isEmpty())
-	    return;
-	switch(format)
-	{
-	case XML:
-	    this.selectedCharset = Encoding.getXmlEncoding(tmpFile);
-	    break;
-	case HTML:
-	    this.selectedCharset = extractCharset(tmpFile);
-	    break;
-	}
-	if (selectedCharset == null || selectedCharset.isEmpty())
-	    selectedCharset = DEFAULT_CHARSET;
-    }
-
-    private Result parse(Format format) throws IOException
-    {
-	NullCheck.notNull(format, "format");
-	final Result res = new Result();
-	final InputStream 	    stream = Files.newInputStream(tmpFile);
-	try {
-	    switch(format)
-	    {
-		/*
-	    case HTML:
-		res.doc = new Html(stream, selectedCharset, responseUrl).constructDocument();
-		return res;
-		*/
-	    case XML:
-		res.doc = readXml();
-		return res;
-		/*
-	    case FB2:
-res.doc = new Fb2(tmpFile, selectedCharset).createDoc();
-return res;
-	    case FB2_ZIP:
-		res.doc = new org.luwrain.app.reader.formats.Zip(tmpFile, (is)->{
-			try {
-return new Fb2(is, selectedCharset).createDoc();
-			}
-			catch (IOException e)
-			{
-			    Log.error(LOG_COMPONENT, "unable to read FB2 subdoc in ZIP:" + e.getClass().getName() + ":" + e.getMessage());
-			    return null;
-			}
-}).createDoc();
-		return res;
-	    case TXT:
-		res.doc = new TextFiles(tmpFile.toFile(), makeTitleFromUrl(), selectedCharset, requestedTxtParaStyle).makeDoc();
-		    return res;
-		*/
-	    default:
-			throw new IOException("No suitable handler for the content type: " + selectedContentType);
-	    }
-	}
-	finally {
-		stream.close();
-	}
-    }
-
-    private Document readXml() throws IOException
-    {
-	final String doctype = Utils.getDoctypeName(Files.newInputStream(tmpFile));
-	if (doctype == null || doctype.trim().isEmpty())
-	{
-	    Log.debug(LOG_COMPONENT, "unable to determine doctype");
-	    return null;
-	}
-	Log.debug(LOG_COMPONENT, "determined doctype is \'" + doctype + "\'");
-	/*
-	switch(doctype.trim().toLowerCase())
-	{
-	case DOCTYPE_FB2:
-	    return new Fb2(tmpFile, selectedCharset).createDoc();
-	}
-	*/
-	return null;
-
-    }
-
     private String makeTitleFromUrl()
     {
 	final String path = responseUrl.getPath();
@@ -332,29 +234,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	}
     }
 
-    static public Format chooseFilterByContentType(String contentType)
-    {
-	NullCheck.notEmpty(contentType, "contentType");
-	switch(contentType.toLowerCase().trim())
-	{
-	    /*
-	case ContentTypes.TEXT_HTML_DEFAULT:
-	    return Format.HTML;
-	    */
-	case CONTENT_TYPE_XML:
-	    return Format.XML;
-	case CONTENT_TYPE_FB2:
-	    return Format.FB2;
-	case CONTENT_TYPE_FB2_ZIP:
-	case CONTENT_TYPE_ZIP:
-	    return Format.FB2_ZIP;
-	case CONTENT_TYPE_TXT:
-	    return Format.TXT;
-	default:
-	    return null;
-	}
-    }
-
+    /*
     static public String extractCharset(Path path) throws IOException
     {
 	NullCheck.notNull(path, "path");
@@ -363,6 +243,7 @@ return new Fb2(is, selectedCharset).createDoc();
 	    return "";
 	return res;
     }
+    */
 
     static public final class Result
     {
