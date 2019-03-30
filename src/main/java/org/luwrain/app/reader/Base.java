@@ -32,12 +32,16 @@ import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 
-import org.luwrain.app.reader.formats.TextFiles.ParaStyle;
-
 final class Base
 {
     static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
+
+enum ParaStyle {
+	EMPTY_LINES,
+	EACH_LINE,
+	INDENT};
+
 
     private final Luwrain luwrain;
     private final Strings strings;

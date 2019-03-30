@@ -24,7 +24,8 @@ import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
-import org.luwrain.app.reader.formats.*;
+
+import org.luwrain.app.reader.Base.ParaStyle;
 
 final class Conversations
 {
@@ -74,7 +75,7 @@ final class Conversations
 			   });
     }
 
-    TextFiles.ParaStyle textParaStyle()
+    ParaStyle textParaStyle()
     {
 	final String emptyLines = "Разбиение по пустым строкам";
 	final String indent = "Разбиение по отступам строк";
@@ -83,11 +84,11 @@ final class Conversations
 	if (o == null)
 	    return null;
 	if (o == emptyLines)
-	    return TextFiles.ParaStyle.EMPTY_LINES;
+	    return ParaStyle.EMPTY_LINES;
 	if (o == indent)
-	    return TextFiles.ParaStyle.INDENT;
+	    return ParaStyle.INDENT;
 	if (o == eachLine)
-	    return TextFiles.ParaStyle.EACH_LINE;
+	    return ParaStyle.EACH_LINE;
 	return null;
     }
 }

@@ -29,7 +29,8 @@ import org.luwrain.core.events.*;
 import org.luwrain.util.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.controls.reader.*;
-import org.luwrain.app.reader.formats.*;
+
+import org.luwrain.app.reader.Base.ParaStyle;
 
 final class Actions
 {
@@ -78,7 +79,7 @@ boolean onOpenUrl(String currentHref)
     {
 	if (base.isBusy() || !base.hasDocument())
 	    return false;
-	final TextFiles.ParaStyle paraStyle = conv.textParaStyle();
+	final ParaStyle paraStyle = conv.textParaStyle();
 	if (paraStyle == null)
 	return true;
 	base.changeTextParaStyle(paraStyle);

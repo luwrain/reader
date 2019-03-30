@@ -28,7 +28,7 @@ import org.luwrain.util.*;
 import org.luwrain.reader.*;
 import org.luwrain.app.reader.books.*;
 
-import org.luwrain.app.reader.formats.TextFiles.ParaStyle;
+import org.luwrain.app.reader.Base.ParaStyle;
 
 public final class UrlLoader
 {
@@ -49,7 +49,7 @@ public final class UrlLoader
     private String selectedContentType = "";
     private String selectedCharset = "";
 
-        private Path tmpFile;
+    private Path tmpFile;
 
     public UrlLoader(Luwrain luwrain, URL url) throws MalformedURLException
     {
@@ -58,7 +58,7 @@ public final class UrlLoader
 	this.luwrain = luwrain;
 	this.requestedTagRef = url.getRef();
 	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
-			       url.getPort(), url.getFile());
+				    url.getPort(), url.getFile());
     }
 
     public void setContentType(String contentType)
@@ -80,7 +80,7 @@ public final class UrlLoader
 	this.requestedCharset = charset;
     }
 
-        public String getCharset()
+    public String getCharset()
     {
 	if (selectedCharset != null && !selectedCharset.isEmpty())
 	    return selectedCharset;
@@ -104,35 +104,32 @@ public final class UrlLoader
 	    if (selectedContentType.isEmpty())
 		throw new IOException("Unable to understand the content type");
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
-
 	    final Result res;
-
-		this.selectedCharset = Utils.extractCharset(selectedContentType);
-		if (!this.requestedCharset.isEmpty())
-		    this.selectedCharset = this.requestedCharset;
-		if (this.selectedCharset.isEmpty())
-		    this.selectedCharset = DEFAULT_CHARSET;
-		Log.debug(LOG_COMPONENT, "trying to use extensible document builders, contentType=" + selectedContentType + ", charset=" + selectedCharset);
-		final DocumentBuilderHook builderHook = new DocumentBuilderHook(luwrain);
-		final Document hookDoc = builderHook.build(Utils.extractBaseContentType(selectedContentType), new Properties(), tmpFile.toFile());
-		if (hookDoc != null)
-		{
-		    Log.debug(LOG_COMPONENT, "the builder hook  has constructed the document");
-		    res = new Result();
-		    res.doc = hookDoc;
-		} else
-		{
-		    Log.debug(LOG_COMPONENT, "the builder hook failed");
-		    final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, Utils.extractBaseContentType(selectedContentType));
-		    if (builder == null)
-			throw new IOException("No suitable handler for the content type: " + selectedContentType);
-		    res = new Result();
-		    final Properties props = new Properties();
-		    props.setProperty("url", responseUrl.toString());
-		    props.setProperty("charset", selectedCharset);
-		    res.doc = builder.buildDoc(tmpFile.toFile(), props);
-		}
-
+	    this.selectedCharset = Utils.extractCharset(selectedContentType);
+	    if (!this.requestedCharset.isEmpty())
+		this.selectedCharset = this.requestedCharset;
+	    if (this.selectedCharset.isEmpty())
+		this.selectedCharset = DEFAULT_CHARSET;
+	    Log.debug(LOG_COMPONENT, "trying to use extensible document builders, contentType=" + selectedContentType + ", charset=" + selectedCharset);
+	    final DocumentBuilderHook builderHook = new DocumentBuilderHook(luwrain);
+	    final Document hookDoc = builderHook.build(Utils.extractBaseContentType(selectedContentType), new Properties(), tmpFile.toFile());
+	    if (hookDoc != null)
+	    {
+		Log.debug(LOG_COMPONENT, "the builder hook  has constructed the document");
+		res = new Result();
+		res.doc = hookDoc;
+	    } else
+	    {
+		Log.debug(LOG_COMPONENT, "the builder hook failed");
+		final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, Utils.extractBaseContentType(selectedContentType));
+		if (builder == null)
+		    throw new IOException("No suitable handler for the content type: " + selectedContentType);
+		res = new Result();
+		final Properties props = new Properties();
+		props.setProperty("url", responseUrl.toString());
+		props.setProperty("charset", selectedCharset);
+		res.doc = builder.buildDoc(tmpFile.toFile(), props);
+	    }
 	    if (res.doc == null)
 		throw new IOException("No suitable handler for the content type: " + selectedContentType);
 	    res.doc.setProperty("url", responseUrl.toString());
@@ -210,10 +207,9 @@ public final class UrlLoader
 	}
     }
 
-
     static public final class Result
     {
-		public Book book = null;
+	public Book book = null;
 	public Document doc = null;
     }
 }
