@@ -25,15 +25,10 @@ import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 
+import org.luwrain.core.*;
 import org.luwrain.reader.NodeFactory;
 import org.luwrain.reader.NodeBuilder;
-import org.luwrain.reader.ExtraInfo;
-import org.luwrain.core.NullCheck;
-import org.luwrain.core.Log;
 
-
-import org.luwrain.core.*;
-//import org.luwrain.reader.*;
 
 final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 {
@@ -260,6 +255,7 @@ doc.setProperty("charset", charset);
 	case "h7":
 	case "h8":
 	case "h9":
+	    {
 	    commitPara(nodes, runs);
 	addExtraInfo(el);
 	final NodeBuilder builder = new NodeBuilder();
@@ -268,6 +264,7 @@ doc.setProperty("charset", charset);
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
 	nodes.add(n);
+	    }
 	break;
 
 	case "ul":
@@ -277,13 +274,16 @@ doc.setProperty("charset", charset);
 	case "th":
 	case "tr":
 	case "td":
+	    {
 	    commitPara(nodes, runs);
 	addExtraInfo(el);
-	n = NodeFactory.newNode(getNodeType(name));
-	n.setSubnodes(onNode(el));
+	final NodeBuilder builder = new NodeBuilder();
+	builder.addSubnodes(onNode(el));
+	n = createNode(name, builder);
 	n.extraInfo = getCurrentExtraInfo();
 	releaseExtraInfo();
 	nodes.add(n);
+	    }
 	break;
 
 	case "img":
@@ -333,24 +333,24 @@ doc.setProperty("charset", charset);
 	runs.clear();
     }
 
-    private org.luwrain.reader.Node.Type getNodeType(String tagName)
+    private org.luwrain.reader.Node createNode(String tagName, NodeBuilder builder)
     {
 	NullCheck.notEmpty(tagName, "tagName");
 	switch(tagName)
 	{
 	case "ul":
-	    return org.luwrain.reader.Node.Type.UNORDERED_LIST;
+	    return builder.newUnorderedList();
 	case "ol":
-	    return org.luwrain.reader.Node.Type.ORDERED_LIST;
+	    return builder.newOrderedList();
 	case "li":
-	    return org.luwrain.reader.Node.Type.LIST_ITEM;
+	    return builder.newListItem();
 	case "table":
-	    return org.luwrain.reader.Node.Type.TABLE;
+	    return builder.newTable();
 	case "tr":
-	    return org.luwrain.reader.Node.Type.TABLE_ROW;
+	    return builder.newTableRow();
 	case "th":
 	case "td":
-	    return org.luwrain.reader.Node.Type.TABLE_CELL;
+	    return builder.newTableCell();
 	default:
 	    Log.warning(LOG_COMPONENT, "unable to create the node for tag \'" + tagName + "\'");
 	    return null;

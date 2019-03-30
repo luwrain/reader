@@ -83,6 +83,14 @@ public final class NodeBuilder
 	return tableRow;
     }
 
+        public TableCell newTableCell()
+    {
+	final TableCell tableCell = new TableCell();
+	tableCell.setSubnodes(nodes.toArray(new Node[nodes.size()]));
+	return tableCell;
+    }
+
+
     public ListItem newListItem()
     {
 	final ListItem listItem = new ListItem();
