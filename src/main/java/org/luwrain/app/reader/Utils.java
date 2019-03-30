@@ -75,4 +75,14 @@ final class Utils
 	    return "";
 	}
     }
+
+        static public String extractHtmlCharset(File file) throws IOException
+    {
+	NullCheck.notNull(file, "file");
+	final String res = Encoding.getHtmlEncoding(file.toPath());
+	if (res == null)
+	    return "";
+	return res;
+    }
+
 }

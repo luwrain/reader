@@ -20,7 +20,6 @@ package org.luwrain.app.reader;
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
-import java.nio.charset.*;
 import java.util.*;
 import java.util.zip.*;
 
@@ -33,30 +32,7 @@ import org.luwrain.app.reader.formats.TextFiles.ParaStyle;
 
 public final class UrlLoader
 {
-    static private final String LOG_COMPONENT = "reader";
-
-    enum Format {
-	TXT,
-	HTML,
-	XML,
-	FB2,
-	FB2_ZIP,
-	//	EPUB,
-    };
-
-    static public final String CONTENT_TYPE_DATA = "application/octet-stream";
-    static public final String CONTENT_TYPE_PDF = "application/pdf";
-    static public final String CONTENT_TYPE_POSTSCRIPT = "application/postscript";
-    static public final String CONTENT_TYPE_XHTML = "application/xhtml";
-    static public final String CONTENT_TYPE_ZIP = "application/zip";
-    static public final String CONTENT_TYPE_HTML = "text/html";
-    static public final String CONTENT_TYPE_TXT = "text/plain";
-    static public final String CONTENT_TYPE_XML = "application/xml";
-    static public final String CONTENT_TYPE_FB2 = "application/fb2";
-    static public final String CONTENT_TYPE_FB2_ZIP = "application/fb2+zip";
-
-    static private final String DOCTYPE_FB2 = "fictionbook";
-
+    static private final String LOG_COMPONENT = Base.LOG_COMPONENT;
     static private final String DEFAULT_CHARSET = "UTF-8";
 
     private final Luwrain luwrain;
@@ -234,16 +210,6 @@ public final class UrlLoader
 	}
     }
 
-    /*
-    static public String extractCharset(Path path) throws IOException
-    {
-	NullCheck.notNull(path, "path");
-	final String res = Encoding.getHtmlEncoding(path);
-	if (res == null)
-	    return "";
-	return res;
-    }
-    */
 
     static public final class Result
     {
