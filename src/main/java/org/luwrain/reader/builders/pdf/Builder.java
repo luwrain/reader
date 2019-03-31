@@ -43,17 +43,13 @@ final class Builder implements DocumentBuilder
     {
 	NullCheck.notNull(file, "file");
 	NullCheck.notNull(props, "props");
-
-		PDDocument pdf = PDDocument.load(new FileInputStream(file));
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            pdfStripper.setSortByPosition(true);
-            String text = pdfStripper.getText(pdf);
-
-	    
+	PDDocument pdf = PDDocument.load(new FileInputStream(file));
+	PDFTextStripper pdfStripper = new PDFTextStripper();
+	pdfStripper.setSortByPosition(true);
+	String text = pdfStripper.getText(pdf);
 	final NodeBuilder builder = new NodeBuilder();
 	for(String s: text.split("\n", -1))
 	    builder.addParagraph(s);
-
 	return new Document(builder.newRoot());
     }
 
@@ -69,35 +65,5 @@ final class Builder implements DocumentBuilder
 	NullCheck.notNull(is, "is");
 	NullCheck.notNull(props, "props");
 	return null;
-    }
-
-    private Node[] processPage(PdfPage page)
-    {
-	NullCheck.notNull(page, "page");
-	final List<Node> res = new LinkedList();
-res.add(new NodeBuilder().addSubnode(NodeBuilder.newParagraph("Страница " + new Integer(page.num).toString())).newSection(1));
-	    if (page.chars.length == 0)
-		return res.toArray(new Node[res.size()]);
-	    StringBuilder b = new StringBuilder();
-	    double x = page.chars[0].x;
-	    	    double  y = page.chars[0].y;
-	    for(PdfChar c: page.chars)
-	    {
-		if (y - 0.1 > c.y)
-		{
-		    res.add(NodeBuilder.newParagraph(new String(b)));
-			    b = new StringBuilder();
-			    b.append(c.ch);
-			    y = c.y;
-			    x = c.x;
-			    			    continue;
-		}
-		b.append(c.ch);
-		Log.debug("offset", String.format("%.2f", c.x - x));
-		x = c.x;
-	    }
-	    if (b.length() > 0)
-		res.add(NodeBuilder.newParagraph(new String(b)));
-	return res.toArray(new Node[res.size()]);
     }
 }
