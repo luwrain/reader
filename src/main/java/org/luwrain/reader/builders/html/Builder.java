@@ -31,6 +31,8 @@ import org.luwrain.reader.Run;
 
 final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 {
+    static private final String DEFAULT_CHARSET = "UTF-8";
+
     private org.jsoup.nodes.Document jsoupDoc = null;
     private URL docUrl = null;
 
@@ -52,8 +54,23 @@ final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 
     @Override public org.luwrain.reader.Document buildDoc(String text, Properties props)
 {
-    throw new RuntimeException("Not implemented");
-        }
+    NullCheck.notNull(text, "text");
+    NullCheck.notNull(props, "props");
+    final InputStream is = new ByteArrayInputStream(text.getBytes());
+    try {
+	try {
+	    return buildDoc(is, props);
+	}
+	finally {
+	    is.close();
+	}
+    }
+    catch(IOException e)
+    {
+	Log.error(LOG_COMPONENT, "unable to read HTML from a string:" + e.getClass().getName() + ":" + e.getMessage());
+	return null;
+    }
+    }
 
     @Override public org.luwrain.reader.Document buildDoc(InputStream is, Properties props) throws IOException
     {
@@ -63,9 +80,11 @@ final class Builder extends Base implements org.luwrain.reader.DocumentBuilder
 	if (urlStr == null || urlStr.isEmpty())
 throw new IOException("no \'url\' property");
 	    this.docUrl = new URL(urlStr);
-	final String charset = props.getProperty("charset");
-	if (charset == null || charset.isEmpty())
-	    throw new IOException("no \'charset\' property");
+	final String charsetValue = props.getProperty("charset");
+	final String charset;
+		if (charsetValue != null && !charsetValue.isEmpty())
+		    charset = charsetValue; else
+		    charset = DEFAULT_CHARSET;
 	this.jsoupDoc = Jsoup.parse(is, charset, docUrl.toString());
 	final org.luwrain.reader.Document doc = constructDoc();
 doc.setProperty("url", docUrl.toString());
