@@ -79,14 +79,29 @@ final class PdfCharsExtractor
 	    addOperator(new ShowTextLineAndSpace());
 	}
 
+
 	@Override protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode, org.apache.pdfbox.util.Vector displacement) throws IOException
 	{
+	    getCharWidth(font, unicode);
+	    System.out.println("value2 " + String.format("%.2f", font.getWidth(code)));
 	    final AffineTransform at = textRenderingMatrix.createAffineTransform();
 	    at.concatenate(font.getFontMatrix().createAffineTransform());
 	    final double x = getCm(at.getTranslateX());
 	    final double y = getCm(at.getTranslateY());
 	    final boolean bold = (font.getName().toLowerCase().indexOf("bold") >= 0);
 	    output.add(new PdfChar((unicode != null && !unicode.isEmpty())?unicode.charAt(0):'\0', x, y, bold));
+	}
+
+	private void getCharWidth(PDFont font, String charName) throws IOException
+	{
+	    if (!(font instanceof PDSimpleFont))
+		return;
+	    final PDSimpleFont simpleFont = (PDSimpleFont)font;
+double value = simpleFont.getPath(charName).getBounds2D().getWidth();
+//value = getCm(value);
+	    System.out.println("value " + String.format("%.2f", value) + " " + charName);
+
+		    
 	}
 
 	static private double getCm(double pt)

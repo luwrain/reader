@@ -21,6 +21,19 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
+import java.awt.geom.AffineTransform;
+import org.apache.pdfbox.pdmodel.font.*;
+import org.apache.pdfbox.util.*;
+import org.apache.pdfbox.pdmodel.*;
+
+import org.apache.pdfbox.contentstream.operator.DrawObject;
+import org.apache.pdfbox.contentstream.operator.state.*;
+import org.apache.pdfbox.contentstream.operator.text.*;
+import org.apache.pdfbox.text.*;
+
+
+
+
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 
@@ -30,10 +43,17 @@ final class Builder implements DocumentBuilder
     {
 	NullCheck.notNull(file, "file");
 	NullCheck.notNull(props, "props");
+
+		PDDocument pdf = PDDocument.load(new FileInputStream(file));
+            PDFTextStripper pdfStripper = new PDFTextStripper();
+            pdfStripper.setSortByPosition(true);
+            String text = pdfStripper.getText(pdf);
+
+	    
 	final NodeBuilder builder = new NodeBuilder();
-		final PdfPage[] pages = new PdfCharsExtractor().getChars(file);
-	for(PdfPage p: pages)
-	    builder.addSubnodes(processPage(p));
+	for(String s: text.split("\n", -1))
+	    builder.addParagraph(s);
+
 	return new Document(builder.newRoot());
     }
 
@@ -59,7 +79,8 @@ res.add(new NodeBuilder().addSubnode(NodeBuilder.newParagraph("Страница 
 	    if (page.chars.length == 0)
 		return res.toArray(new Node[res.size()]);
 	    StringBuilder b = new StringBuilder();
-	    double y = page.chars[0].y;
+	    double x = page.chars[0].x;
+	    	    double  y = page.chars[0].y;
 	    for(PdfChar c: page.chars)
 	    {
 		if (y - 0.1 > c.y)
@@ -68,9 +89,12 @@ res.add(new NodeBuilder().addSubnode(NodeBuilder.newParagraph("Страница 
 			    b = new StringBuilder();
 			    b.append(c.ch);
 			    y = c.y;
+			    x = c.x;
 			    			    continue;
 		}
 		b.append(c.ch);
+		Log.debug("offset", String.format("%.2f", c.x - x));
+		x = c.x;
 	    }
 	    if (b.length() > 0)
 		res.add(NodeBuilder.newParagraph(new String(b)));
