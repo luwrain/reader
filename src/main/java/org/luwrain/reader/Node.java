@@ -261,7 +261,7 @@ void setEmptyMark()
 	    }
 	    if (!nextNodes.isEmpty())
 	    {
-		final Node item = NodeFactory.newNode(Type.LIST_ITEM);
+		final Node item = new ListItem();
 		item.setSubnodes(nextNodes.toArray(new Node[nextNodes.size()]));
 		nextNodes.clear();
 		item.parentNode = this;
@@ -273,7 +273,7 @@ void setEmptyMark()
 	}
 	if (!nextNodes.isEmpty())
 	{
-	    final Node item = NodeFactory.newNode(Type.LIST_ITEM);
+	    final Node item = new ListItem();
 	    item.setSubnodes(nextNodes.toArray(new Node[nextNodes.size()]));
 	    nextNodes.clear();
 	    item.parentNode = this;

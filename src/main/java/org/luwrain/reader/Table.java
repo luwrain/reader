@@ -35,7 +35,7 @@ public class Table extends Node
 	    if (!(subnodes[i] instanceof TableRow))
 	    {
 		Log.warning("doctree", "table has a subnode of class " + subnodes[i].getClass().getName() + ", it will be put into newly created table row");
-		final Node n = NodeFactory.newNode(Type.TABLE_ROW);
+		final Node n = new TableRow();
 		n.subnodes = new Node[]{subnodes[i]};
 		n.subnodes[0].setParentNode(n);
 		n.setParentNode(this);

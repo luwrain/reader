@@ -46,12 +46,29 @@ public final class NodeBuilder
 	    this.nodes.add(n);
     }
 
-    public Paragraph addPara()
+    public Paragraph addParagraph()
     {
 	final Paragraph para = new Paragraph();
 	nodes.add(para);
 	return para;
     }
+
+        public Paragraph addParagraph(String text)
+    {
+	NullCheck.notNull(text, "text");
+	final Paragraph p;
+	if (text.isEmpty())
+	    	p = new EmptyLine(); else
+	    p = new Paragraph(new Run[]{new TextRun(text)});
+	nodes.add(p);
+	return p;
+    }
+
+    public Paragraph addEmptyLine()
+    {
+	return addParagraph("");
+    }
+
 
     static public Paragraph newParagraph(Run[] runs)
     {
@@ -61,14 +78,16 @@ public final class NodeBuilder
 	return p;
     }
 
-    public Paragraph addPara(String text)
+        static public Paragraph newParagraph(String text)
     {
 	NullCheck.notNull(text, "text");
-	final Paragraph para = new Paragraph();
-	para.runs = new Run[]{new TextRun(text)};
-	nodes.add(para);
-	return para;
+	final Paragraph p;
+	if (text.isEmpty())
+	    p = new EmptyLine(); else
+	    p = new Paragraph(new Run[]{new TextRun(text)});
+	return p;
     }
+
 
     public Node newRoot()
     {
