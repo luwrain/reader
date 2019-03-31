@@ -30,12 +30,11 @@ final class Builder implements DocumentBuilder
     {
 	NullCheck.notNull(file, "file");
 	NullCheck.notNull(props, "props");
-
+	final NodeBuilder builder = new NodeBuilder();
 		final PdfPage[] pages = new PdfCharsExtractor().getChars(file);
-		//	for(PdfPage p: pages)
-		return null;
-
-
+	for(PdfPage p: pages)
+	    builder.addSubnodes(processPage(p));
+	return new Document(builder.newRoot());
     }
 
     @Override public org.luwrain.reader.Document buildDoc(String text, Properties props)
