@@ -30,13 +30,12 @@ final class Builder implements DocumentBuilder
     {
 	NullCheck.notNull(file, "file");
 	NullCheck.notNull(props, "props");
-	final InputStream is = new FileInputStream(file);
-	try {
-	    return buildDoc(is, props);
-	}
-	finally {
-	    is.close();
-	}
+
+		final PdfPage[] pages = new PdfCharsExtractor().getChars(file);
+		//	for(PdfPage p: pages)
+		return null;
+
+
     }
 
     @Override public org.luwrain.reader.Document buildDoc(String text, Properties props)
@@ -51,5 +50,31 @@ final class Builder implements DocumentBuilder
 	NullCheck.notNull(is, "is");
 	NullCheck.notNull(props, "props");
 	return null;
+    }
+
+    private Node[] processPage(PdfPage page)
+    {
+	NullCheck.notNull(page, "page");
+	final List<Node> res = new LinkedList();
+res.add(new NodeBuilder().addSubnode(NodeBuilder.newParagraph("Страница " + new Integer(page.num).toString())).newSection(1));
+	    if (page.chars.length == 0)
+		return res.toArray(new Node[res.size()]);
+	    StringBuilder b = new StringBuilder();
+	    double y = page.chars[0].y;
+	    for(PdfChar c: page.chars)
+	    {
+		if (y - 0.1 > c.y)
+		{
+		    res.add(NodeBuilder.newParagraph(new String(b)));
+			    b = new StringBuilder();
+			    b.append(c.ch);
+			    y = c.y;
+			    			    continue;
+		}
+		b.append(c.ch);
+	    }
+	    if (b.length() > 0)
+		res.add(NodeBuilder.newParagraph(new String(b)));
+	return res.toArray(new Node[res.size()]);
     }
 }

@@ -27,10 +27,11 @@ public final class NodeBuilder
 {
     private final List<Node> nodes = new LinkedList();
 
-    public void addSubnode(Node node)
+    public NodeBuilder addSubnode(Node node)
     {
 	NullCheck.notNull(node, "node");
 	nodes.add(node);
+	return this;
     }
 
     public void addSubnodes(List<Node> nodes)
@@ -39,11 +40,12 @@ public final class NodeBuilder
 	this.nodes.addAll(nodes);
     }
 
-    public void addSubnodes(Node[] nodes)
+    public NodeBuilder addSubnodes(Node[] nodes)
     {
 	NullCheck.notNullItems(nodes, "nodes");
 	for(Node n: nodes)
 	    this.nodes.add(n);
+	return this;
     }
 
     public Paragraph addParagraph()
@@ -69,7 +71,6 @@ public final class NodeBuilder
 	return addParagraph("");
     }
 
-
     static public Paragraph newParagraph(Run[] runs)
     {
 	NullCheck.notNullItems(runs, "runs");
@@ -87,8 +88,7 @@ public final class NodeBuilder
 	    p = new Paragraph(new Run[]{new TextRun(text)});
 	return p;
     }
-
-
+    
     public Node newRoot()
     {
 	final Node  node = new Node(Node.Type.ROOT);
