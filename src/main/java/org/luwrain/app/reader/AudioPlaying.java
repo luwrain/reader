@@ -79,7 +79,7 @@ class AudioPlaying  implements Listener
 		this.area = area;
 		this.currentPlaylist = new Playlist(audioFileUrl.toString());
 		luwrain.playSound(Sounds.PLAYING);
-		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS);
+		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS, null);
 		return true;
 	    }
 	}
