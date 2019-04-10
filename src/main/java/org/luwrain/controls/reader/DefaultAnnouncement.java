@@ -67,7 +67,8 @@ Node node = getDominantNode(it);
 	if (node != null)
 	{
 	    if (node instanceof TableCell)
-		onTableCell((TableCell)node);
+		onTableCell((TableCell)node); else
+			announceText(it);
 	    return;
 	}
 	announceText(it);
@@ -92,42 +93,18 @@ protected void onTableCell(TableCell cell)
 	context.say("столбец " + (colIndex + 1), Sounds.TABLE_CELL);
     }
 
-    private void announceText(Iterator it)
+    protected void announceText(Iterator it)
     {
 	NullCheck.notNull(it, "it");
-	//Checking if there is nothing to say
-	if (it.getText().trim().isEmpty())
+	final String text = it.getText().trim();
+	if (text.isEmpty())
 	{
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
 	    return;
 	}
-	//Checking should we use any specific sound
-final Sounds sound;
-	if (it.getIndexInParagraph() == 0 && it.getNode() != null)
-	{
-		switch(it.getNode().getType())
-		{
-		case SECTION:
-		    sound = Sounds.DOC_SECTION;
-		    break;
-		case LIST_ITEM:
-		    sound = Sounds.LIST_ITEM;
-		    break;
-		default:
-		    sound = null;
-		}
-	} else
-	    sound = null;
-	//Speaking with sound if we have chosen any
-	if (sound != null)
-	{
-	    context.say(textPreprocessor.preprocess(it.getText()), sound);
-	    return;
-	}
-	//Speaking with paragraph sound if it is a first row
 	if (it.getIndexInParagraph() == 0)
-	    context.say(textPreprocessor.preprocess(it.getText()), Sounds.PARAGRAPH); else
-	    context.say(textPreprocessor.preprocess(it.getText()));
+	    context.setEventResponse(DefaultEventResponse.text(Sounds.PARAGRAPH, text)); else
+	    context.setEventResponse(DefaultEventResponse.text(textPreprocessor.preprocess(text)));
     }
 
     protected Node getDominantNode(Iterator it)
