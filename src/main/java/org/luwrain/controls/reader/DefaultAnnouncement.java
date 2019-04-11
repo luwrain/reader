@@ -60,21 +60,23 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	}
 	if (it.getNode() == null)
 	{
-	context.say(it.getText());
-	return;
+	    context.say(it.getText());
+	    return;
 	}
-Node node = getDominantNode(it);
+	Node node = getDominantNode(it);
 	if (node != null)
 	{
 	    if (node instanceof TableCell)
 		onTableCell((TableCell)node); else
-			announceText(it);
+		if (node instanceof ListItem)
+		    onListItem(it, (ListItem)node); else
+		    announceText(it);
 	    return;
 	}
 	announceText(it);
     }
 
-protected void onTableCell(TableCell cell)
+    protected void onTableCell(TableCell cell)
     {
 	NullCheck.notNull(cell, "cell");
 	final TableRow row = (TableRow)cell.getParentNode();
@@ -84,13 +86,20 @@ protected void onTableCell(TableCell cell)
 	{
 	    context.say(textPreprocessor.preprocess(row.getCompleteText()) + " Начало таблицы", Sounds.TABLE_CELL);
 	    return;
-}
+	}
 	if (colIndex == 0)
 	{
 	    context.say(textPreprocessor.preprocess(row.getCompleteText()) + " строка " + (rowIndex + 1) , Sounds.TABLE_CELL);
 	    return;
 	}
 	context.say("столбец " + (colIndex + 1), Sounds.TABLE_CELL);
+    }
+
+    protected void onListItem(Iterator it, ListItem listItem)
+    {
+	NullCheck.notNull(it, "it");
+	NullCheck.notNull(listItem, "listItem");
+	context.setEventResponse(DefaultEventResponse.text(Sounds.LIST_ITEM, it.getText()));
     }
 
     protected void announceText(Iterator it)
@@ -123,17 +132,15 @@ protected void onTableCell(TableCell cell)
 	{
 	    if (!res.noSubnodes() &&!res.getSubnode(0).noSubnodes())
 		return res.getSubnode(0).getSubnode(0);
-	return res;
+	    return res;
 	}
-	/*
-    if (res instanceof OrderedList || res instanceof UnorderedList)
-    {
-	if (!res.noContent())
-	    return res.getSubnode(0);
+	if (res.getType() == Node.Type.ORDERED_LIST || res.getType() == Node.Type.UNORDERED_LIST)
+	{
+	    if (res.getSubnodeCount() > 0)
+		return res.getSubnode(0);
+	    return res;
+	}
 	return res;
-    }
-	*/
-    return res;
     }
 
     protected Node findDominantNode(Iterator it)
@@ -143,7 +150,7 @@ protected void onTableCell(TableCell cell)
 	    return null;
 	Node node = it.getNode();
 	if (node.getIndexInParentSubnodes() != 0)
-	    return null;
+	    return node;
 	node = node.getParentNode();
 	while (node != null)
 	{
@@ -151,7 +158,6 @@ protected void onTableCell(TableCell cell)
 		return node;
 	    node = node.getParentNode();
 	}
-	
 	return null;
     }
 }
