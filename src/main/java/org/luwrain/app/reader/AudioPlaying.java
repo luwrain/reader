@@ -104,9 +104,9 @@ class AudioPlaying  implements Listener
 	    return;
 	if (playlist != currentPlaylist)
 	    return;
-	if (playlist.getPlaylistUrls() == null || trackNum >= playlist.getPlaylistUrls().length)
+	if (trackNum >= playlist.getTrackCount())
 	    return;
-	final String track = playlist.getPlaylistUrls()[trackNum];
+	final String track = playlist.getTrack(trackNum);
 	final String link = book.findTextForAudio(track, msec);
 	if (link == null)
 	    return;

@@ -19,8 +19,8 @@
 
 package org.luwrain.controls.reader;
 
-import java.util.LinkedList;
-import java.util.EnumSet;
+import java.util.*;
+import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
@@ -29,6 +29,7 @@ import org.luwrain.controls.*;
 import org.luwrain.util.WordIterator;
 import org.luwrain.reader.*;
 import org.luwrain.reader.view.*;
+import org.luwrain.reader.view.Iterator;
 
 
 // Transition tries to iteratate over inner objects
@@ -166,6 +167,30 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	return document;
     }
 
+    public String getDocTitle()
+    {
+	if (!hasDocument())
+	    return "";
+	final String res = getDocument().getTitle();
+	return res != null?res:"";
+    }
+
+        public String getDocUrl()
+    {
+	if (!hasDocument())
+	    return "";
+	final URL url = document.getUrl();
+	return url != null?url.toString():"";
+    }
+
+    public String getDocUniRef()
+    {
+	final String addr = getDocUrl();
+	if (addr.isEmpty())
+	    return "";
+	return UniRefUtils.makeUniRef(UniRefUtils.URL, addr);
+    }
+
     public Run getCurrentRun()
     {
 	if (isEmpty())
@@ -213,11 +238,6 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	hotPointX = 0;
 	context.onAreaNewHotPoint(this);
 	return true;
-    }
-
-    public java.net.URL getUrl()
-    {
-	return !isEmpty()?document.getUrl():null;
     }
 
     public String[] getHtmlIds()
@@ -355,11 +375,26 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	NullCheck.notNull(query, "query");
 	switch(query.getQueryCode())
 	{
-	case AreaQuery.UNIREF_AREA:
-	    if (isEmpty() || document.getUrl() == null)
-		return false;
-	    ((UniRefAreaQuery)query).answer("url:" + document.getUrl().toString());
-	    return true;
+
+	    		    case AreaQuery.UNIREF_AREA:
+			{
+			    final String title = getDocTitle();
+			    final String uniRef = getDocUniRef();
+			    if (uniRef.isEmpty())
+				return false;
+			    if (title.isEmpty())
+				((UniRefAreaQuery)query).answer(uniRef); else
+				((UniRefAreaQuery)query).answer(UniRefUtils.makeAlias(title, uniRef));
+			    			return true;
+			}
+		    case AreaQuery.URL_AREA:
+			{
+			    final String url = getDocUrl();
+			    if (url.isEmpty())
+				return false;
+			((UrlAreaQuery)query).answer(url);
+			return true;
+			}
 	    	case AreaQuery.UNIREF_HOT_POINT:
 		    {
 			final Run run = getCurrentRun();

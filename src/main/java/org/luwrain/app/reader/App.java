@@ -208,20 +208,6 @@ class App implements Application
 		    NullCheck.notNull(query, "query");
 		    switch(query.getQueryCode())
 		    {
-		    case AreaQuery.UNIREF_AREA:
-			if (isEmpty() || !base.hasDocument())
-			    return false;
-			{
-			    final String title = getAreaName().replaceAll(":", "\\:");
-			    final String url = base.getDocument().getUrl().toString();
-			    ((UniRefAreaQuery)query).answer("link:" + title + ":reader:" + url);
-			}
-			return true;
-		    case AreaQuery.URL_AREA:
-			if (isEmpty() || !base.hasDocument())
-			    return false;
-			((UrlAreaQuery)query).answer(base.getDocument().getUrl().toString());
-			return true;
 		    case AreaQuery.BACKGROUND_SOUND:
 			if (base.isBusy())
 			{
@@ -248,6 +234,13 @@ class App implements Application
 		    NullCheck.notNull(it, "it");
 		    announcement.announce(it, briefAnnouncement);
 		}
+		    @Override public String getDocUniRef()
+    {
+	final String addr = getDocUrl();
+	if (addr.isEmpty())
+	    return "";
+	return UniRefUtils.makeUniRef("reader", addr);
+    }
 		@Override protected String noContentStr()
 		{
 		    return base.isBusy()?strings.noContentFetching():strings.noContent();

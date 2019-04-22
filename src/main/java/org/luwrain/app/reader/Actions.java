@@ -106,10 +106,10 @@ luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
     boolean onRestoreBookmark(ReaderArea area)
     {
 	NullCheck.notNull(area, "area");
-	final URL url = area.getUrl();
-	if (url == null)
+	final String url = area.getDocUrl();
+	if (url == null || url.isEmpty())
 	    return false;
-final int value = Settings.getBookmark(luwrain.getRegistry(), url.toString());
+final int value = Settings.getBookmark(luwrain.getRegistry(), url);
 if (value < 0 || !area.setCurrentRowIndex(value))
 {
     luwrain.message(strings.noBookmark(), Luwrain.MessageType.ERROR);
