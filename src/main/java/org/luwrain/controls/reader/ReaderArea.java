@@ -69,7 +69,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     protected final ControlContext context;
     protected final RegionPoint regionPoint = new RegionPoint();
     protected final ClipboardTranslator clipboardTranslator = new ClipboardTranslator(this, regionPoint, EnumSet.noneOf(ClipboardTranslator.Flags.class));
-    private String areaName = null;//FIXME:No corresponding constructor;
+    protected final String name;
     protected final Announcement announcement;
     protected final Transition transition;
     protected ClickHandler clickHandler = null;
@@ -85,6 +85,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	NullCheck.notNull(params, "params");
 	NullCheck.notNull(params.context, "params.context");
 	NullCheck.notNull(params.transition, "params.transition");
+	NullCheck.notNull(params.name, "params.name");
 	this.context = params.context;
 	if (params.announcement != null)
 	this.announcement = params.announcement; else
@@ -97,6 +98,8 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 		    throw new IllegalArgumentException("width (" + params.width + ") may not be negative");
 		setDocument(params.doc, params.width);
 	    }
+	    		this.name = params.name;
+
     }
 
 
@@ -113,6 +116,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 		setDocument(document, width);
 	    }
 	    this.transition = new DefaultTransition();
+	    this.name = "";
     }
 
     public ReaderArea(ControlContext context, Announcement announcement)
@@ -429,14 +433,9 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 
     @Override public String getAreaName()
     {
-	if (areaName != null)
-	    return areaName;
-	if (document != null)
-	{
-	    final String title = document.getTitle();
-	    return title != null?title:"";
-	}
-	return "";
+	if (name.isEmpty())
+	    return getDocTitle();
+	    return name;
     }
 
     @Override public boolean onClipboardCopyAll()

@@ -54,7 +54,7 @@ public final class App implements Application
     private void createAreas()
     {
 	final ListArea.Params librariesParams = new ListArea.Params();
-	librariesParams.context = new DefaultControlEnvironment(luwrain);
+	librariesParams.context = new DefaultControlContext(luwrain);
 	librariesParams.model = base.getLibrariesModel();
 	librariesParams.appearance = new Appearance(luwrain, strings);
 	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(listArea, obj);
@@ -89,7 +89,7 @@ public final class App implements Application
 	    };
 
 	final ListArea.Params params = new ListArea.Params();
-	params.context = new DefaultControlEnvironment(luwrain);
+	params.context = new DefaultControlContext(luwrain);
 	params.model = base.getModel();
 	params.appearance = new Appearance(luwrain, strings);
 	params.clickHandler = (area, index, obj)->actions.onListClick( listArea, obj);
@@ -171,7 +171,7 @@ public final class App implements Application
 	    };
 
 	final ListArea.Params detailsParams = new ListArea.Params();
-	detailsParams.context = new DefaultControlEnvironment(luwrain);
+	detailsParams.context = new DefaultControlContext(luwrain);
 	detailsParams.model = new ListUtils.FixedModel();
 	detailsParams.appearance = new ListUtils.DefaultAppearance(detailsParams.context, Suggestions.CLICKABLE_LIST_ITEM);
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
