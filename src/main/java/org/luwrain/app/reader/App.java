@@ -451,7 +451,7 @@ class App implements Application
 	area.addLine("");
 	area.endLinesTrans();
 	layout.openTempArea(area);
-	luwrain.say(strings.errorAreaName(), Sounds.ERROR);
+	luwrain.speak(strings.errorAreaName(), Sounds.ERROR);
     }
 
     private void updateMode()
@@ -565,7 +565,7 @@ class App implements Application
 	NullCheck.notNull(doc, "doc");
 	luwrain.silence();
 	luwrain.playSound(Sounds.INTRO_REGULAR);
-	luwrain.say(doc.getTitle());
+	luwrain.speak(doc.getTitle());
     }
 
     private void openStartFrom()

@@ -38,7 +38,7 @@ class Jump
 	return it == null;
     }
 
-    void announce(ControlEnvironment environment)
+    void announce(ControlContext environment)
     {
 	NullCheck.notNull(environment, "environment");
 	if (isEmpty())
