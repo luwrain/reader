@@ -35,6 +35,14 @@ public class DefaultTransition implements ReaderArea.Transition
 	    return onNext(it);
 	case PREV:
 	    return onPrev(it);
+	case NEXT_SECTION:
+	    case NEXT_SECTION_SAME_LEVEL:
+	    return onNextSection(it, type == Type.NEXT_SECTION_SAME_LEVEL);
+	    	case PREV_SECTION:
+	    case PREV_SECTION_SAME_LEVEL:
+	    return onPrevSection(it, type == Type.NEXT_SECTION_SAME_LEVEL);
+
+	    
 	default:
 	    return false;
 	}
@@ -63,6 +71,79 @@ public class DefaultTransition implements ReaderArea.Transition
 			return para != null;
 		    }, it.getIndex() - 1);
     }
+
+    protected boolean onNextSection(Iterator it, boolean sameLevel)
+    {
+	final Node currentNode = it.getNode();
+	if (currentNode == null)//Actually very strange, should never happen
+	    return false;
+	final int currentSectLevel; 
+	if (currentNode instanceof Section)
+	{
+	    final Section sect = (Section)currentNode;
+	    currentSectLevel = sect.getSectionLevel();
+	} else
+	    currentSectLevel = -1;
+	if (!sameLevel || currentSectLevel < 0)
+	{
+	    if (!it.searchForward((node,para,row)->{
+			if (node == currentNode)
+			    return false;
+			return node.getType() == Node.Type.SECTION;
+		    }, it.getIndex()))
+		return false;
+	} else
+	{
+	    if (!it.searchForward((node,para,row)->{
+			if (node == currentNode)
+			    return false;
+			if (node.getType() != Node.Type.SECTION)
+			    return false;
+			final Section sect = (Section)node;
+			return sect.getSectionLevel() <= currentSectLevel;
+		    }, it.getIndex()))
+		return false;
+	}
+	return true;
+    }
+
+    protected boolean onPrevSection(Iterator it, boolean sameLevel)
+    {
+	NullCheck.notNull(it, "it");
+	final Node currentNode = it.getNode();
+	if (currentNode == null)//Actually very strange, should never happen
+	    return false;
+	final int currentSectLevel; 
+	if (currentNode instanceof Section)
+	{
+	    final Section sect = (Section)currentNode;
+	    currentSectLevel = sect.getSectionLevel();
+	} else
+	    currentSectLevel = -1;
+	if (!sameLevel || currentSectLevel < 0)
+	{
+	    if (!it.searchBackward((node,para,row)->{
+			if (node == currentNode || row.getRelNum() > 0)
+			    return false;
+			return node.getType() == Node.Type.SECTION;
+		    }, it.getIndex()))
+		return false;
+	} else
+	{
+	    if (!it.searchBackward((node,para,row)->{
+			if (node == currentNode || row.getRelNum() > 0)
+			    return false;
+			if (node.getType() != Node.Type.SECTION)
+			    return false;
+			final Section sect = (Section)node;
+			return sect.getSectionLevel() <= currentSectLevel;
+		    }, it.getIndex()))
+		return false;
+	}
+	return true;
+    }
+
+
 
     boolean onTableDown(TableCell tableCell, Iterator it)
     {

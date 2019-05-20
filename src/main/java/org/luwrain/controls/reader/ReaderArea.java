@@ -50,7 +50,10 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 
     public interface Transition
     {
-	public enum Type{NEXT, PREV};
+	public enum Type{NEXT, PREV,
+			 NEXT_SECTION, PREV_SECTION,
+			 NEXT_SECTION_SAME_LEVEL, PREV_SECTION_SAME_LEVEL
+	};
 
 	boolean transition(Type type, Iterator it);
     }
@@ -593,77 +596,22 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 
     protected boolean onFindNextSection(boolean sameLevel)
     {
-	if (noContentCheck())
+		if (noContentCheck())
 	    return true;
-	final Node currentNode = iterator.getNode();
-	if (currentNode == null)//Actually very strange, should never happen
-	    return false;
-	final int currentSectLevel; 
-	if (currentNode instanceof Section)
-	{
-	    final Section sect = (Section)currentNode;
-	    currentSectLevel = sect.getSectionLevel();
-	} else
-	    currentSectLevel = -1;
-	if (!sameLevel || currentSectLevel < 0)
-	{
-	    if (!iterator.searchForward((node,para,row)->{
-			if (node == currentNode)
-			    return false;
-			return node.getType() == Node.Type.SECTION;
-		    }, iterator.getIndex()))
-		return false;
-	} else
-	{
-	    if (!iterator.searchForward((node,para,row)->{
-			if (node == currentNode)
-			    return false;
-			if (node.getType() != Node.Type.SECTION)
-			    return false;
-			final Section sect = (Section)node;
-			return sect.getSectionLevel() <= currentSectLevel;
-		    }, iterator.getIndex()))
-		return false;
-	}
-	onNewHotPointY(false);
+		if (transition.transition(sameLevel?Transition.Type.NEXT_SECTION_SAME_LEVEL:Transition.Type.NEXT_SECTION, iterator))
+	    onNewHotPointY( false); else
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	return true;
     }
 
     protected boolean onFindPrevSection(boolean sameLevel)
     {
-		if (noContentCheck())
+
+			if (noContentCheck())
 	    return true;
-	final Node currentNode = iterator.getNode();
-	if (currentNode == null)//Actually very strange, should never happen
-	    return false;
-	final int currentSectLevel; 
-	if (currentNode instanceof Section)
-	{
-	    final Section sect = (Section)currentNode;
-	    currentSectLevel = sect.getSectionLevel();
-	} else
-	    currentSectLevel = -1;
-	if (!sameLevel || currentSectLevel < 0)
-	{
-	    if (!iterator.searchBackward((node,para,row)->{
-			if (node == currentNode || row.getRelNum() > 0)
-			    return false;
-			return node.getType() == Node.Type.SECTION;
-		    }, iterator.getIndex()))
-		return false;
-	} else
-	{
-	    if (!iterator.searchBackward((node,para,row)->{
-			if (node == currentNode || row.getRelNum() > 0)
-			    return false;
-			if (node.getType() != Node.Type.SECTION)
-			    return false;
-			final Section sect = (Section)node;
-			return sect.getSectionLevel() <= currentSectLevel;
-		    }, iterator.getIndex()))
-		return false;
-	}
-	onNewHotPointY(false);
+		if (transition.transition(sameLevel?Transition.Type.PREV_SECTION_SAME_LEVEL:Transition.Type.PREV_SECTION, iterator))
+	    onNewHotPointY( false); else
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	return true;
     }
 
