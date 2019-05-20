@@ -166,13 +166,18 @@ void setEmptyMark()
 	return false;
     }
 
-    public final boolean isInTable()
+    public final boolean isInTable(Table table)
     {
 	Node p = getParentNode();
 	while(p != null)
 	{
 	    if (p instanceof Table)
+	    {
+		if (table == null)
 		return true;
+		if ((Table)p == table)
+		    return true;
+	    }
 	    p = p.getParentNode();
 	}
 	return false;
@@ -195,6 +200,11 @@ void setEmptyMark()
 	    b.append(value);
 	}
 	return new String(b);
+    }
+
+    public boolean noText()
+    {
+	return getCompleteText().isEmpty();
     }
 
     /** 

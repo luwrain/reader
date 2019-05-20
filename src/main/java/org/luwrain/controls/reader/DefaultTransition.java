@@ -43,7 +43,7 @@ public class DefaultTransition implements ReaderArea.Transition
     boolean onNext(Iterator it)
     {
 	NullCheck.notNull(it, "it");
-	final TableCell tableCell = isTableCellIntroRow(it);
+	final TableCell tableCell = isTableCellIntroRow(it);// always for the table of the maximum depth
 	if (tableCell != null && onTableDown(tableCell, it))
 	    return true;
 		return it.searchForward((node,para,row)->{
@@ -72,7 +72,11 @@ public class DefaultTransition implements ReaderArea.Transition
 	final int rowIndex = tableCell.getRowIndex();
 	final int colIndex = tableCell.getColIndex();
 	if (rowIndex + 1 >= table.getRowCount())
-	    return false;
+	    //	    throw new RuntimeException("proba");
+	    		return it.searchForward((node,para,row)->{
+				return !node.isInTable(table) && !node.noText();
+				    
+		    }, it.getIndex() + 1);
 	final TableCell newCell = table.getCell(colIndex, rowIndex + 1);
 	if (newCell == null)
 	    return false;

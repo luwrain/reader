@@ -67,17 +67,21 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	if (node != null)
 	{
 	    if (node instanceof TableCell)
-		onTableCell((TableCell)node); else
+		onTableCell(it, (TableCell)node); else
 		if (node instanceof ListItem)
 		    onListItem(it, (ListItem)node); else
+
+		    		if (node instanceof Section)
+		    onSection(it, (Section)node); else
 		    announceText(it);
 	    return;
 	}
 	announceText(it);
     }
 
-    protected void onTableCell(TableCell cell)
+    protected void onTableCell(Iterator it, TableCell cell)
     {
+	NullCheck.notNull(it, "it");
 	NullCheck.notNull(cell, "cell");
 	final TableRow row = (TableRow)cell.getParentNode();
 	final int rowIndex = cell.getRowIndex();
@@ -92,7 +96,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	    context.say(textPreprocessor.preprocess(row.getCompleteText()) + " строка " + (rowIndex + 1) , Sounds.TABLE_CELL);
 	    return;
 	}
-	context.say("столбец " + (colIndex + 1), Sounds.TABLE_CELL);
+	context.setEventResponse(DefaultEventResponse.text(Sounds.TABLE_CELL, textPreprocessor.preprocess(it.getText()) + " столбец " + String.valueOf(colIndex + 1)));
     }
 
     protected void onListItem(Iterator it, ListItem listItem)
@@ -100,6 +104,13 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	NullCheck.notNull(it, "it");
 	NullCheck.notNull(listItem, "listItem");
 	context.setEventResponse(DefaultEventResponse.text(Sounds.LIST_ITEM, it.getText()));
+    }
+
+    protected void onSection(Iterator it, Section sect)
+    {
+	NullCheck.notNull(it, "it");
+	NullCheck.notNull(sect, "sect");
+	context.setEventResponse(DefaultEventResponse.text(Sounds.DOC_SECTION, it.getText()));
     }
 
     protected void announceText(Iterator it)
