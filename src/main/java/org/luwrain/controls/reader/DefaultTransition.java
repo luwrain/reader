@@ -36,13 +36,11 @@ public class DefaultTransition implements ReaderArea.Transition
 	case PREV:
 	    return onPrev(it);
 	case NEXT_SECTION:
-	    case NEXT_SECTION_SAME_LEVEL:
+	case NEXT_SECTION_SAME_LEVEL:
 	    return onNextSection(it, type == Type.NEXT_SECTION_SAME_LEVEL);
-	    	case PREV_SECTION:
-	    case PREV_SECTION_SAME_LEVEL:
+	case PREV_SECTION:
+	case PREV_SECTION_SAME_LEVEL:
 	    return onPrevSection(it, type == Type.NEXT_SECTION_SAME_LEVEL);
-
-	    
 	default:
 	    return false;
 	}
@@ -54,9 +52,9 @@ public class DefaultTransition implements ReaderArea.Transition
 	final TableCell tableCell = isTableCellIntroRow(it);// always for the table of the maximum depth
 	if (tableCell != null && onTableDown(tableCell, it))
 	    return true;
-		return it.searchForward((node,para,row)->{
-			return para != null;
-		    }, it.getIndex() + 1);
+	return it.searchForward((node,para,row)->{
+		return para != null;
+	    }, it.getIndex() + 1);
     }
 
     boolean onPrev(Iterator it)
@@ -67,9 +65,9 @@ public class DefaultTransition implements ReaderArea.Transition
 	final TableCell tableCell = isTableCellIntroRow(it);
 	if (tableCell != null && onTableUp(tableCell, it))
 	    return true;
-			return it.searchBackward((node,para,row)->{
-			return para != null;
-		    }, it.getIndex() - 1);
+	return it.searchBackward((node,para,row)->{
+		return para != null;
+	    }, it.getIndex() - 1);
     }
 
     protected boolean onNextSection(Iterator it, boolean sameLevel)
@@ -143,8 +141,6 @@ public class DefaultTransition implements ReaderArea.Transition
 	return true;
     }
 
-
-
     boolean onTableDown(TableCell tableCell, Iterator it)
     {
 	NullCheck.notNull(tableCell, "tableCell");
@@ -154,10 +150,9 @@ public class DefaultTransition implements ReaderArea.Transition
 	final int colIndex = tableCell.getColIndex();
 	if (rowIndex + 1 >= table.getRowCount())
 	    //	    throw new RuntimeException("proba");
-	    		return it.searchForward((node,para,row)->{
-				return !node.isInTable(table) && !node.noText();
-				    
-		    }, it.getIndex() + 1);
+	    return it.searchForward((node,para,row)->{
+		    return !node.isInTable(table) && !node.noText();
+		}, it.getIndex() + 1);
 	final TableCell newCell = table.getCell(colIndex, rowIndex + 1);
 	if (newCell == null)
 	    return false;
