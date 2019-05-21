@@ -41,6 +41,13 @@ public class DefaultTransition implements ReaderArea.Transition
 	case PREV_SECTION:
 	case PREV_SECTION_SAME_LEVEL:
 	    return onPrevSection(it, type == Type.NEXT_SECTION_SAME_LEVEL);
+	case NEXT_PARAGRAPH:
+	    return onNextParagraph(it);
+
+	    	case PREV_PARAGRAPH:
+	    return onPrevParagraph(it);
+
+	    
 	default:
 	    return false;
 	}
@@ -140,6 +147,25 @@ public class DefaultTransition implements ReaderArea.Transition
 	}
 	return true;
     }
+
+    protected boolean onNextParagraph(Iterator it)
+    {
+	NullCheck.notNull(it, "it");
+	return it.searchForward((node,para,row)->{
+		return row.getRelNum() == 0;
+	    }, it.getIndex() + 1);
+    }
+
+        protected boolean onPrevParagraph(Iterator it)
+    {
+	NullCheck.notNull(it, "it");
+	if (it.getIndex() == 0)
+	    return false;
+	return it.searchBackward((node,para,row)->{
+		return row.getRelNum() == 0;
+	    }, it.getIndex() - 1);
+    }
+
 
     boolean onTableDown(TableCell tableCell, Iterator it)
     {

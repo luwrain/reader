@@ -51,22 +51,7 @@ class Jump
 	    environment.say(text);
     }
 
-    static Jump nextParagraph(Iterator fromIt, int fromPos)
-    {
-	NullCheck.notNull(fromIt, "fromIt");
-	//	if (fromIt.isEmptyRow())
-	//	    return new Jump();
-	//Looking for the beginning of the next paragraph
-	final Iterator it = (Iterator)fromIt.clone();
-	if (!it.moveNext())
-	    return new Jump();
-		do {
-		    if (it.isParagraphBeginning())
-			return new Jump(it, 0, getParagraphText(it), chooseSound(it, 0));
-		} while (it.moveNext());
-	return new Jump();
-    }
-
+    /*
     static private String getParagraphText(Iterator fromIt)
     {
 	NullCheck.notNull(fromIt, "fromIt");
@@ -79,6 +64,7 @@ class Jump
 	} while(it.moveNext() && !it.isParagraphBeginning());
 	return new String(b).trim();
     }
+    */
 
     static Jump nextSentence(Iterator fromIt, int fromPos)
     {

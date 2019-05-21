@@ -50,9 +50,11 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 
     public interface Transition
     {
-	public enum Type{NEXT, PREV,
+	public enum Type{
+	    NEXT, PREV,
 			 NEXT_SECTION, PREV_SECTION,
-			 NEXT_SECTION_SAME_LEVEL, PREV_SECTION_SAME_LEVEL
+	    NEXT_SECTION_SAME_LEVEL, PREV_SECTION_SAME_LEVEL,
+	    NEXT_PARAGRAPH, PREV_PARAGRAPH,
 	};
 
 	boolean transition(Type type, Iterator it);
@@ -307,9 +309,9 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    case ' ':
 		return onFindNextHref();
 	    case '[':
-		return onLeftSquareBracket(event);
+		return onTransition(event, Transition.Type.PREV_PARAGRAPH, false);
 	    case ']':
-		return onNextParagraph(event);
+		return onTransition(event, Transition.Type.NEXT_PARAGRAPH, false);
 	    case '.':
 		return onNextSentence(event);
 	    }
@@ -319,13 +321,15 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    case ENTER:
 		return onClick();
 	    case ARROW_DOWN:
-		return onMoveDown(event, false);
+		return onTransition(event, Transition.Type.NEXT, false);
 	    case ARROW_UP:
-		return onMoveUp(event, false);
+		return onTransition(event, Transition.Type.PREV, false);
+		/*
 	    case ALTERNATIVE_ARROW_DOWN:
 		return onMoveDown(event, true);
 	    case ALTERNATIVE_ARROW_UP:
 		return onMoveUp(event, true);
+		*/
 	    case ARROW_LEFT:
 		return onMoveLeft(event);
 	    case ARROW_RIGHT:
@@ -343,13 +347,13 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    case ALTERNATIVE_END:
 		return onAltEnd(event);
 	    case PAGE_UP:
-		return onFindPrevSection( false);
+		return onTransition(event, Transition.Type.PREV_SECTION, false);
 	    case PAGE_DOWN:
-		return onFindNextSection(false);
+		return onTransition(event, Transition.Type.NEXT_SECTION, false);
 	    case ALTERNATIVE_PAGE_UP:
-		return onFindPrevSection(true);
+		return onTransition(event, Transition.Type.PREV_SECTION_SAME_LEVEL, false);
 	    case ALTERNATIVE_PAGE_DOWN:
-		return onFindNextSection(true);
+		return onTransition(event, Transition.Type.NEXT_SECTION_SAME_LEVEL, false); 
 	    }
 	return false;
     }
@@ -556,23 +560,15 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	return clickHandler.onReaderClick(this, run);
     }
 
-    protected boolean onMoveDown(KeyboardEvent event, boolean quickNav)
+    protected boolean onTransition(KeyboardEvent event, Transition.Type type, boolean briefAnnouncement)
     {
+	NullCheck.notNull(event, "event");
+	NullCheck.notNull(type, "type");
 	if (noContentCheck())
 	    return true;
-	if (transition.transition(Transition.Type.NEXT, iterator))
-	    onNewHotPointY( quickNav); else
+	if (transition.transition(type, iterator))
+	    onNewHotPointY( briefAnnouncement); else
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
-	return true;
-    }
-
-    protected boolean onMoveUp(KeyboardEvent event, boolean quickNav)
-    {
-	if (noContentCheck())
-	    return true;
-	if (transition.transition(Transition.Type.PREV, iterator))
-	    onNewHotPointY( quickNav); else
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_ABOVE));
 	return true;
     }
 
@@ -594,43 +590,6 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	return true;
     }
 
-    protected boolean onFindNextSection(boolean sameLevel)
-    {
-		if (noContentCheck())
-	    return true;
-		if (transition.transition(sameLevel?Transition.Type.NEXT_SECTION_SAME_LEVEL:Transition.Type.NEXT_SECTION, iterator))
-	    onNewHotPointY( false); else
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
-	return true;
-    }
-
-    protected boolean onFindPrevSection(boolean sameLevel)
-    {
-
-			if (noContentCheck())
-	    return true;
-		if (transition.transition(sameLevel?Transition.Type.PREV_SECTION_SAME_LEVEL:Transition.Type.PREV_SECTION, iterator))
-	    onNewHotPointY( false); else
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
-	return true;
-    }
-
-protected boolean onNextParagraph(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	final Jump jump = Jump.nextParagraph(iterator, hotPointX);
-	NullCheck.notNull(jump, "jump");
-	jump.announce(context);
-	if (!jump.isEmpty())
-	{
-	    iterator = jump.it;
-	    hotPointX = jump.pos;
-	    context.onAreaNewHotPoint(this);
-	}
-	return true;
-    }
-
 protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
@@ -644,20 +603,6 @@ protected boolean onNextSentence(KeyboardEvent event)
 	    hotPointX = jump.pos;
 	    context.onAreaNewHotPoint(this);
 	}
-	return true;
-    }
-
-    protected boolean onLeftSquareBracket(KeyboardEvent event)
-    {
-	if (noContentCheck())
-	    return true;
-	if (!iterator.movePrev())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_ABOVE));
-	    return true;
-	}
-	while(!iterator.isParagraphBeginning() && iterator.movePrev());
-	onNewHotPointY( false);
 	return true;
     }
 
