@@ -309,9 +309,9 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    case ' ':
 		return onFindNextHref();
 	    case '[':
-		return onTransition(event, Transition.Type.PREV_PARAGRAPH, false);
+		return onTransition(event, Transition.Type.PREV_PARAGRAPH, false, Hint.NO_LINES_ABOVE);
 	    case ']':
-		return onTransition(event, Transition.Type.NEXT_PARAGRAPH, false);
+		return onTransition(event, Transition.Type.NEXT_PARAGRAPH, false, Hint.NO_LINES_BELOW);
 	    case '.':
 		return onNextSentence(event);
 	    }
@@ -321,9 +321,9 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    case ENTER:
 		return onClick();
 	    case ARROW_DOWN:
-		return onTransition(event, Transition.Type.NEXT, false);
+		return onTransition(event, Transition.Type.NEXT, false, Hint.NO_LINES_BELOW);
 	    case ARROW_UP:
-		return onTransition(event, Transition.Type.PREV, false);
+		return onTransition(event, Transition.Type.PREV, false, Hint.NO_LINES_ABOVE);
 		/*
 	    case ALTERNATIVE_ARROW_DOWN:
 		return onMoveDown(event, true);
@@ -347,13 +347,13 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    case ALTERNATIVE_END:
 		return onAltEnd(event);
 	    case PAGE_UP:
-		return onTransition(event, Transition.Type.PREV_SECTION, false);
+		return onTransition(event, Transition.Type.PREV_SECTION, false, Hint.NO_LINES_ABOVE);
 	    case PAGE_DOWN:
-		return onTransition(event, Transition.Type.NEXT_SECTION, false);
+		return onTransition(event, Transition.Type.NEXT_SECTION, false, Hint.NO_LINES_BELOW);
 	    case ALTERNATIVE_PAGE_UP:
-		return onTransition(event, Transition.Type.PREV_SECTION_SAME_LEVEL, false);
+		return onTransition(event, Transition.Type.PREV_SECTION_SAME_LEVEL, false, Hint.NO_LINES_ABOVE);
 	    case ALTERNATIVE_PAGE_DOWN:
-		return onTransition(event, Transition.Type.NEXT_SECTION_SAME_LEVEL, false); 
+		return onTransition(event, Transition.Type.NEXT_SECTION_SAME_LEVEL, false, Hint.NO_LINES_BELOW);
 	    }
 	return false;
     }
@@ -386,7 +386,6 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	NullCheck.notNull(query, "query");
 	switch(query.getQueryCode())
 	{
-
 	    		    case AreaQuery.UNIREF_AREA:
 			{
 			    final String title = getDocTitle();
@@ -560,15 +559,16 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	return clickHandler.onReaderClick(this, run);
     }
 
-    protected boolean onTransition(KeyboardEvent event, Transition.Type type, boolean briefAnnouncement)
+    protected boolean onTransition(KeyboardEvent event, Transition.Type type, boolean briefAnnouncement, Hint hintFailed)
     {
 	NullCheck.notNull(event, "event");
 	NullCheck.notNull(type, "type");
+	NullCheck.notNull(hintFailed, "hintFailed");
 	if (noContentCheck())
 	    return true;
 	if (transition.transition(type, iterator))
-	    onNewHotPointY( briefAnnouncement); else
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
+	    onNewRow( briefAnnouncement); else
+	    context.setEventResponse(DefaultEventResponse.hint(hintFailed));
 	return true;
     }
 
@@ -577,7 +577,7 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	if (noContentCheck())
 	    return true;
 	iterator.moveEnd();
-	onNewHotPointY( false);
+	onNewRow( false);
 	return true;
     }
 
@@ -586,7 +586,7 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	if (noContentCheck())
 	    return true;
 	iterator.moveBeginning();
-	onNewHotPointY( false);
+	onNewRow( false);
 	return true;
     }
 
@@ -610,17 +610,14 @@ protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	//	if (!iterator.isEmptyRow())
-	{
 	    final String text = iterator.getText();
 	    hotPointX = Math.min(hotPointX, text.length());
 	if (hotPointX > 0)
 	{
 	    --hotPointX;
-	    context.sayLetter(text.charAt(hotPointX));
+	    context.setEventResponse(DefaultEventResponse.letter(text.charAt(hotPointX)));
 	    context.onAreaNewHotPoint(this);
 	    return true;
-	}
 	}
 	if (!iterator.canMovePrev())
 	{
@@ -670,13 +667,6 @@ protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	/*
-	if (iterator.isEmptyRow())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
-	    return true;
-	}
-	*/
 	final String text = iterator.getText();
 	final WordIterator it = new WordIterator(text, hotPointX);
 	if (!it.stepBackward())
@@ -685,7 +675,7 @@ protected boolean onNextSentence(KeyboardEvent event)
 	    return true;
 	}
 	hotPointX = it.pos();
-	context.say(it.announce());
+	context.setEventResponse(DefaultEventResponse.text(it.announce()));
 	context.onAreaNewHotPoint(this);
 	return true;
     }
@@ -694,13 +684,6 @@ protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	/*
-	if (iterator.isEmptyRow())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE);
-	    return true;
-	}
-	*/
 	final String text = iterator.getText();
 	final WordIterator it = new WordIterator(text, hotPointX);
 	if (!it.stepForward())
@@ -710,7 +693,7 @@ protected boolean onNextSentence(KeyboardEvent event)
 	}
 	hotPointX = it.pos();
 	if (it.announce().length() > 0)
-	    context.say(it.announce()); else
+	    context.setEventResponse(DefaultEventResponse.text(it.announce())); else
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
 	context.onAreaNewHotPoint(this);
 	return true;
@@ -720,17 +703,10 @@ protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	/*
-	if (iterator.isEmptyRow())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE);
-	    return true;
-	}
-	*/
 	final String text = iterator.getText();
 	hotPointX = 0;
 	if (!text.isEmpty())
-	    context.sayLetter(text.charAt(0)); else
+	    context.setEventResponse(DefaultEventResponse.letter(text.charAt(0))); else
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
 	context.onAreaNewHotPoint(this);
 	return true;
@@ -740,13 +716,6 @@ protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	/*
-	if (iterator.isEmptyRow())
-	{
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE);
-	    return true;
-	}
-	*/
 	final String text = iterator.getText();
 	hotPointX = text.length();
 	context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
@@ -804,41 +773,13 @@ protected boolean onNextSentence(KeyboardEvent event)
 	    return true;    
     }
 
-    protected void onNewHotPointY(boolean briefAnnouncement, boolean alwaysSpeakTitleText)
-    {
-	onNewHotPointY(briefAnnouncement);
-    }
-
-    protected void onNewHotPointY(boolean briefAnnouncement)
+    protected void onNewRow(boolean briefAnnouncement)
     {
 	hotPointX = 0;
-	/*
-	if (iterator.isEmptyRow())
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE)); else
-	*/
-	    announceRow(iterator, briefAnnouncement);
-	context.onAreaNewHotPoint(this);
+		context.onAreaNewHotPoint(this);
+	    	announcement.announce(iterator, briefAnnouncement);
     }
 
-    protected void announceRow(Iterator it, boolean briefAnnouncement)
-    {
-	NullCheck.notNull(it, "it");
-	announcement.announce(it, briefAnnouncement);
-    }
-
-    protected 	void announceFragment(Iterator itFrom, Iterator itTo)
-    {
-	final StringBuilder b = new StringBuilder();
-	Iterator it = itFrom;
-	while(!it.equals(itTo))
-	{
-	    //	    if (!it.isEmptyRow())
-		b.append(it.getText());
-	    if (!it.moveNext())
-		break;
-	}
-	context.say(b.toString());
-    }
 
     protected String noContentStr()
     {

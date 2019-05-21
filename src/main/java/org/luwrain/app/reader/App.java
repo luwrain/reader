@@ -229,11 +229,13 @@ class App implements Application
 			return strings.appName();
 		    return base.getDocument().getTitle();
 		}
+		/*
 		@Override protected void announceRow(org.luwrain.reader.view.Iterator it, boolean briefAnnouncement)
 		{
 		    NullCheck.notNull(it, "it");
 		    announcement.announce(it, briefAnnouncement);
 		}
+		*/
 		    @Override public String getDocUniRef()
     {
 	final String addr = getDocUrl();
