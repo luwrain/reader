@@ -51,27 +51,10 @@ class Jump
 	    environment.say(text);
     }
 
-    /*
-    static private String getParagraphText(Iterator fromIt)
-    {
-	NullCheck.notNull(fromIt, "fromIt");
-	//	if (fromIt.isEmptyRow())
-	//	    return "";
-	final Iterator it = (Iterator)fromIt.clone();
-	final StringBuilder b = new StringBuilder();
-	do {
-	    b.append(it.getText() + " ");
-	} while(it.moveNext() && !it.isParagraphBeginning());
-	return new String(b).trim();
-    }
-    */
-
     static Jump nextSentence(Iterator fromIt, int fromPos)
     {
 	NullCheck.notNull(fromIt, "fromIt");
 	Iterator it = (Iterator)fromIt.clone();
-	if (true)
-	{
 	    final int pos = findNextSentenceBeginning(it.getText(), fromPos);
 	    //Do we have new sentence at the current iterator position
 	    if (pos >= 0)
@@ -82,7 +65,6 @@ class Jump
 		it = findTextBelow(it);
 		return new Jump(it, 0, getSentenceText(it, 0), chooseSound(it, 0));
 	    }
-	}
 	//It is necessary to check next iterator positions
 	if (!it.moveNext())
 	    return new Jump();
@@ -90,11 +72,11 @@ class Jump
 	    Log.debug("reader", "checking " + it.getText());
 	    if (it.isParagraphBeginning())
 		return new Jump(it, 0, getSentenceText(it, 0), chooseSound(it, 0));
-		    final int pos = findNextSentenceBeginning(it.getText(), 0);
-	if (pos >= 0)
+		    final int pos2 = findNextSentenceBeginning(it.getText(), 0);
+	if (pos2 >= 0)
 	{
-	    if (pos < it.getText().length())
-		return new Jump(it, pos, getSentenceText(it, pos), chooseSound(it, pos));
+	    if (pos2 < it.getText().length())
+		return new Jump(it, pos2, getSentenceText(it, pos2), chooseSound(it, pos));
 		//Ops, we have only sentence end here, beginning of the next sentence is somewhere on next iterator positions
 		it = findTextBelow(it);
 		return new Jump(it, 0, getSentenceText(it, 0), chooseSound(it, 0));
