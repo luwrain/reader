@@ -23,11 +23,16 @@ public class SentenceIterator
     {
 	NullCheck.notNull(b, "b");
 	NullCheck.notNull(delim, "delim");
+		boolean afterSentenceEnd;
+	if (atRowEnd())
+	{
 	if (!skipInitialForward(b, delim))
 	    return false;
+	afterSentenceEnd = true;
+	} else
+afterSentenceEnd = false;
 	if (this.pos >=  this.it.getText().length())
 	    throw new RuntimeException("pos (" + pos + ") == row.length (" + it.getText().length() + ")");
-	boolean afterSentenceEnd = false;
 	do {
 	    final String text = it.getText();
 	    if (!afterSentenceEnd)
@@ -48,7 +53,7 @@ public class SentenceIterator
 	    if (this.pos != 0)
 		throw new RuntimeException("pos (" + pos + ") is not zero");
 	    //Looking for any non-space character
-	    while(pos < text.length() && !Character.isSpaceChar(text.charAt(pos)))
+	    while(pos < text.length() && Character.isSpaceChar(text.charAt(pos)))
 		pos++;
 	    b.append(text.substring(0, pos));
 	    if (pos < text.length())
@@ -61,8 +66,6 @@ public class SentenceIterator
     {
 	NullCheck.notNull(b, "b");
 	NullCheck.notNull(delim, "delim");
-	if (pos < it.getText().length())
-	    return true;
 	while(it.canMoveNext())
 	{
 	    it.moveNext();
@@ -128,5 +131,10 @@ public class SentenceIterator
     public int getPos()
     {
 	return pos;
+    }
+
+    public boolean atRowEnd()
+    {
+	return pos >= it.getText().length();
     }
 }

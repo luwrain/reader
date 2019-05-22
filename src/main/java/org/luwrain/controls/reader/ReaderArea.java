@@ -598,6 +598,14 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	    return true;
 	}
+	//If we are at the row end
+	if (sentIt.atRowEnd() && !sentIt.forward(b, " "))
+	{
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
+	    return true;
+	}
+
+		
 	this.iterator = sentIt.getIterator();
 	this.hotPointX = sentIt.getPos();
 	//Making one more iteration to get the next of the next sentence
