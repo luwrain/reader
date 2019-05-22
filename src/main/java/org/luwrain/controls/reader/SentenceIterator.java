@@ -19,76 +19,87 @@ public class SentenceIterator
 	this.pos = pos;
     }
 
-    public String forward(String delim)
+    public boolean forward(StringBuilder b, String delim)
     {
-	final String thisRow = checkThisRowForward();
-	if (thisRow != null)
-	    return thisRow;
-		//It is necessary to check next iterator positions
-	final StringBuilder b = new StringBuilder();
-	b.append(it.getText().substring(this.pos));
-	if (!canMoveNext())
+	NullCheck.notNull(b, "b");
+	NullCheck.notNull(delim, "delim");
+	if (!skipInitialForward(b, delim))
+	    return false;
+		if (this.pos >=  this.it.getText().length())
+	    throw new RuntimeException("pos (" + pos + ") == row.length (" + it.getText().length() + ")");
+		boolean afterSentenceEnd = false;
+do {
+	final String text = it.getText();
+	if (!afterSentenceEnd)
 	{
-	    //Saving the current row, but moving the pos to the end of the row
-	    final String text = it.getText();
-	    final String res = text.substring(this.pos);
-	    this.pos = text.length();
-	    return res;
+final int nextPos = findNextSentenceInString(text, this.pos);
+	if (nextPos >= 0 && nextPos < text.length())
+	{
+	    b.append(text.substring(this.pos, nextPos));
+	    this.pos = nextPos;
+	    return true;
 	}
-	do {
+	if (nextPos >= 0)//There is the sentence end, but there is no next sentence begin
+	    afterSentenceEnd = true;
+		    this.pos = text.length();
+		    b.append(text.substring(pos));
+		    continue;
+	}
+	if (this.pos != 0)
+	    throw new RuntimeException("pos (" + pos + ") is not zero");
+	//Looking for any non-space character
+	while(pos < text.length() && !Character.isSpaceChar(text.charAt(pos)))
+	    pos++;
+	b.append(text.substring(0, pos));
+	if (pos < text.length())
+	    return true;
+} while(moveNextInParagraph(b, delim));
+	return true;
+    }
+
+    protected boolean skipInitialForward(StringBuilder b, String delim)
+    {
+	NullCheck.notNull(b, "b");
+	NullCheck.notNull(delim, "delim");
+	if (pos < it.getText().length())
+	    return true;
+	while(it.canMoveNext())
+	{
 	    it.moveNext();
 	    b.append(delim);
-	    final String text = it.getText();
-		    final int nextPos = findNextSentenceBeginning(text, 0);
-		    if (nextPos < 0)
-		    {
-			b.append(text);
-			continue;
-		    }
-	    if (nextPos < text.length())
+	    if (!it.getText().isEmpty())
 	    {
-		this.pos = nextPos;
-		b.append(text.substring(0, nextPos));
-		return new String(b);
+		this.pos = 0;
+		return true;
+	    }
 	}
-	} while (canMoveNext());
 	this.pos = it.getText().length();
-	return new String(b);
+	return false;
     }
 
-    protected String checkThisRowForward()
+    protected boolean moveNextInParagraph(StringBuilder b, String delim)
     {
-	final String text = it.getText();
-	final int nextPos = findNextSentenceBeginning(text, pos);
-	if (nextPos < 0)
-	    return null;
-	    //We have new sentence at the current iterator position
-		if (pos < text.length())
-		{
-		    final String res = text.substring(this.pos, nextPos);
-		    this.pos = nextPos;
-		    return res;
-		}
-		//Ops, we have only sentence end here,the  beginning of the next sentence is somewhere on next iterator positions
-		return null;//FIXME:
-    }
-
-    protected boolean canMoveNext()
-    {
+	NullCheck.notNull(b, "b");
+	NullCheck.notNull(delim, "dleim");
 	final Paragraph p = it.getParagraph();
 	final Iterator i = it.clone();
 	if (!i.canMoveNext())
 	    return false;
 	i.moveNext();
-	return p == i.getParagraph();
+	if (p != i.getParagraph())
+	    return false;
+	this.it.moveNext();
+	this.pos = 0;
+	b.append(delim);
+	return true;
+	
     }
-
 
     // Returns:
     // -1 if nothing found
     // any number less than the length of the text, if there is beginning of the next sentence on the current line
     // the length of the text, if there is end of the current sentence, but there is no beginning of the next sentence
-    static private int findNextSentenceBeginning(String text, int posFrom)
+    protected int findNextSentenceInString(String text, int posFrom)
     {
 	NullCheck.notNull(text, "text");
 	int pos = posFrom;
