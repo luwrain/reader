@@ -46,14 +46,14 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     public interface Announcement
     {
 	void announce(Iterator it, boolean brief);
-	    }
+    }
 
     public interface Transition
     {
 	public enum Type{
 	    NEXT, PREV,
 	    STRICT_NEXT, STRICT_PREV,
-			 NEXT_SECTION, PREV_SECTION,
+	    NEXT_SECTION, PREV_SECTION,
 	    NEXT_SECTION_SAME_LEVEL, PREV_SECTION_SAME_LEVEL,
 	    NEXT_PARAGRAPH, PREV_PARAGRAPH,
 	};
@@ -65,11 +65,11 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     {
 	public ControlContext context = null;
 	public String name = "";
-		public ClickHandler clickHandler = null;
+	public ClickHandler clickHandler = null;
 	public Announcement announcement = null;
 	public Transition transition = new DefaultTransition();
 	public Document doc = null;
-		public int width = 100;
+	public int width = 100;
     }
 
     protected final ControlContext context;
@@ -86,7 +86,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     protected org.luwrain.reader.view.Iterator iterator = null;
     protected int hotPointX = 0;
 
-            public ReaderArea(Params params)
+    public ReaderArea(Params params)
     {
 	NullCheck.notNull(params, "params");
 	NullCheck.notNull(params.context, "params.context");
@@ -94,35 +94,33 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	NullCheck.notNull(params.name, "params.name");
 	this.context = params.context;
 	if (params.announcement != null)
-	this.announcement = params.announcement; else
+	    this.announcement = params.announcement; else
 	    this.announcement = new DefaultAnnouncement(params.context, (Strings)params.context.getI18n().getStrings(Strings.NAME));
 	this.transition = params.transition;
 	this.clickHandler = params.clickHandler;
-	    if (params.doc != null)
-	    {
-		if (params.width < 0)
-		    throw new IllegalArgumentException("width (" + params.width + ") may not be negative");
-		setDocument(params.doc, params.width);
-	    }
-	    		this.name = params.name;
-
+	if (params.doc != null)
+	{
+	    if (params.width < 0)
+		throw new IllegalArgumentException("width (" + params.width + ") may not be negative");
+	    setDocument(params.doc, params.width);
+	}
+	this.name = params.name;
     }
 
-
-        public ReaderArea(ControlContext context, Announcement announcement, Document document, int width)
+    public ReaderArea(ControlContext context, Announcement announcement, Document document, int width)
     {
 	NullCheck.notNull(context, "context");
 	NullCheck.notNull(announcement, "announcement");
 	this.context = context;
 	this.announcement = announcement;
-	    if (document != null)
-	    {
-		if (width < 0)
-		    throw new IllegalArgumentException("width (" + width + ") may not be negative");
-		setDocument(document, width);
-	    }
-	    this.transition = new DefaultTransition();
-	    this.name = "";
+	if (document != null)
+	{
+	    if (width < 0)
+		throw new IllegalArgumentException("width (" + width + ") may not be negative");
+	    setDocument(document, width);
+	}
+	this.transition = new DefaultTransition();
+	this.name = "";
     }
 
     public ReaderArea(ControlContext context, Announcement announcement)
@@ -185,7 +183,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	return res != null?res:"";
     }
 
-        public String getDocUrl()
+    public String getDocUrl()
     {
 	if (!hasDocument())
 	    return "";
@@ -235,7 +233,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     public boolean setCurrentRowIndex(int index)
     {
 	if (isEmpty())
-		      return false;
+	    return false;
 	final Iterator newIt;
 	try {
 	    newIt = view.getIterator(index);
@@ -385,40 +383,40 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	NullCheck.notNull(query, "query");
 	switch(query.getQueryCode())
 	{
-	    		    case AreaQuery.UNIREF_AREA:
-			{
-			    final String title = getDocTitle();
-			    final String uniRef = getDocUniRef();
-			    if (uniRef.isEmpty())
-				return false;
-			    if (title.isEmpty())
-				((UniRefAreaQuery)query).answer(uniRef); else
-				((UniRefAreaQuery)query).answer(UniRefUtils.makeAlias(title, uniRef));
-			    			return true;
-			}
-		    case AreaQuery.URL_AREA:
-			{
-			    final String url = getDocUrl();
-			    if (url.isEmpty())
-				return false;
-			((UrlAreaQuery)query).answer(url);
-			return true;
-			}
-	    	case AreaQuery.UNIREF_HOT_POINT:
-		    {
-			final Run run = getCurrentRun();
-		    if (isEmpty() || run == null)
-		return false;
-		    final String res = getCurrentRun().href();
-		    if (res == null || res.isEmpty())
-			return false;
-	    ((UniRefHotPointQuery)query).answer("url:" + res);
-	    return true;
-		    }
+	case AreaQuery.UNIREF_AREA:
+	    {
+		final String title = getDocTitle();
+		final String uniRef = getDocUniRef();
+		if (uniRef.isEmpty())
+		    return false;
+		if (title.isEmpty())
+		    ((UniRefAreaQuery)query).answer(uniRef); else
+		    ((UniRefAreaQuery)query).answer(UniRefUtils.makeAlias(title, uniRef));
+		return true;
+	    }
+	case AreaQuery.URL_AREA:
+	    {
+		final String url = getDocUrl();
+		if (url.isEmpty())
+		    return false;
+		((UrlAreaQuery)query).answer(url);
+		return true;
+	    }
+	case AreaQuery.UNIREF_HOT_POINT:
+	    {
+		final Run run = getCurrentRun();
+		if (isEmpty() || run == null)
+		    return false;
+		final String res = getCurrentRun().href();
+		if (res == null || res.isEmpty())
+		    return false;
+		((UniRefHotPointQuery)query).answer("url:" + res);
+		return true;
+	    }
 	case AreaQuery.BEGIN_LISTENING:
 	    return onBeginListeningQuery((BeginListeningQuery)query);
 	default:
-	return false;
+	    return false;
 	}
     }
 
@@ -440,7 +438,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     {
 	if (name.isEmpty())
 	    return getDocTitle();
-	    return name;
+	return name;
     }
 
     @Override public boolean onClipboardCopyAll()
@@ -485,19 +483,19 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	return true;
     }
 
-@Override public boolean onDeleteRegion(int fromX, int fromY, int toX, int toY)
+    @Override public boolean onDeleteRegion(int fromX, int fromY, int toX, int toY)
     {
 	return false;
     }
 
-protected boolean onBeginListeningQuery(BeginListeningQuery query)
+    protected boolean onBeginListeningQuery(BeginListeningQuery query)
     {
 	NullCheck.notNull(query, "query");
 	final Jump jump = Jump.nextSentence(iterator, hotPointX);
 	if (jump.isEmpty())
 	    return false;
 	query.answer(new BeginListeningQuery.Answer(textUntil(jump.it, jump.pos), new ListeningInfo(jump.it, jump.pos)));
-return true;
+	return true;
     }
 
     protected boolean onListeningFinishedEvent(ListeningFinishedEvent event)
@@ -512,7 +510,7 @@ return true;
 	return true;
     }
 
-protected boolean onMoveHotPoint(MoveHotPointEvent event)
+    protected boolean onMoveHotPoint(MoveHotPointEvent event)
     {
 	NullCheck.notNull(event, "event");
 	if (isEmpty())
@@ -532,10 +530,10 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	if (it2.coversPos(x, y) &&
 	    x >= it2.getX())
 	{
-	iterator = it2;
-	hotPointX = x - iterator.getX();
-	context.onAreaNewHotPoint(this);
-	return true;
+	    iterator = it2;
+	    hotPointX = x - iterator.getX();
+	    context.onAreaNewHotPoint(this);
+	    return true;
 	}
 	if (event.precisely())
 	    return false;
@@ -617,8 +615,8 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	    final String text = iterator.getText();
-	    hotPointX = Math.min(hotPointX, text.length());
+	final String text = iterator.getText();
+	hotPointX = Math.min(hotPointX, text.length());
 	if (hotPointX > 0)
 	{
 	    --hotPointX;
@@ -642,19 +640,18 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	//	if (!iterator.isEmptyRow())
 	{
-	final String text = iterator.getText();
-	if (hotPointX < text.length())
-	{
-	    ++hotPointX;
+	    final String text = iterator.getText();
 	    if (hotPointX < text.length())
-		context.sayLetter(text.charAt(hotPointX)); else
-		context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
-	    context.onAreaNewHotPoint(this);
-	    return true;
+	    {
+		++hotPointX;
+		if (hotPointX < text.length())
+		    context.sayLetter(text.charAt(hotPointX)); else
+		    context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
+		context.onAreaNewHotPoint(this);
+		return true;
+	    }
 	}
-}
 	if (!iterator.canMoveNext())
 	{
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_TEXT));
@@ -732,61 +729,60 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 
     protected boolean onFindNextHref()
     {
-		if (noContentCheck())
+	if (noContentCheck())
 	    return true;
-		final Run currentRun = iterator.getRunUnderPos(hotPointX);
-		if (currentRun != null)
+	final Run currentRun = iterator.getRunUnderPos(hotPointX);
+	if (currentRun != null)
+	{
+	    //Trying to find the run with href on the current row
+	    final Run[] runs = iterator.getRuns();
+	    boolean skipping = true;
+	    for(Run r: runs)
+	    {
+		if (r == currentRun)
 		{
-		    //Trying to find the run with href on the current row
-		    final Run[] runs = iterator.getRuns();
-		    boolean skipping = true;
-		    for(Run r: runs)
-		    {
-			if (r == currentRun)
-			{
-			    skipping = false;
-			    continue;
-			}
-			if (skipping)
-			    continue;
-			if (r.href() != null && !r.href().trim().isEmpty())
-			{
-			    		    hotPointX = iterator.runBeginsAt(r);
-					    context.say(r.text());
-	    context.onAreaNewHotPoint(this);
-	    return true;    
-			}
-		    }
+		    skipping = false;
+		    continue;
 		}
-		if (iterator.getIndex() + 1 >= iterator.getCount())
+		if (skipping)
+		    continue;
+		if (r.href() != null && !r.href().trim().isEmpty())
+		{
+		    hotPointX = iterator.runBeginsAt(r);
+		    context.say(r.text());
+		    context.onAreaNewHotPoint(this);
+		    return true;    
+		}
+	    }
+	}
+	if (iterator.getIndex() + 1 >= iterator.getCount())
+	    return false;
+	if (!iterator.searchForward((node,para,row)->{
+		    final Run[] runs = row.getRuns();
+		    for(Run r: runs)
+			if (r.href() != null && !r.href().trim().isEmpty())
+			    return true;
 		    return false;
-		if (!iterator.searchForward((node,para,row)->{
-			    final Run[] runs = row.getRuns();
-			    for(Run r: runs)
-				if (r.href() != null && !r.href().trim().isEmpty())
-				    return true;
-			    return false;
-			}, iterator.getIndex() + 1))
-		    return false;
-		    final Run[] runs = iterator.getRuns();
-		    int k = 0;
-		    while (k < runs.length && (runs[k].href() == null || runs[k].href().trim().isEmpty()))
-			++k;
-		    if (k >= runs.length)//Should never happen
-			return false;
-		    hotPointX = iterator.runBeginsAt(runs[k]);
-		    context.say(runs[k].text());
-	    context.onAreaNewHotPoint(this);
-	    return true;    
+		}, iterator.getIndex() + 1))
+	    return false;
+	final Run[] runs = iterator.getRuns();
+	int k = 0;
+	while (k < runs.length && (runs[k].href() == null || runs[k].href().trim().isEmpty()))
+	    ++k;
+	if (k >= runs.length)//Should never happen
+	    return false;
+	hotPointX = iterator.runBeginsAt(runs[k]);
+	context.say(runs[k].text());
+	context.onAreaNewHotPoint(this);
+	return true;    
     }
 
     protected void onNewRow(boolean briefAnnouncement)
     {
 	hotPointX = 0;
-		context.onAreaNewHotPoint(this);
-	    	announcement.announce(iterator, briefAnnouncement);
+	context.onAreaNewHotPoint(this);
+	announcement.announce(iterator, briefAnnouncement);
     }
-
 
     protected String noContentStr()
     {
