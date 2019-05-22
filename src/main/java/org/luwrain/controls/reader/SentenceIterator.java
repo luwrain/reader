@@ -15,7 +15,7 @@ public class SentenceIterator
     public SentenceIterator(Iterator it, int pos)
     {
 	NullCheck.notNull(it, "it");
-	this.it = it;
+	this.it = it.clone();
 	this.pos = pos;
     }
 
@@ -25,35 +25,35 @@ public class SentenceIterator
 	NullCheck.notNull(delim, "delim");
 	if (!skipInitialForward(b, delim))
 	    return false;
-		if (this.pos >=  this.it.getText().length())
+	if (this.pos >=  this.it.getText().length())
 	    throw new RuntimeException("pos (" + pos + ") == row.length (" + it.getText().length() + ")");
-		boolean afterSentenceEnd = false;
-do {
-	final String text = it.getText();
-	if (!afterSentenceEnd)
-	{
-final int nextPos = findNextSentenceInString(text, this.pos);
-	if (nextPos >= 0 && nextPos < text.length())
-	{
-	    b.append(text.substring(this.pos, nextPos));
-	    this.pos = nextPos;
-	    return true;
-	}
-	if (nextPos >= 0)//There is the sentence end, but there is no next sentence begin
-	    afterSentenceEnd = true;
-		    this.pos = text.length();
-		    b.append(text.substring(pos));
-		    continue;
-	}
-	if (this.pos != 0)
-	    throw new RuntimeException("pos (" + pos + ") is not zero");
-	//Looking for any non-space character
-	while(pos < text.length() && !Character.isSpaceChar(text.charAt(pos)))
-	    pos++;
-	b.append(text.substring(0, pos));
-	if (pos < text.length())
-	    return true;
-} while(moveNextInParagraph(b, delim));
+	boolean afterSentenceEnd = false;
+	do {
+	    final String text = it.getText();
+	    if (!afterSentenceEnd)
+	    {
+		final int nextPos = findNextSentenceInString(text, this.pos);
+		if (nextPos >= 0 && nextPos < text.length())
+		{
+		    b.append(text.substring(this.pos, nextPos));
+		    this.pos = nextPos;
+		    return true;
+		}
+		if (nextPos >= 0)//There is the sentence end, but there is no next sentence begin
+		    afterSentenceEnd = true;
+				b.append(text.substring(pos));
+		this.pos = text.length();
+		continue;
+	    }
+	    if (this.pos != 0)
+		throw new RuntimeException("pos (" + pos + ") is not zero");
+	    //Looking for any non-space character
+	    while(pos < text.length() && !Character.isSpaceChar(text.charAt(pos)))
+		pos++;
+	    b.append(text.substring(0, pos));
+	    if (pos < text.length())
+		return true;
+	} while(moveNextInParagraph(b, delim));
 	return true;
     }
 
@@ -92,7 +92,6 @@ final int nextPos = findNextSentenceInString(text, this.pos);
 	this.pos = 0;
 	b.append(delim);
 	return true;
-	
     }
 
     // Returns:
@@ -118,6 +117,16 @@ final int nextPos = findNextSentenceInString(text, this.pos);
 	//Skipping all spaces before the beginning of the next sentence
 	while (pos < text.length() && Character.isSpace(text.charAt(pos)))
 	    ++pos;
+	return pos;
+    }
+
+    public org.luwrain.reader.view.Iterator getIterator()
+    {
+	return it.clone();
+    }
+
+    public int getPos()
+    {
 	return pos;
     }
 }

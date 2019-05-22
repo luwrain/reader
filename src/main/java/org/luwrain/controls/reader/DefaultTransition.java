@@ -35,6 +35,10 @@ public class DefaultTransition implements ReaderArea.Transition
 	    return onNext(it);
 	case PREV:
 	    return onPrev(it);
+	case STRICT_NEXT:
+	    return it.moveNext();
+	case STRICT_PREV:
+	    return it.movePrev();
 	case NEXT_SECTION:
 	case NEXT_SECTION_SAME_LEVEL:
 	    return onNextSection(it, type == Type.NEXT_SECTION_SAME_LEVEL);

@@ -52,6 +52,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     {
 	public enum Type{
 	    NEXT, PREV,
+	    STRICT_NEXT, STRICT_PREV,
 			 NEXT_SECTION, PREV_SECTION,
 	    NEXT_SECTION_SAME_LEVEL, PREV_SECTION_SAME_LEVEL,
 	    NEXT_PARAGRAPH, PREV_PARAGRAPH,
@@ -324,12 +325,10 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 		return onTransition(event, Transition.Type.NEXT, false, Hint.NO_LINES_BELOW);
 	    case ARROW_UP:
 		return onTransition(event, Transition.Type.PREV, false, Hint.NO_LINES_ABOVE);
-		/*
 	    case ALTERNATIVE_ARROW_DOWN:
-		return onMoveDown(event, true);
+		return onTransition(event, Transition.Type.STRICT_NEXT, false, Hint.NO_LINES_BELOW);
 	    case ALTERNATIVE_ARROW_UP:
-		return onMoveUp(event, true);
-		*/
+		return onTransition(event, Transition.Type.STRICT_PREV, false, Hint.NO_LINES_BELOW);
 	    case ARROW_LEFT:
 		return onMoveLeft(event);
 	    case ARROW_RIGHT:
@@ -590,19 +589,27 @@ protected boolean onMoveHotPoint(MoveHotPointEvent event)
 	return true;
     }
 
-protected boolean onNextSentence(KeyboardEvent event)
+    protected boolean onNextSentence(KeyboardEvent event)
     {
 	if (noContentCheck())
 	    return true;
-	final Jump jump = Jump.nextSentence(iterator, hotPointX);
-	NullCheck.notNull(jump, "jump");
-	jump.announce(context);
-	if (!jump.isEmpty())
+	final SentenceIterator sentIt = new SentenceIterator(this.iterator, hotPointX);
+	StringBuilder b = new StringBuilder();
+	if (!sentIt.forward(b, " "))
 	{
-	    iterator = jump.it;
-	    hotPointX = jump.pos;
-	    context.onAreaNewHotPoint(this);
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
+	    return true;
 	}
+	this.iterator = sentIt.getIterator();
+	this.hotPointX = sentIt.getPos();
+	//Making one more iteration to get the next of the next sentence
+	b = new StringBuilder();
+	sentIt.forward(b, " ");
+	final String text = new String(b).trim();
+	context.onAreaNewHotPoint(this);
+	if (!text.isEmpty())
+	    context.setEventResponse(DefaultEventResponse.text(text)); else
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.EMPTY_LINE));
 	return true;
     }
 
