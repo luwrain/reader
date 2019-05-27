@@ -38,7 +38,7 @@ public final class DocumentBuilderLoader
 	    Log.error(LOG_COMPONENT, "no property \'" + propName + "\'");
 	    return null;
 	}
-	final Object obj = ClassUtils.newInstanceOf(className, DocumentBuilderFactory.class);
+	final Object obj = ClassUtils.newInstanceOf(this.getClass().getClassLoader(), className, DocumentBuilderFactory.class);
 	if (obj == null)
 	    return null;
 	return ((DocumentBuilderFactory)obj).newDocumentBuilder(luwrain);
