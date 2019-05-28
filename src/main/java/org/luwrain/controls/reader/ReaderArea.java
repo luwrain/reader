@@ -303,7 +303,7 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
     {
 	NullCheck.notNull(event, "event");
 	if (!event.isSpecial() && !event.isModified())
-	    switch(event.getChar())
+	    switch(KeyboardEvent.getKeyboardLayout().getAsciiOfButton(event.getChar()))
 	    {
 	    case ' ':
 		return onFindNextHref();
