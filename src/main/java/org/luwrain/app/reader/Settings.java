@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2019 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2019 Michael Pozhidaev <msp@luwrain.org>
    Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
@@ -18,32 +18,20 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.io.*;
 
 import org.luwrain.core.*;
 
 interface Settings
 {
+    static final String LOG_COMPONENT = Base.LOG_COMPONENT;
     static final String PROPERTIES_PATH = "/org/luwrain/app/reader/properties";
     static final String BOOKMARKS_PATH = "/org/luwrain/app/reader/bookmarks";
 
-    interface Properties
+    interface Props
     {
-	String getBookmarkUrl(String defValue);
-	void setBookmarkUrl(String value);
-	int getBookmarkPos(int defValue);
-	void setBookmarkPos(int value);
-	String getCharset(String defValue);
-	void setCharset(String value);
-	String getParaStyle(String defValue);
-	void setParaStyle(String defValue);
-    }
-
-    interface Bookmark
-    {
-	String getUrl(String defValue);
-	int getPosition(int defValue);
-	void setUrl(String value);
-	void setPosition(int value);
+	String getProps(String defValue);
+	String setProps(String value);
     }
 
     interface Note
@@ -58,13 +46,6 @@ interface Settings
 	void setUniRef(String value);
     }
 
-    static Bookmark createBookmark(Registry registry, String path)
-    {
-	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(path, "path");
-	return RegistryProxy.create(registry, path, Bookmark.class);
-    }
-
     static Note createNote(Registry registry, String path)
     {
 	NullCheck.notNull(registry, "registry");
@@ -72,35 +53,13 @@ interface Settings
 	return RegistryProxy.create(registry, path, Note.class);
     }
 
-    static int getBookmark(Registry registry, String url)
-    {
-	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(url, "url");
-	registry.addDirectory(BOOKMARKS_PATH);
-	for(String p: registry.getDirectories(BOOKMARKS_PATH))
-	{
-	    if (p.isEmpty())
-		continue;
-	    final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, p));
-	    if (bookmark.getUrl("").equals(url))
-		return bookmark.getPosition(-1);
-	}
-	return -1;
-    }
 
     static org.luwrain.app.reader.Note[] getNotes(Registry registry, String url)
     {
 	NullCheck.notNull(registry, "registry");
 	NullCheck.notEmpty(url, "url");
 	registry.addDirectory(BOOKMARKS_PATH);
-	for(String p: registry.getDirectories(BOOKMARKS_PATH))
-	{
-	    if (p.isEmpty())
-		continue;
-	    final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, p));
-	    if (bookmark.getUrl("").equals(url))
-		return getNotesImpl(registry, Registry.join(Registry.join(BOOKMARKS_PATH, p), "notes"));
-	}
+	//FIXME:
 	return new org.luwrain.app.reader.Note[0];
     }
 
@@ -113,40 +72,15 @@ interface Settings
 	NullCheck.notNull(noteComment, "noteComment");
 	NullCheck.notNull(noteUniRef, "noteUniRef");
 	registry.addDirectory(BOOKMARKS_PATH);
-	for(String p: registry.getDirectories(BOOKMARKS_PATH))
-	{
-	    if (p.isEmpty())
-		continue;
-	    final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, p));
-	    if (bookmark.getUrl("").equals(url))
-	    {
-		addNoteImpl(registry, Registry.join(BOOKMARKS_PATH, p), noteUrl, notePos, noteComment, noteUniRef);
-	    return;
+	//FIXME:
 	    }
-	}
-	final int num = Registry.nextFreeNum(registry, BOOKMARKS_PATH);
-	final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, "" + num));
-	bookmark.setUrl(url);
-	bookmark.setPosition(0);
-	addNoteImpl(registry, Registry.join(BOOKMARKS_PATH, "" + num), noteUrl, notePos, noteComment, noteUniRef);
-    }
 
     static void deleteNote(Registry registry, String url, int num)
     {
 	NullCheck.notNull(registry, "registry");
 	NullCheck.notEmpty(url, "url");
 	registry.addDirectory(BOOKMARKS_PATH);
-	for(String p: registry.getDirectories(BOOKMARKS_PATH))
-	{
-	    if (p.isEmpty())
-		continue;
-	    final Bookmark bookmark = createBookmark(registry, Registry.join(BOOKMARKS_PATH, p));
-	    if (!bookmark.getUrl("").equals(url))
-		continue;
-	    final String pp = Registry.join(Registry.join(Registry.join(BOOKMARKS_PATH, p), "notes"), "" + num);
-	    registry.deleteDirectory(pp);
-	    return;
-	}
+	//FIXME:
     }
 
     static void addNoteImpl(Registry registry, String path, String noteUrl, int notePos,
@@ -194,10 +128,48 @@ interface Settings
 	return res.toArray(new org.luwrain.app.reader.Note[res.size()]);
     }
 
-    static Properties createProperties(Registry registry, String path)
+    static Props createProperties(Registry registry, String path)
     {
 	NullCheck.notNull(registry, "registry");
 	NullCheck.notEmpty(path, "path");
-	return RegistryProxy.create(registry, path, Properties.class);
+	return RegistryProxy.create(registry, path, Props.class);
     }
+
+    
+    static Properties decodeProperties(String value)
+    {
+	NullCheck.notNull(value, "value");
+	final StringReader r = new StringReader(value);
+	final Properties props = new Properties();
+	try {
+	    props.load(r);
+	    return props;
+	}
+	catch(IOException e)
+	{
+	    Log.warning(LOG_COMPONENT, "unable to decode reader properties:" + e.getClass().getName() + ":" + e.getMessage());
+	    return new Properties();
+	}
+    }
+
+    static String encodeProperties(Properties props)
+    {
+	NullCheck.notNull(props, "props");
+	final StringWriter w = new StringWriter();
+	try {
+	    try {
+		props.store(w, "");
+	    }
+	    finally {
+		w.flush();
+	    }
+	    return w.toString();
+	}
+	catch(IOException e)
+	{
+	    Log.warning(LOG_COMPONENT, "unable to save the properties:" + e.getClass().getName() + ":" + e.getMessage());
+	    return "";
+	}
+    }
+
 }

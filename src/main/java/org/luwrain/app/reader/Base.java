@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2019 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2019 Michael Pozhidaev <msp@luwrain.org>
    Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
@@ -43,8 +43,8 @@ enum ParaStyle {
 	INDENT};
 
 
-    private final Luwrain luwrain;
-    private final Strings strings;
+    final Luwrain luwrain;
+    final Strings strings;
         private final AudioPlaying audioPlaying;
 
         private final Runnable successNotification;
@@ -99,9 +99,9 @@ enum ParaStyle {
 	if (StoredProperties.hasProperties(luwrain.getRegistry(), url.toString()))
 	{
 	    final StoredProperties props = new StoredProperties(luwrain.getRegistry(), url.toString());
-	    if (!props.sett.getCharset("").isEmpty())
-		urlLoader.setCharset(props.sett.getCharset(""));
-	    	final ParaStyle paraStyle = translateParaStyle(props.sett.getParaStyle(""));
+	    if (!props.getCharset().isEmpty())
+		urlLoader.setCharset(props.getCharset());
+	    	final ParaStyle paraStyle = translateParaStyle(props.getParaStyle());
 		if (paraStyle != null)
 		    urlLoader.setTxtParaStyle(paraStyle);
 	}
@@ -128,9 +128,9 @@ enum ParaStyle {
 	}
 		if (storedProps == null)
 	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
-		storedProps.sett.setCharset(newCharset);
+		storedProps.setCharset(newCharset);
 	urlLoader.setCharset(newCharset);
-	final ParaStyle paraStyle = translateParaStyle(storedProps.sett.getParaStyle(""));
+	final ParaStyle paraStyle = translateParaStyle(storedProps.getParaStyle());
 	if (paraStyle != null)
 	    urlLoader.setTxtParaStyle(paraStyle);
 	task = createTask(urlLoader);
@@ -154,10 +154,10 @@ enum ParaStyle {
 	}
 	if (storedProps == null)
 	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
-	storedProps.sett.setParaStyle(newParaStyle.toString());
+	storedProps.setParaStyle(newParaStyle.toString());
 	urlLoader.setTxtParaStyle(newParaStyle);
-	if (!storedProps.sett.getCharset("").isEmpty())
-	    urlLoader.setCharset(storedProps.sett.getCharset(""));
+	if (!storedProps.getCharset().isEmpty())
+	    urlLoader.setCharset(storedProps.getCharset());
 	task = createTask(urlLoader);
 	luwrain.executeBkg(task);
 	return true;
@@ -265,23 +265,20 @@ successNotification.run();
 	if (StoredProperties.hasProperties(luwrain.getRegistry(), res.doc.getUrl().toString ()))
 	{
 	    this.storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
-	    final int savedPosition = storedProps.sett.getBookmarkPos(0);
+	    final int savedPosition = storedProps.getBookmarkPos();
 	if (savedPosition > 0)
 	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
 	}
 	res.doc.commit();
     }
 
-    boolean setBookmark(int pos)
-    {
-	if (pos < 0)
-	    throw new IllegalArgumentException("pos (" + pos + ") may not be negative");
+    StoredProperties getStoredProps()
+	    {
 	if (!hasDocument())
-	    return false;
+	    return null;
 	if (storedProps == null)
-	    storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
-	storedProps.sett.setBookmarkPos(pos);
-	return true;
+	    this.storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
+	return storedProps;
     }
 
     boolean fillDocProperties(MutableLines lines)

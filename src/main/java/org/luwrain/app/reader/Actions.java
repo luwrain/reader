@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2019 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2019 Michael Pozhidaev <msp@luwrain.org>
    Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
@@ -41,14 +41,12 @@ final class Actions
     private final Base base;
     final Conversations conv;
 
-    Actions(Luwrain luwrain, Base base, Strings strings)
+    Actions( Base base)
     {
-	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(base, "base");
-	NullCheck.notNull(strings, "strings");
-	this.luwrain = luwrain;
+	this.luwrain = base.luwrain;
 	this.base = base;
-	this.strings = strings;
+	this.strings = base.strings;
 	this.conv = new Conversations(luwrain, strings);
     }
 
@@ -94,17 +92,17 @@ boolean onOpenUrl(String currentHref)
 	final int value = area.getCurrentRowIndex();
 	if (value < 0)
 	    return false;
-	final URL url = area.getDocument().getUrl();
-	if (url == null)
+	final StoredProperties props = base.getStoredProps();
+	if (props == null)
 	    return false;
-	if (!base.setBookmark(value))
-	return false;
-luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
+	props.setBookmarkPos(value);
+	luwrain.message(strings.bookmarkSaved(), Luwrain.MessageType.OK);
 	return true;
     }
 
     boolean onRestoreBookmark(ReaderArea area)
     {
+	/*
 	NullCheck.notNull(area, "area");
 	final String url = area.getDocUrl();
 	if (url == null || url.isEmpty())
@@ -116,6 +114,7 @@ if (value < 0 || !area.setCurrentRowIndex(value))
     return true;
 }
 luwrain.playSound(Sounds.DONE);
+	*/
 	return true;
     }
 
