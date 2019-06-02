@@ -132,6 +132,7 @@ public final class UrlLoader
 	    }
 	    if (res.doc == null)
 		throw new IOException("No suitable handler for the content type: " + selectedContentType);
+	    res.doc.setProperty("hash", getTmpFileHash());
 	    res.doc.setProperty("url", responseUrl.toString());
 	    res.doc.setProperty("contenttype", selectedContentType);
 	    if (requestedTagRef != null)
@@ -189,6 +190,24 @@ public final class UrlLoader
 	tmpFile = Files.createTempFile("tmplwr-reader-", ".dat");
 	Log.debug(LOG_COMPONENT, "creating temporary file " + tmpFile.toString());
 	Files.copy(s, tmpFile, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private String getTmpFileHash()
+    {
+	try {
+	    final InputStream is = new FileInputStream(tmpFile.toFile());
+	    try {
+		return org.luwrain.util.Sha1.getSha1(is);
+	    }
+	    finally {
+		is.close();
+	    }
+	}
+	catch(Exception e)
+	{
+	    Log.error(LOG_COMPONENT, "unable to get the hash of the temporary file:" + e.getClass().getName() + ":" + e.getMessage());
+	    return "";
+	}
     }
 
     private String makeTitleFromUrl()

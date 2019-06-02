@@ -272,14 +272,6 @@ successNotification.run();
 	res.doc.commit();
     }
 
-    StoredProperties getStoredProps()
-	    {
-	if (!hasDocument())
-	    return null;
-	if (storedProps == null)
-	    this.storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
-	return storedProps;
-    }
 
     boolean fillDocProperties(MutableLines lines)
     {
@@ -356,6 +348,28 @@ successNotification.run();
     Document getDocument()
     {
 	return res.doc;
+    }
+
+    String getDocHash()
+    {
+	if (!hasDocument())
+	    return "";
+	final String res = getDocument().getProperty("hash");
+	return res != null?res:"";
+    }
+
+        boolean hasStoredProps()
+    {
+	return storedProps != null;
+    }
+
+    StoredProperties getStoredProps()
+	    {
+	if (!hasDocument())
+	    return null;
+	if (storedProps == null)
+	    this.storedProps = new StoredProperties(luwrain.getRegistry(), res.doc.getUrl().toString());
+	return storedProps;
     }
 
     boolean isBusy()
