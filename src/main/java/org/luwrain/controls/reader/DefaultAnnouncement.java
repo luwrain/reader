@@ -47,7 +47,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 
     public DefaultAnnouncement(ControlContext context, Strings strings)
     {
-	this(context, (text)->{return context.getSpokenText(text, Luwrain.SpokenTextType.NATURAL);}, strings);
+	this(context, (text)->{return context.getSpeakableText(text, Luwrain.SpeakableTextType.NATURAL);}, strings);
     }
 
     @Override public void announce(Iterator it, boolean briefIntroduction)
