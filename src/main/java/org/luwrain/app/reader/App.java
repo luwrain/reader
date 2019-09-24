@@ -94,12 +94,7 @@ class App implements Application
 
     private void createAreas()
     {
-	final TreeArea.Params treeParams = new TreeArea.Params();
-	treeParams.context = new DefaultControlContext(luwrain);
-	treeParams.model = base.getTreeModel();
-	treeParams.name = strings.treeAreaName();
-	treeParams.clickHandler = (area, obj)->onTreeClick( obj);
-	this.treeArea = new TreeArea(treeParams){
+	this.treeArea = new TreeArea(base.createTreeParams((area, obj)->onTreeClick( obj))){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -249,13 +244,7 @@ class App implements Application
 		}
 	    };
 
-	final ListArea.Params listParams = new ListArea.Params();
-	listParams.context = treeParams.context;
-	listParams.model = base.getNotesModel();
-	listParams.appearance = new ListUtils.DefaultAppearance(listParams.context, Suggestions.LIST_ITEM);
-	listParams.clickHandler = (area, index, obj)->onNotesClick(obj);
-	listParams.name = strings.notesAreaName();
-	this.notesArea = new ListArea(listParams){
+	this.notesArea = new ListArea(base.createNotesListParams((area, index, obj)->onNotesClick(obj))){
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");

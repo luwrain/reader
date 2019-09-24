@@ -403,14 +403,28 @@ successNotification.run();
 	return true;
     }
 
-    TreeArea.Model getTreeModel()
+    TreeArea.Params createTreeParams(TreeArea.ClickHandler clickHandler)
     {
-	return new CachedTreeModel(new BookTreeModelSource(strings.bookTreeRoot()));
+	NullCheck.notNull(clickHandler, "clickHandler");
+
+	final TreeArea.Params params = new TreeArea.Params();
+	params.context = new DefaultControlContext(luwrain);
+	params.model = new CachedTreeModel(new BookTreeModelSource(strings.bookTreeRoot()));
+	params.name = strings.treeAreaName();
+	params.clickHandler = clickHandler;
+	return params;
     }
 
-ListArea.Model getNotesModel()
+    ListArea.Params createNotesListParams(ListArea.ClickHandler clickHandler)
     {
-	return notesModel;
+	NullCheck.notNull(clickHandler, "clickHandler");
+	final ListArea.Params params = new ListArea.Params();
+	params.context = new DefaultControlContext(luwrain);
+	params.model = notesModel;
+	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
+	params.clickHandler = clickHandler;
+	params.name = strings.notesAreaName();
+	return params;
     }
 
     UrlLoader.Result getResult()
