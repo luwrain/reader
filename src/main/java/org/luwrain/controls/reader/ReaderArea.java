@@ -633,7 +633,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	iterator.movePrev();
 	final String prevRowText = iterator.getText();
 	hotPointX = prevRowText.length();
-	context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
+	context.setEventResponse(DefaultEventResponse.hint(Hint.LINE_BOUND));
 	return true;
     }
 
@@ -641,17 +641,15 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     {
 	if (noContentCheck())
 	    return true;
+	final String text = iterator.getText();
+	if (hotPointX < text.length())
 	{
-	    final String text = iterator.getText();
+	    ++hotPointX;
 	    if (hotPointX < text.length())
-	    {
-		++hotPointX;
-		if (hotPointX < text.length())
-		    context.sayLetter(text.charAt(hotPointX)); else
-		    context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
-		context.onAreaNewHotPoint(this);
-		return true;
-	    }
+		context.setEventResponse(DefaultEventResponse.letter(text.charAt(hotPointX))); else
+		context.setEventResponse(DefaultEventResponse.hint(Hint.LINE_BOUND));
+	    context.onAreaNewHotPoint(this);
+	    return true;
 	}
 	if (!iterator.canMoveNext())
 	{
@@ -662,8 +660,8 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	final String nextRowText = iterator.getText();
 	hotPointX = 0;
 	if (nextRowText.isEmpty())
-	    context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE)); else
-	    context.sayLetter(nextRowText.charAt(0));
+	    context.setEventResponse(DefaultEventResponse.hint(Hint.LINE_BOUND)); else
+	    context.setEventResponse(DefaultEventResponse.letter(nextRowText.charAt(0)));
 	context.onAreaNewHotPoint(this);
 	return true;
     }
