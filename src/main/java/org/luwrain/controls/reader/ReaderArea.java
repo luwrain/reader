@@ -34,7 +34,7 @@ import org.luwrain.reader.view.Iterator;
 
 // Transition tries to iteratate over inner objects
 // while announcing tries to announce greater objects
-public class ReaderArea implements Area, ClipboardTranslator.Provider
+public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Provider
 {
     public enum State {LOADING, READY};
 
@@ -362,8 +362,6 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	    return false;
 	switch(event.getCode())
 	{
-	case LISTENING_FINISHED:
-	    return onListeningFinishedEvent((ListeningFinishedEvent)event);
 	case MOVE_HOT_POINT:
 	    if (event instanceof MoveHotPointEvent)
 		return onMoveHotPoint((MoveHotPointEvent)event);
@@ -413,8 +411,6 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 		((UniRefHotPointQuery)query).answer("url:" + res);
 		return true;
 	    }
-	case AreaQuery.BEGIN_LISTENING:
-	    return onBeginListeningQuery((BeginListeningQuery)query);
 	default:
 	    return false;
 	}
@@ -488,26 +484,23 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	return false;
     }
 
-    protected boolean onBeginListeningQuery(BeginListeningQuery query)
+    @Override public ListenableArea.ListeningInfo onListeningStart()
     {
-	NullCheck.notNull(query, "query");
 	final Jump jump = Jump.nextSentence(iterator, hotPointX);
 	if (jump.isEmpty())
-	    return false;
-	query.answer(new BeginListeningQuery.Answer(textUntil(jump.it, jump.pos), new ListeningInfo(jump.it, jump.pos)));
-	return true;
+	    return new ListenableArea.ListeningInfo();
+	return new ListeningInfo(textUntil(jump.it, jump.pos), jump.it, jump.pos);
     }
 
-    protected boolean onListeningFinishedEvent(ListeningFinishedEvent event)
+    @Override public void onListeningFinish(ListenableArea.ListeningInfo listeningInfo)
     {
-	NullCheck.notNull(event, "event");
-	if (!(event.getExtraInfo() instanceof ListeningInfo))
-	    return false;
-	final ListeningInfo info = (ListeningInfo)event.getExtraInfo();
-	iterator = info.it;
-	hotPointX = info.pos;
+	NullCheck.notNull(listeningInfo, "listeningInfo");
+	if (!(listeningInfo instanceof ReaderArea.ListeningInfo))
+	    return;
+	final ReaderArea.ListeningInfo info = (ReaderArea.ListeningInfo)listeningInfo;
+	this.iterator = info.it;
+	this.hotPointX = info.pos;
 	context.onAreaNewHotPoint(this);
-	return true;
     }
 
     protected boolean onMoveHotPoint(MoveHotPointEvent event)
@@ -829,13 +822,13 @@ public class ReaderArea implements Area, ClipboardTranslator.Provider
 	}
     }
 
-    static protected class ListeningInfo
+    static protected class ListeningInfo extends ListenableArea.ListeningInfo
     {
 	final Iterator it;
 	final int pos;
-
-	ListeningInfo(Iterator it, int pos)
+	ListeningInfo(String text, Iterator it, int pos)
 	{
+	    super(text);
 	    NullCheck.notNull(it, "it");
 	    this.it = it;
 	    this.pos = pos;
