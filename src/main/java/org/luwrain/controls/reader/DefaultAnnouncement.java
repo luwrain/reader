@@ -123,7 +123,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	    return;
 	}
 	if (it.getIndexInParagraph() == 0)
-	    context.setEventResponse(DefaultEventResponse.text(Sounds.PARAGRAPH, text)); else
+	    context.setEventResponse(DefaultEventResponse.text(Sounds.PARAGRAPH, textPreprocessor.preprocess(text))); else
 	    context.setEventResponse(DefaultEventResponse.text(textPreprocessor.preprocess(text)));
     }
 
