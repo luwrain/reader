@@ -110,7 +110,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
     {
 	NullCheck.notNull(it, "it");
 	NullCheck.notNull(sect, "sect");
-	context.setEventResponse(DefaultEventResponse.text(Sounds.DOC_SECTION, it.getText()));
+	context.setEventResponse(DefaultEventResponse.text(Sounds.DOC_SECTION, textPreprocessor.preprocess(it.getText())));
     }
 
     protected void announceText(Iterator it)

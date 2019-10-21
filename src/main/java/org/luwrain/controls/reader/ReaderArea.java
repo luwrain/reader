@@ -721,7 +721,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	    return true;
 	final String text = iterator.getText();
 	hotPointX = text.length();
-	context.setEventResponse(DefaultEventResponse.hint(Hint.END_OF_LINE));
+	context.setEventResponse(DefaultEventResponse.hint(Hint.LINE_BOUND));
 	context.onAreaNewHotPoint(this);
 	return true;
     }
