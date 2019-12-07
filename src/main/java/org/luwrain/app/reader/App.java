@@ -433,6 +433,11 @@ class App implements Application
 			return super.onSystemEvent(event);
 		    }
 		}
+				@Override public void announceLine(int index, String line)
+		{
+		    NullCheck.notNull(line, "line");
+		    defaultLineAnnouncement(context, index, luwrain.getSpeakableText(line, Luwrain.SpeakableTextType.PROGRAMMING));
+		}
 	    };
 	area.beginLinesTrans();
 	area.addLine("");
@@ -504,6 +509,11 @@ class App implements Application
 		    default:
 			return super.onSystemEvent(event);
 		    }
+		}
+		@Override public void announceLine(int index, String line)
+		{
+		    NullCheck.notNull(line, "line");
+		    defaultLineAnnouncement(context, index, luwrain.getSpeakableText(line, Luwrain.SpeakableTextType.PROGRAMMING));
 		}
 	    };
 	final DocProps props = new DocProps(luwrain, strings, base.getDocument());
