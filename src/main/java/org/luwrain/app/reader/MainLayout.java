@@ -10,25 +10,31 @@ import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
+import org.luwrain.app.reader.books.*;
 import org.luwrain.template.*;
 
-final class MainLayout extends LayoutBase
+final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
+    private App2 app = null;
         private final TreeArea treeArea;
     private final ReaderArea readerArea;
     private final ListArea notesArea;
-    
-    MainLayout(App app)
+
+    MainLayout(App2 app)
     {
 	this.treeArea = new TreeArea(createTreeParams()) {
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (app.onInputEvent(this, event))
+			return true;
 		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (app.onSystemEvent(this, event))
+			return true;
 			return super.onSystemEvent(event);
 		}
 		@Override public Action[] getAreaActions()
@@ -101,26 +107,30 @@ final class MainLayout extends LayoutBase
 	    };
     }
 
-    private TreeArea.Params createTreeParams()
+    @Override public boolean onTreeClick(TreeArea treeArea, Object obj)
     {
-	return null;
+	NullCheck.notNull(treeArea, "treeArea");
+	NullCheck.notNull(obj, "obj");
+		if (!(obj instanceof Book.Section))
+	    return false;
+	final Book.Section sect = (Book.Section)obj;
+return app.getBookContainer().jump(sect.href, 0, 0, ()->{
+		    //FIXME:
+    });
     }
 
-    final ReaderArea.Params createReaderParams()
+    @Override public boolean onReaderClick(ReaderArea area, Run run)
     {
-    	final ReaderArea.Params params = new ReaderArea.Params();
-	/*
-	readerParams.context = new DefaultControlContext(luwrain);
-	readerParams.clickHandler = (area,run)->{
 	    NullCheck.notNull(area, "area");
 	    NullCheck.notNull(run, "run");
-	    if (!run.href().isEmpty())
-		return jumpByHref(run.href(), luwrain.getAreaVisibleWidth(area));
-	    return actions.onPlayAudio(area);
-	};
-	*/
-	return params;
-    }
+	    final String href = run.href();
+	    if (!href.isEmpty())
+		return app.getBookContainer().jump(href, 0, 0, ()->{
+		    });
+	    //	    return actions.onPlayAudio(area);
+	    return false;
+	}
+
 
     private int getSuitableWidth()
     {
@@ -163,10 +173,6 @@ final class MainLayout extends LayoutBase
 	return true;
     }
 
-    private ListArea.Params createNotesParams()
-    {
-	return null;
-    }
 
     /*
     boolean addNote(int pos)
@@ -189,75 +195,76 @@ final class MainLayout extends LayoutBase
 
     */
 
-    /*
-    TreeArea.Params createTreeParams(TreeArea.ClickHandler clickHandler)
+    private TreeArea.Params createTreeParams()
     {
-	NullCheck.notNull(clickHandler, "clickHandler");
-
 	final TreeArea.Params params = new TreeArea.Params();
-	params.context = new DefaultControlContext(luwrain);
-	params.model = new CachedTreeModel(new BookTreeModelSource(strings.bookTreeRoot()));
-	params.name = strings.treeAreaName();
-	params.clickHandler = clickHandler;
+	params.context = new DefaultControlContext(app.getLuwrain());
+	params.model = new CachedTreeModel(new BookTreeModelSource());
+	params.name = app.getStrings().treeAreaName();
+	params.clickHandler = this;
 	return params;
     }
 
-    ListArea.Params createNotesListParams(ListArea.ClickHandler clickHandler)
+        final ReaderArea.Params createReaderParams()
     {
-	NullCheck.notNull(clickHandler, "clickHandler");
+    	final ReaderArea.Params params = new ReaderArea.Params();
+	params.context = new DefaultControlContext(app.getLuwrain());
+	params.clickHandler = this;
+		return params;
+    }
+
+    private ListArea.Params createNotesParams()
+    {
 	final ListArea.Params params = new ListArea.Params();
-	params.context = new DefaultControlContext(luwrain);
-	params.model = notesModel;
+	params.context = new DefaultControlContext(app.getLuwrain());
+	params.model = new ListUtils.FixedModel();
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
-	params.clickHandler = clickHandler;
-	params.name = strings.notesAreaName();
+	//params.clickHandler = clickHandler;
+	params.name = app.getStrings().notesAreaName();
 	return params;
     }
 
-    */
+    AreaLayout getLayout()
+    {
+	return new AreaLayout(readerArea);
+    }
 
-    /*
     private final class BookTreeModelSource implements CachedTreeModelSource
-{
-    private final String root;
-    BookTreeModelSource(String root)
     {
-	NullCheck.notNull(root, "root");
-	this.root = root;
-    }
-    @Override public Object getRoot()
-    {
-	return root;
-    }
-    @Override public Object[] getChildObjs(Object obj)
-    {
-	final List res = new LinkedList();
-	if (obj == root)
+	private final String root = app.getStrings().bookTreeRoot();
+	@Override public Object getRoot()
 	{
-	    for(Book.Section s: sections)
-		if (s.level == 1)
-		    res.add(s);
-	} else
+	    return this.root;
+	}
+	@Override public Object[] getChildObjs(Object obj)
 	{
-	    int i = 0;
-	    for(i = 0;i < sections.length;++i)
-		if (sections[i] == obj)
-		    break;
-	    if (i < sections.length)
+	    NullCheck.notNull(obj, "obj");
+	    final List res = new LinkedList();
+	    if (obj == root)
 	    {
-		final Book.Section sect = sections[i];
-		for(int k = i + 1;k < sections.length;++k)
-		{
-		    if (sections[k].level <= sect.level)
+		for(Book.Section s: app.getBookContainer().getSections())
+		    if (s.level == 1)
+			res.add(s);
+	    } else
+	    {
+		final Book.Section[] sections = app.getBookContainer().getSections();
+		int i = 0;
+		for(i = 0;i < sections.length;++i)
+		    if (sections[i] == obj)
 			break;
-		    if (sections[k].level == sect.level + 1)
-			res.add(sections[k]);
+		if (i < sections.length)
+		{
+		    final Book.Section sect = sections[i];
+		    for(int k = i + 1;k < sections.length;++k)
+		    {
+			if (sections[k].level <= sect.level)
+			    break;
+			if (sections[k].level == sect.level + 1)
+			    res.add(sections[k]);
+		    }
 		}
 	    }
+	    return res.toArray(new Object[res.size()]);
 	}
-	return res.toArray(new Object[res.size()]);
     }
-}
-
-    */
 }
