@@ -85,4 +85,23 @@ final class Utils
 	return res;
     }
 
+    /*
+    static private ParaStyle translateParaStyle(String str)
+    {
+	NullCheck.notNull(str, "str");
+	switch(str)
+	{
+	case "EMPTY_LINES":
+	    return ParaStyle.EMPTY_LINES;
+	case "INDENT":
+	    return ParaStyle.INDENT;
+	case "EACH_LINE":
+	    return ParaStyle.EACH_LINE;
+	default:
+	    return null;
+	}
+    }
+
+    */
+
 }

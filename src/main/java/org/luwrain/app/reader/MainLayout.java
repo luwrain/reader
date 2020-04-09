@@ -168,4 +168,96 @@ final class MainLayout extends LayoutBase
 	return null;
     }
 
+    /*
+    boolean addNote(int pos)
+    {
+	NullCheck.notNull(res.doc, "res.doc");
+	final String text = Popups.simple(luwrain, strings.addNotePopupName(), strings.addNotePopupPrefix(), "");
+	if (text == null)
+	    return false;
+	Settings.addNote(luwrain.getRegistry(), getNotesUrl().toString(), res.doc.getUrl().toString(), pos, text, "");
+	updateNotesModel();
+	return true;
+    }
+
+    void deleteNote(Note note)
+    {
+	NullCheck.notNull(note, "note");
+	Settings.deleteNote(luwrain.getRegistry(), getNotesUrl().toString(), note.num);
+	updateNotesModel();
+    }
+
+    */
+
+    /*
+    TreeArea.Params createTreeParams(TreeArea.ClickHandler clickHandler)
+    {
+	NullCheck.notNull(clickHandler, "clickHandler");
+
+	final TreeArea.Params params = new TreeArea.Params();
+	params.context = new DefaultControlContext(luwrain);
+	params.model = new CachedTreeModel(new BookTreeModelSource(strings.bookTreeRoot()));
+	params.name = strings.treeAreaName();
+	params.clickHandler = clickHandler;
+	return params;
+    }
+
+    ListArea.Params createNotesListParams(ListArea.ClickHandler clickHandler)
+    {
+	NullCheck.notNull(clickHandler, "clickHandler");
+	final ListArea.Params params = new ListArea.Params();
+	params.context = new DefaultControlContext(luwrain);
+	params.model = notesModel;
+	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
+	params.clickHandler = clickHandler;
+	params.name = strings.notesAreaName();
+	return params;
+    }
+
+    */
+
+    /*
+    private final class BookTreeModelSource implements CachedTreeModelSource
+{
+    private final String root;
+    BookTreeModelSource(String root)
+    {
+	NullCheck.notNull(root, "root");
+	this.root = root;
+    }
+    @Override public Object getRoot()
+    {
+	return root;
+    }
+    @Override public Object[] getChildObjs(Object obj)
+    {
+	final List res = new LinkedList();
+	if (obj == root)
+	{
+	    for(Book.Section s: sections)
+		if (s.level == 1)
+		    res.add(s);
+	} else
+	{
+	    int i = 0;
+	    for(i = 0;i < sections.length;++i)
+		if (sections[i] == obj)
+		    break;
+	    if (i < sections.length)
+	    {
+		final Book.Section sect = sections[i];
+		for(int k = i + 1;k < sections.length;++k)
+		{
+		    if (sections[k].level <= sect.level)
+			break;
+		    if (sections[k].level == sect.level + 1)
+			res.add(sections[k]);
+		}
+	    }
+	}
+	return res.toArray(new Object[res.size()]);
+    }
+}
+
+    */
 }
