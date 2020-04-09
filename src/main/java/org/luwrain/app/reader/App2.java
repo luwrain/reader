@@ -17,7 +17,7 @@ import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 import org.luwrain.template.*;
 
-final class App2 extends AppBase
+final class App2 extends AppBase<Strings>
 {
     static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
@@ -28,7 +28,9 @@ enum ParaStyle {
 	INDENT};
 
 
+    private BookContainer bookContainer = null;
         private AudioPlaying audioPlaying = null;
+    
         private final LinkedList<HistoryItem> history = new LinkedList();
     private UrlLoader.Result res = null;
         private StoredProperties storedProps = null;
@@ -314,32 +316,14 @@ successNotification.run();
     */
 
 
-
-    /*
-    String getDocHash()
+    BookContainer getBookContainer()
     {
-	if (!hasDocument())
-	    return "";
-	final String res = getDocument().getProperty("hash");
-	return res != null?res:"";
+	return this.bookContainer;
     }
-    */
 
-    /*
-    String getContentType()
-    {
-	if (!hasDocument())
-	    return "";
-	final String r = res.doc.getProperty("contenttype");
-	return r != null?r:"";
-    }
-    */
 
     @Override public AreaLayout getDefaultAreaLayout()
     {
 	return null;
     }
-
-
-
 }
