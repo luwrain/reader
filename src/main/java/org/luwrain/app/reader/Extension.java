@@ -144,14 +144,14 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 		{
 		    NullCheck.notNull(args, "args");
 		    if (args.length < 1)
-			return new Application[]{new App2()};
+			return new Application[]{new App()};
 		    if (args.length == 1)
-			return new Application[]{new App2(args[0])};
+			return new Application[]{new App(args[0])};
 		    /*
 		    if (args.length == 2)
 			return new Application[]{new App(args[0], args[1])};
 		    */
-		    return new Application[]{new App2()};
+		    return new Application[]{new App()};
 		}
 	    },
 

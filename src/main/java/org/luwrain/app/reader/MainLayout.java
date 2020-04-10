@@ -15,12 +15,12 @@ import org.luwrain.template.*;
 
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
-    private App2 app;
+    private App app;
     private final TreeArea treeArea;
     private final ReaderArea readerArea;
     private final ListArea notesArea;
 
-    MainLayout(App2 app)
+    MainLayout(App app)
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;

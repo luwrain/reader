@@ -18,13 +18,13 @@ import org.luwrain.template.*;
 
 final class BookContainer
 {
-    private final App2 app;
+    private final App app;
     private final Book book;
     private Document doc = null;
         private final LinkedList<HistoryItem> history = new LinkedList();
         private Book.Section[] sections = new Book.Section[0];
 
-    BookContainer(App2 app, Book book)
+    BookContainer(App app, Book book)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(book, "book");
@@ -37,7 +37,7 @@ final class BookContainer
     {
 	NullCheck.notEmpty(href, "href");
 	NullCheck.notNull(onSuccess, "onSuccess");
-	final App2.TaskId taskId = app.newTaskId();
+	final App.TaskId taskId = app.newTaskId();
 	return app.runTask(taskId, ()->{	
 		final Document doc;
 		try {

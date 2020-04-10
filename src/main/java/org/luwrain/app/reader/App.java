@@ -19,590 +19,138 @@ package org.luwrain.app.reader;
 
 import java.util.*;
 import java.net.*;
+import java.io.*;
 
 import org.luwrain.core.*;
-import org.luwrain.core.events.*;
-import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
+import org.luwrain.player.*;
+import org.luwrain.template.*;
 
-class App implements Application
+final class App extends AppBase<Strings>
 {
-    static private final String LOG_COMPONENT = "reader";
+    static final String LOG_COMPONENT = "reader";
+    static private final String DEFAULT_ENCODING = "UTF-8";
 
-    private Luwrain luwrain = null;
-    private Base base = null;
-    private Actions actions = null;
-    private ActionLists actionLists = null;
-    private Strings strings = null;
+enum ParaStyle {
+	EMPTY_LINES,
+	EACH_LINE,
+	INDENT};
 
-    private ReaderArea readerArea = null;
-    private TreeArea treeArea = null;
-    private ListArea notesArea = null;
-    private AreaLayoutHelper layout = null;
-
-    private boolean showSections = false;
-    private final boolean showNotes = false;
-
-    private final String startingUrl;
-    private final String startingContentType;
+    private final String arg;
+    private BookContainer bookContainer = null;
+        private AudioPlaying audioPlaying = null;
+    private StartingLayout startingLayout = null;
+    private StoredProperties storedProps = null;
 
     App()
     {
-	startingUrl = "";
-	startingContentType = "";
+	this(null);
     }
 
-    App(String url, String contentType)
+    App(String arg)
     {
-	NullCheck.notNull(url, "url");
-	NullCheck.notNull(contentType, "contentType");
-	this.startingUrl = url;
-	this.startingContentType = contentType;
+	super(Strings.NAME, Strings.class);
+	this.arg = arg;
     }
 
-    @Override public InitResult onLaunchApp(Luwrain luwrain)
+    @Override protected boolean onAppInit()
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	final Object o = luwrain.i18n().getStrings(Strings.NAME);
-	if (o == null || !(o instanceof Strings))
-	    return new InitResult(InitResult.Type.NO_STRINGS_OBJ, Strings.NAME);
-	this.strings = (Strings)o;
-	this.luwrain = luwrain;
-	this.base = new Base(luwrain, strings,
-			     ()->onNewDocument(),
-			     ()->onNewBook(),
-			     (props, throwable)->showErrorPage(props, throwable));
-	this.actions = new Actions( base);
-	this.actionLists = new ActionLists(luwrain, base, strings);
-	createAreas();
-		this.layout = new AreaLayoutHelper(()->{
-		luwrain.onNewAreaLayout();
-		//luwrain.announceActiveArea();
-	    }, readerArea);
-	openStartFrom();
-	return new InitResult();
-    }
-
-    int getCurrentRowIndex()
-    {
-	return 10;//FIXME:
-    }
-
-    private void createAreas()
-    {
-	this.treeArea = new TreeArea(base.createTreeParams((area, obj)->onTreeClick( obj))){
-		@Override public boolean onInputEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if(event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-			{
-			case TAB:
-			    luwrain.setActiveArea(readerArea);
-			    return true;
-			}
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    switch(event.getCode())
-		    {
-		    case ACTION:
-			if (ActionEvent.isAction(event, "hide-sections-tree"))
-			{
-			    showSections = false;
-			    luwrain.setActiveArea(readerArea);
-			    updateMode();
-			    return true;
-			}
-			return false;
-		    case HELP:
-			luwrain.openHelp("luwrain.reader");
-			return true;
-		    case CLOSE:
-			closeApp();
-			return true;
-		    default:
-			return super.onSystemEvent(event);
-		    }
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return new Action[]{
-			new Action("hide-sections-tree", strings.actionHideSectionsTree(), new KeyboardEvent(KeyboardEvent.Special.ESCAPE)),
-		    };
-		}
-	    };
-
-	final ReaderArea.Params readerParams = new ReaderArea.Params();
-	readerParams.context = new DefaultControlContext(luwrain);
-	readerParams.clickHandler = (area,run)->{
-	    NullCheck.notNull(area, "area");
-	    NullCheck.notNull(run, "run");
-	    if (!run.href().isEmpty())
-		return jumpByHref(run.href(), luwrain.getAreaVisibleWidth(area));
-	    return actions.onPlayAudio(area);
-	};
-	this.readerArea = new ReaderArea(readerParams){
-		@Override public boolean onInputEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-			{
-			case TAB:
-			    if (showNotes)
-			    {
-				luwrain.setActiveArea(notesArea);
-				return true;
-			    }
-			    if (base.isInBookMode() && showSections)
-			    {
-				luwrain.setActiveArea(treeArea);
-				return true;
-			    }
-			    return false;
-			case ESCAPE:
-			    if (base.stopAudio())
-				return true;
-			    closeApp();
-			    return true;
-			case BACKSPACE:
-			    return base.onPrevDoc();
-			}
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    switch(event.getCode())
-		    {
-		    case SAVE:
-			return actions.onSaveBookmark(readerArea);
-		    case HELP:
-			luwrain.openHelp("luwrain.reader");
-			return true;
-		    case ACTION:
-			return onAction(event);
-		    case CLOSE:
-			closeApp();
-			return true;
-		    case PROPERTIES:
-			return showProps();
-		    default:
-			return super.onSystemEvent(event);
-		    }
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    switch(query.getQueryCode())
-		    {
-		    case AreaQuery.BACKGROUND_SOUND:
-			if (base.isBusy())
-			{
-			    ((BackgroundSoundQuery)query).answer(new BackgroundSoundQuery.Answer(BkgSounds.FETCHING));
-			    return true;
-			}
-			return false;
-		    default:
-			return super.onAreaQuery(query);
-		    }
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return actionLists.getReaderActions();
-		}
-		@Override public String getAreaName()
-		{
-		    if (!base.hasDocument())
-			return strings.appName();
-		    return base.getDocument().getTitle();
-		}
-		/*
-		@Override protected void announceRow(org.luwrain.reader.view.Iterator it, boolean briefAnnouncement)
-		{
-		    NullCheck.notNull(it, "it");
-		    announcement.announce(it, briefAnnouncement);
-		}
-		*/
-		    @Override public String getDocUniRef()
-    {
-	final String addr = getDocUrl();
-	if (addr.isEmpty())
-	    return "";
-	return UniRefUtils.makeUniRef("reader", addr);
-    }
-		@Override protected String noContentStr()
-		{
-		    return base.isBusy()?strings.noContentFetching():strings.noContent();
-		}
-	    };
-
-	this.notesArea = new ListArea(base.createNotesListParams((area, index, obj)->onNotesClick(obj))){
-		@Override public boolean onInputEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-			{
-			case TAB:
-			    if (base.isInBookMode() && showSections)
-				luwrain.setActiveArea(treeArea); else
-				luwrain.setActiveArea(readerArea);
-			    return true;
-			}
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    switch(event.getCode())
-		    {
-		    case ACTION:
-			return onAction(event);
-		    case HELP:
-			luwrain.openHelp("luwrain.reader");
-			return true;
-		    case CLOSE:
-			closeApp();
-			return true;
-		    default:
-			return super.onSystemEvent(event);
-		    }
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return actionLists.getNotesAreaActions(base.hasDocument());
-		}
-	    };
-    }
-
-    private boolean onAction(EnvironmentEvent event)
-    {
-	NullCheck.notNull(event, "event");
-	if (ActionEvent.isAction(event, "open-url"))
-	    return actions.onOpenUrl(Base.hasHref(readerArea)?Base.getHref(readerArea):"");
-	if (ActionEvent.isAction(event, "open-file"))
-	    return actions.onOpenFile();
-	if (ActionEvent.isAction(event, "change-text-para-style"))
-	    return actions.onChangeTextParaStyle();
-	if (ActionEvent.isAction(event, "open-in-narrator"))
-	    return base.openInNarrator();
-	if (ActionEvent.isAction(event, "show-sections-tree"))
-	    return false;//FIXME:
-	if (ActionEvent.isAction(event, "hide-sections-tree"))
-	    return false;//FIXME:
-	if (ActionEvent.isAction(event, "show-notes"))
-	    return false;//FIXME:
-	if (ActionEvent.isAction(event, "hide-notes"))
-	    return false;//FIXME:
-	if (ActionEvent.isAction(event, "save-bookmark"))
-	    return actions.onSaveBookmark(readerArea);
-	if (ActionEvent.isAction(event, "restore-bookmark"))
-	    return actions.onRestoreBookmark(readerArea);
-	/*
-	if (ActionEvent.isAction(event, "change-format"))
-	    return Actions.onChangeFormat(this, luwrain, strings, base);
-	*/
-	/*
-	if (ActionEvent.isAction(event, "change-charset"))
-	    return Actions.onChangeCharset(this, luwrain, strings, base);
-	*/
-	if (ActionEvent.isAction(event, "add-note"))
-	    return addNote();
-	if (ActionEvent.isAction(event, "delete-note"))
-	    return onDeleteNote();
-	return false;
-    }
-
-    private boolean onTreeClick(Object obj)
-    {
-	NullCheck.notNull(obj, "obj");
-	if (!(obj instanceof Book.Section))
-	    return false;
-	final Book.Section sect = (Book.Section)obj;
-	if (!jumpByHref(sect.href, luwrain.getAreaVisibleWidth(readerArea)))
-	    return false;
-	//	goToReaderArea();
-	return true;
-    }
-
-    private boolean onNotesClick(Object item)
-    {
-	NullCheck.notNull(item, "item");
-	if (!(item instanceof Note))
-	    return false;
-	final Note note = (Note)item;
-	if (!base.isInBookMode())
-	{
-	    readerArea.setCurrentRowIndex(note.position);
-	    goToReaderArea();
-	    return true;
-	}
-	final Document doc = base.jumpByHrefInBook(note.url, readerArea.getCurrentRowIndex(), note.position);
-	if (doc == null)
-	    return false;
-	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
-	goToReaderArea();
-	return true;
-    }
-
-    //Handle the new book notification
-    private void onNewBook()
-    {
-	if (!base.isInBookMode())
-	    throw new RuntimeException("Must be in book mode");
-	treeArea.refresh();
-	showSections = true;
-    }
-
-    //Handles the success notification
-    private void onNewDocument()
-    {
-	if (!base.hasDocument())
-	    throw new RuntimeException("base does not have any document");
-	base.updateNotesModel();
-	notesArea.refresh();
-	updateMode();
-	final Document doc = base.getDocument();
-	readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
-	luwrain.setActiveArea(readerArea);
-	announceNewDoc(doc);
-    }
-
-    private boolean jumpByHref(String href, int width)
-    {
-	if (base.isInBookMode())
-	{
-	    final Document doc = base.jumpByHrefInBook(href, readerArea.getCurrentRowIndex(), -1);
-	    if (doc == null)
-	    {
-		luwrain.launchApp("reader", new String[]{href});
+	this.audioPlaying = new AudioPlaying(getLuwrain());
+	if (!audioPlaying.isLoaded())
+		this.audioPlaying = null;
+	this.startingLayout = new StartingLayout(this);
+		setAppName(getStrings().appName());
+	if (arg != null && !arg.isEmpty())
+	    open(arg);
 		return true;
-	    }
-	    readerArea.setDocument(doc, luwrain.getAreaVisibleWidth(readerArea));
-	    updateMode();
-	    goToReaderArea();
-	    announceNewDoc(doc);
-	    return true;
-	}
-	if (base.jumpByHrefInNonBook(href, getCurrentRowIndex()))
-	{
-	    luwrain.onAreaNewBackgroundSound(readerArea);
-	    updateMode();
-	    return true;
-	}
-	return false;
-    }
-
-    private void showErrorPage(Object propsObj, Object throwableObj)
-    {
-	NullCheck.notNull(propsObj, "propsobj");
-	final Properties props = (Properties)propsObj;
-	final Throwable throwable = (Throwable)throwableObj;
-	final SimpleArea area = new SimpleArea(new DefaultControlContext(luwrain), strings.errorAreaName()) {
-		@Override public boolean onInputEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-			{
-			case ESCAPE:
-			    layout.closeTempLayout();
-			    return true;
-			}
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
-			return super.onSystemEvent(event);
-		    switch(event.getCode())
-		    {
-		    case CLOSE:
-			closeApp();
-			return true;
-		    default:
-			return super.onSystemEvent(event);
 		    }
-		}
-				@Override public void announceLine(int index, String line)
-		{
-		    NullCheck.notNull(line, "line");
-		    defaultLineAnnouncement(context, index, luwrain.getSpeakableText(line, Luwrain.SpeakableTextType.PROGRAMMING));
-		}
-	    };
-	area.beginLinesTrans();
-	area.addLine("");
-	final ErrorHook errorHook = new ErrorHook(luwrain);
-	for(String s: errorHook.run(props, throwable))
-	    area.addLine(s);
-	area.addLine("");
-	area.endLinesTrans();
-	layout.openTempArea(area);
-	luwrain.speak(strings.errorAreaName(), Sounds.ERROR);
-    }
 
-    private void updateMode()
+    void open(String url)
     {
-	final boolean sects = this.showSections && base.isInBookMode();
-	final boolean notes = this.showNotes;
-	if (sects && notes)
+	NullCheck.notEmpty(url, "url");
+	final TaskId taskId = newTaskId();
+	runTask(taskId, ()->{
+		final Book book;
+		try {
+		    book = new BookFactory().newBook(getLuwrain(), url);
+		}
+		catch(IOException e)
+		{
+		    getLuwrain().crash(e);
+		    return;
+		}
+		finishedTask(taskId, ()->{
+			this.bookContainer = new BookContainer(this, book);
+			final MainLayout mainLayout = new MainLayout(this);
+			getLayout().setBasicLayout(mainLayout.getLayout());
+			mainLayout.update();
+		});
+	    });
 	{
-	    layout.setBasicLayout(new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea));
-	    readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
-	    return;
 	}
-	if (sects)
-	{
-	    layout.setBasicLayout(new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea));
-	    readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
-	    return;
-	}
-	if (notes)
-	{
-	    layout.setBasicLayout(new AreaLayout(AreaLayout.TOP_BOTTOM, readerArea, notesArea));
-	    readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
-	    return;
-	}
-	layout.setBasicLayout(new AreaLayout(readerArea));
-	readerArea.rebuildView(luwrain.getAreaVisibleWidth(readerArea));
     }
 
-    private boolean showProps()
-    {
-	if (!base.hasDocument())
-	    return false;
-	final SimpleArea propsArea = new SimpleArea(new DefaultControlContext(luwrain), strings.propertiesAreaName()) {
-		@Override public boolean onInputEvent(KeyboardEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && !event.isModified())
-			switch(event.getSpecial())
-			{
-			case ESCAPE:
-			    layout.closeTempLayout();
-			    return true;
-			}
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.getType() != EnvironmentEvent.Type.REGULAR)
-			return super.onSystemEvent(event);
-		    switch(event.getCode())
-		    {
-					    case HELP:
-			luwrain.openHelp("luwrain.reader");
-			return true;
-					    case CLOSE:
-			closeApp();
-			return true;
-		    default:
-			return super.onSystemEvent(event);
-		    }
-		}
-		@Override public void announceLine(int index, String line)
-		{
-		    NullCheck.notNull(line, "line");
-		    defaultLineAnnouncement(context, index, luwrain.getSpeakableText(line, Luwrain.SpeakableTextType.PROGRAMMING));
-		}
-	    };
-	final DocProps props = new DocProps(luwrain, strings, base.getDocument());
-	props.fillProperties(propsArea);
-	layout.openTempArea(propsArea);
-	return true;
-    }
-
-    private int getSuitableWidth()
-    {
-	final int areaWidth = luwrain.getAreaVisibleWidth(readerArea);
-	final int screenWidth = luwrain.getScreenWidth();
-	int width = areaWidth;
-	if (width < 80)
-	    width = screenWidth;
-	if (width < 80)
-	    width = 80;
-	return width;
-    }
-
-    private boolean addNote()
-    {
-	if (!base.hasDocument())
-	    return false;
-	if (!base.addNote(readerArea.getCurrentRowIndex()))
-	    return true;
-	notesArea.refresh();
-	return true;
-    }
-
-    private boolean onDeleteNote()
-    {
-	if (notesArea.selected() == null || !(notesArea.selected() instanceof Note))
-	    return false;
-	final Note note = (Note)notesArea.selected();
-	if (!Popups.confirmDefaultNo(luwrain, "Удаление закладки", "Вы действительно хотите удалить закладку \"" + note.comment + "\"?"))
-	    return true;
-	base.deleteNote(note);
-	notesArea.refresh();
-	return true;
-    }
-
-    @Override public void closeApp()
-    {
-	luwrain.closeApp();
-    }
-
-    private void announceNewDoc(Document doc)
-    {
-	NullCheck.notNull(doc, "doc");
-	luwrain.silence();
-	luwrain.playSound(Sounds.INTRO_REGULAR);
-	luwrain.speak(doc.getTitle());
-    }
-
-    private void openStartFrom()
-    {
+    /*
+	final UrlLoader urlLoader;
 	try {
-	    if (!startingUrl.isEmpty())
-		base.openInitial(new  URL(startingUrl), startingContentType);
+	    urlLoader = new UrlLoader(luwrain, url);
 	}
 	catch(MalformedURLException e)
+	{
+	    luwrain.crash(e);
+	    return false;
+	    	}
+	if (StoredProperties.hasProperties(luwrain.getRegistry(), url.toString()))
+	{
+	    final StoredProperties props = new StoredProperties(luwrain.getRegistry(), url.toString());
+	    if (!props.getCharset().isEmpty())
+		urlLoader.setCharset(props.getCharset());
+	    	final ParaStyle paraStyle = translateParaStyle(props.getParaStyle());
+		if (paraStyle != null)
+		    urlLoader.setTxtParaStyle(paraStyle);
+	}
+	if (!contentType.isEmpty())
+	    urlLoader.setContentType(contentType);
+    */
+
+
+    /*
+    boolean playAudio(ReaderArea area, String[] ids)
     {
-	luwrain.crash(e);//FIXME:
+	NullCheck.notNull(area, "area");
+	NullCheck.notNullItems(ids, "ids");
+	if (!isInBookMode())
+	    return false;
+	if (audioPlaying == null)
+	return false;
+	return audioPlaying.playAudio(res.book, res.doc, area, ids);
     }
+    */
+
+    /*
+    boolean stopAudio()
+    {
+	if (audioPlaying == null)
+	    return false;
+	return audioPlaying.stop();
+    }
+    */
+
+    void showErrorLayout(Exception e)
+    {
     }
 
-    private void goToTreeArea()
+    BookContainer getBookContainer()
     {
-	luwrain.setActiveArea(treeArea);
+	return this.bookContainer;
     }
 
-    private void goToReaderArea()
+    @Override public AreaLayout getDefaultAreaLayout()
     {
-	luwrain.setActiveArea(readerArea);
-    }
-
-    private void goToNotesArea()
-    {
-	luwrain.setActiveArea(notesArea);
-    }
-
-    @Override public String getAppName()
-    {
-	return readerArea != null?readerArea.getAreaName():strings.appName();
-    }
-
-    @Override public AreaLayout getAreaLayout()
-    {
-	return layout.getLayout();
+	return this.startingLayout.getLayout();
     }
 }

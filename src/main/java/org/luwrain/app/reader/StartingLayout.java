@@ -15,10 +15,10 @@ import org.luwrain.template.*;
 
 final class StartingLayout extends LayoutBase
 {
-    private App2 app;
+    private App app;
     private final ListArea listArea;
 
-    StartingLayout(App2 app)
+    StartingLayout(App app)
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;
