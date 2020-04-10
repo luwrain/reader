@@ -108,7 +108,7 @@ enum ParaStyle {
 	if (!contentType.isEmpty())
 	    urlLoader.setContentType(contentType);
 	task = createTask(urlLoader);
-	luwrain.executeBkg(task);
+		luwrain.executeBkg(task);
 	return true;
     }
 
@@ -206,7 +206,14 @@ successNotification.run();
 	NullCheck.notEmpty(href, "href");
 	if (!isInBookMode() || isBusy())
 	    return null;
-	final Document doc = res.book.getDocument(href);
+	final Document doc;
+	try {
+	    doc = res.book.getDocument(href);
+	}
+	catch(IOException e)
+	{
+	    return null;
+	}
 	if (doc == null)
 	    return null;
 	if (doc != res.doc)

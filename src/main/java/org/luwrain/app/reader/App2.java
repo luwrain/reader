@@ -40,35 +40,61 @@ enum ParaStyle {
 	EACH_LINE,
 	INDENT};
 
+    private final String arg;
     private BookContainer bookContainer = null;
         private AudioPlaying audioPlaying = null;
+    private StartingLayout startingLayout = null;
     private StoredProperties storedProps = null;
 
     App2()
     {
-	super(Strings.NAME, Strings.class);
+	this(null);
     }
 
-    @Override public boolean onAppInit()
+    App2(String arg)
+    {
+	super(Strings.NAME, Strings.class);
+	this.arg = arg;
+    }
+
+    @Override protected boolean onAppInit()
     {
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
 		this.audioPlaying = null;
+	this.startingLayout = new StartingLayout(this);
+		setAppName(getStrings().appName());
+	if (arg != null && !arg.isEmpty())
+	    open(arg);
 		return true;
 		    }
 
-    boolean openInitial(URL url, String contentType)
+    void open(String url)
     {
-	/*
-	NullCheck.notNull(url, "url");
-	NullCheck.notNull(contentType, "contentType");
-	if (isInBookMode())
+	NullCheck.notEmpty(url, "url");
+	final TaskId taskId = newTaskId();
+	runTask(taskId, ()->{
+		final Book book;
+		try {
+		    book = new BookFactory().newBook(getLuwrain(), url);
+		}
+		catch(IOException e)
+		{
+		    getLuwrain().crash(e);
+		    return;
+		}
+		finishedTask(taskId, ()->{
+			this.bookContainer = new BookContainer(this, book);
+			final MainLayout mainLayout = new MainLayout(this);
+			getLayout().setBasicLayout(mainLayout.getLayout());
+			mainLayout.update();
+		});
+	    });
 	{
-	    luwrain.launchApp("reader", new String[]{url.toString()});
-	    return true;
 	}
-	if (isBusy())
-	    return false;
+    }
+
+    /*
 	final UrlLoader urlLoader;
 	try {
 	    urlLoader = new UrlLoader(luwrain, url);
@@ -89,11 +115,7 @@ enum ParaStyle {
 	}
 	if (!contentType.isEmpty())
 	    urlLoader.setContentType(contentType);
-	task = createTask(urlLoader);
-	luwrain.executeBkg(task);
-	*/
-	return true;
-    }
+    */
 
 
     /*
@@ -118,14 +140,17 @@ enum ParaStyle {
     }
     */
 
+    void showErrorLayout(Exception e)
+    {
+    }
+
     BookContainer getBookContainer()
     {
 	return this.bookContainer;
     }
 
-
     @Override public AreaLayout getDefaultAreaLayout()
     {
-	return null;
+	return this.startingLayout.getLayout();
     }
 }

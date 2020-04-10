@@ -1,25 +1,10 @@
-/*
-   Copyright 2012-2019 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
 
 package org.luwrain.app.reader;
 
 import java.net.*;
 import java.util.*;
 
+import org.luwrain.base.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
@@ -27,23 +12,15 @@ import org.luwrain.cpanel.Factory;
 public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 {
     private final Set<String> queries = new TreeSet();
-    
+
     @Override public Command[] getCommands(Luwrain luwrain)
     {
 	return new Command[]{
+	    new SimpleShortcutCommand("reader")
+	};
+    }
 
-	    new Command(){
-		@Override public String getName()
-		{
-		    return "reader";
-		}
-		@Override public void onCommand(Luwrain luwrain)
-		{
-		    luwrain.launchApp("reader");
-		}
-	    },
-
-	    new Command(){
+    /*	    new Command(){
 		@Override public String getName()
 		{
 		    return "reader-open";
@@ -152,42 +129,48 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 
 	};
     }
-    
-    @Override public Shortcut[] getShortcuts(Luwrain luwrain)
+    */
+
+    @Override public ExtensionObject[] getExtObjects(Luwrain luwrain)
     {
-	final Shortcut reader = new Shortcut() {
+	return new ExtensionObject[]{
+
+	    new Shortcut() {
 		@Override public String getExtObjName()
 		{
 		    return "reader";
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
-		    if (args == null || args.length < 1)
-			return new Application[]{new App()};
+		    NullCheck.notNull(args, "args");
+		    if (args.length < 1)
+			return new Application[]{new App2()};
 		    if (args.length == 1)
-			return new Application[]{new App(args[0], "")};
+			return new Application[]{new App2(args[0])};
+		    /*
 		    if (args.length == 2)
 			return new Application[]{new App(args[0], args[1])};
-		    return new Application[]{new App()};
-
+		    */
+		    return new Application[]{new App2()};
 		}
-	    };
+	    },
 
-
-	final Shortcut opds = new Shortcut() {
+new Shortcut() {
 		@Override public String getExtObjName()
 		{
 		    return "opds";
 		}
 		@Override public Application[] prepareApp(String[] args)
 		{
+		    NullCheck.notNullItems(args, "args");
 		    return new Application[]{new org.luwrain.app.opds.App()};
 		}
-	    };
+},
 
-	return new Shortcut[]{reader, opds};
-    }
+	};
+	    }
 
+    /*
     private String constructGoogleUrl(Registry registry, String query)
     {
 	NullCheck.notNull(registry, "registry");
@@ -207,7 +190,7 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 	NullCheck.notNull(registry, "registry");
 	return RegistryProxy.create(registry, "/org/luwrain/app/reader", Settings.class);
     }
-
+    */
     @Override public UniRefProc[] getUniRefProcs(Luwrain luwrain)
     {
 	NullCheck.notNull(luwrain, "luwrain");

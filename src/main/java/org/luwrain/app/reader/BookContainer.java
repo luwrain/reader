@@ -30,26 +30,38 @@ final class BookContainer
 	NullCheck.notNull(book, "book");
 	this.app = app;
 	this.book = book;
+	this.doc = this.book.getStartingDocument();
     }
 
-    boolean jump(String href, int lastPos, int newDesiredPos, Runnable onSuccess)
+    boolean jump(String href, int currentRowNum, int newRowNum, Runnable onSuccess)
     {
 	NullCheck.notEmpty(href, "href");
 	NullCheck.notNull(onSuccess, "onSuccess");
 	final App2.TaskId taskId = app.newTaskId();
-	return app.runTask(()->{	
-	final Document doc = book.getDocument(href);
-	if (doc == null)
+	return app.runTask(taskId, ()->{	
+		final Document doc;
+		try {
+		    doc = book.getDocument(href);
+		}
+		catch(IOException e)
+		{
+		    app.showErrorLayout(e);
+		    return;
+		}
+		if (doc == null)//should not happen, all errors must be indicated through exceptions
 	    return;
 	if (doc != doc)
 	{
-	    if (lastPos >= 0 && !history.isEmpty())
-		history.getLast().lastRowIndex = lastPos;
+	    if (currentRowNum >= 0 && !history.isEmpty())
+		history.getLast().lastRowIndex = currentRowNum;
 	    history.add(new HistoryItem(doc));
 	}
-	this.doc = doc;
-	if (newDesiredPos >= 0)
-	    doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + newDesiredPos);
+	if (newRowNum >= 0)
+	    doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, String.valueOf(newRowNum));
+	app.finishedTask(taskId, ()->{
+			this.doc = doc;
+			onSuccess.run();
+	    });
 	    });
 	    }
 
@@ -163,6 +175,11 @@ successNotification.run();
 	return r != null?r:"";
     }
     */
+
+    Document getDocument()
+    {
+	return this.doc;
+    }
 
     Book.Section[] getSections()
     {

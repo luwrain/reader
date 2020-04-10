@@ -15,13 +15,15 @@ import org.luwrain.template.*;
 
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
-    private App2 app = null;
-        private final TreeArea treeArea;
+    private App2 app;
+    private final TreeArea treeArea;
     private final ReaderArea readerArea;
     private final ListArea notesArea;
 
     MainLayout(App2 app)
     {
+	NullCheck.notNull(app, "app");
+	this.app = app;
 	this.treeArea = new TreeArea(createTreeParams()) {
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
@@ -35,7 +37,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		    NullCheck.notNull(event, "event");
 		    if (app.onSystemEvent(this, event))
 			return true;
-			return super.onSystemEvent(event);
+		    return super.onSystemEvent(event);
 		}
 		@Override public Action[] getAreaActions()
 		{
@@ -46,65 +48,80 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (app.onInputEvent(this, event))
+			return true;
 		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-			return super.onSystemEvent(event);
+		    if (app.onSystemEvent(this, event))
+			return true;
+		    return super.onSystemEvent(event);
 		}
 		@Override public boolean onAreaQuery(AreaQuery query)
 		{
 		    NullCheck.notNull(query, "query");
-			return super.onAreaQuery(query);
+		    if (app.onAreaQuery(this, query))
+			return true;
+		    return super.onAreaQuery(query);
 		}
 		@Override public Action[] getAreaActions()
 		{
 		    return new Action[0];
-		    		}
+		}
 		@Override public String getAreaName()
 		{
-		    /*
-		    if (!base.hasDocument())
-			return strings.appName();
-		    */
-		    //		    return base.getDocument().getTitle();
-		    return "";
+		    final Document doc = getDocument();
+		    if (doc == null)
+			return app.getStrings().appName();
+		    return doc.getTitle();
 		}
-		    @Override public String getDocUniRef()
-    {
-	/*
-	final String addr = getDocUrl();
-	if (addr.isEmpty())
-	    return "";
-	return UniRefUtils.makeUniRef("reader", addr);
-	*/
-	return null;
-    }
+		@Override public String getDocUniRef()
+		{
+		    final String addr = getDocUrl();
+		    if (addr.isEmpty())
+			return "";
+		    return UniRefUtils.makeUniRef("reader", addr);
+		}
 		@Override protected String noContentStr()
 		{
-		    /*
-		    return base.isBusy()?strings.noContentFetching():strings.noContent();
-		    */
-		    return "";
+		    return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
 		}
 	    };
 	this.notesArea = new ListArea(createNotesParams()) {
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (app.onInputEvent(this, event))
+			return true;
 		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-			return super.onSystemEvent(event);
+		    if (app.onSystemEvent(this, event))
+			return true;
+		    return super.onSystemEvent(event);
+		}
+		@Override public boolean onAreaQuery(AreaQuery query)
+		{
+		    NullCheck.notNull(query, "query");
+		    if (app.onAreaQuery(this, query))
+			return true;
+		    return super.onAreaQuery(query);
 		}
 		@Override public Action[] getAreaActions()
 		{
 		    return new Action[0];
 		}
 	    };
+    }
+
+    void update()
+    {
+		this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+		app.getLuwrain().setActiveArea(this.readerArea);
     }
 
     @Override public boolean onTreeClick(TreeArea treeArea, Object obj)
@@ -125,12 +142,10 @@ return app.getBookContainer().jump(sect.href, 0, 0, ()->{
 	    NullCheck.notNull(run, "run");
 	    final String href = run.href();
 	    if (!href.isEmpty())
-		return app.getBookContainer().jump(href, 0, 0, ()->{
-		    });
-	    //	    return actions.onPlayAudio(area);
+		return app.getBookContainer().jump(href, readerArea.getCurrentRowIndex(), 0, ()->update());
+			    //	    return actions.onPlayAudio(area);
 	    return false;
 	}
-
 
     private int getSuitableWidth()
     {

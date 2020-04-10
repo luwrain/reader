@@ -35,6 +35,6 @@ public interface Book
     AudioFragment findAudioForId(String ids);
     String findTextForAudio(String audioFileUrl, long msec);
     //Expecting that href is absolute
-        Document getDocument(String href);
+        Document getDocument(String href) throws java.io.IOException;
     Section[] getBookSections();
 }
