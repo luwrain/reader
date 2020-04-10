@@ -1,3 +1,19 @@
+/*
+   Copyright 2012-2020 Michael Pozhidaev <msp@luwrain.org>
+   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
+
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.app.reader.books;
 
@@ -7,9 +23,9 @@ import javax.activation.*;
 
 import org.luwrain.core.*;
 
-public final class Utils
+final class Utils
 {
-    static public String getDoctypeName(InputStream s) throws IOException
+    static String getDoctypeName(InputStream s) throws IOException
     {
 	final org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(s, "us-ascii", "", org.jsoup.parser.Parser.xmlParser());
 	List<org.jsoup.nodes.Node>nods = doc.childNodes();
@@ -32,7 +48,7 @@ public final class Utils
 	return "";
     }
 
-    static public String extractBaseContentType(String value)
+    static String extractBaseContentType(String value)
     {
 	NullCheck.notEmpty(value, "value");
 	try {
@@ -46,7 +62,7 @@ public final class Utils
 	}
     }
 
-    static public String extractCharset(String value)
+    static String extractCharset(String value)
     {
 	NullCheck.notEmpty(value, "value");
 	try {
@@ -60,7 +76,7 @@ public final class Utils
 	}
     }
 
-        static public String extractHtmlCharset(File file) throws IOException
+        static String extractHtmlCharset(File file) throws IOException
     {
 	NullCheck.notNull(file, "file");
 	final String res = Encoding.getHtmlEncoding(file.toPath());
