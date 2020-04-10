@@ -17,7 +17,7 @@
 
 package org.luwrain.app.reader;
 
-enum ParagraphStyle {
+public enum ParagraphStyle {
     EMPTY_LINES,
     EACH_LINE,
     INDENT
