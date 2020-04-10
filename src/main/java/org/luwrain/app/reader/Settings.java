@@ -24,7 +24,7 @@ import org.luwrain.core.*;
 
 interface Settings
 {
-    static final String LOG_COMPONENT = Base.LOG_COMPONENT;
+    static final String LOG_COMPONENT = "reader";
     static final String PROPERTIES_PATH = "/org/luwrain/app/reader/properties";
     static final String BOOKMARKS_PATH = "/org/luwrain/app/reader/bookmarks";
 

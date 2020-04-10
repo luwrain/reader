@@ -35,11 +35,6 @@ final class App extends AppBase<Strings>
     static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
 
-enum ParaStyle {
-	EMPTY_LINES,
-	EACH_LINE,
-	INDENT};
-
     private final String arg;
     private BookContainer bookContainer = null;
         private AudioPlaying audioPlaying = null;

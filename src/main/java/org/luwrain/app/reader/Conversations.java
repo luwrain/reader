@@ -25,7 +25,6 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 
-import org.luwrain.app.reader.Base.ParaStyle;
 
 final class Conversations
 {
@@ -75,6 +74,7 @@ final class Conversations
 			   });
     }
 
+    /*
     ParaStyle textParaStyle()
     {
 	final String emptyLines = "Разбиение по пустым строкам";
@@ -91,4 +91,5 @@ final class Conversations
 	    return ParaStyle.EACH_LINE;
 	return null;
     }
+    */
 }

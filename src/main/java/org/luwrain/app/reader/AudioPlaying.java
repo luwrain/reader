@@ -27,7 +27,7 @@ import org.luwrain.app.reader.books.*;
 
 class AudioPlaying  implements Listener
 {
-    static private final String LOG_COMPONENT = Base.LOG_COMPONENT;
+    static private final String LOG_COMPONENT = "reader";
 
     private final Luwrain luwrain;
     private final Player player;

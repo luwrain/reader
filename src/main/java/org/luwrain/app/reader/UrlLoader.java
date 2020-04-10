@@ -28,11 +28,9 @@ import org.luwrain.util.*;
 import org.luwrain.reader.*;
 import org.luwrain.app.reader.books.*;
 
-import org.luwrain.app.reader.Base.ParaStyle;
-
 public final class UrlLoader
 {
-    static private final String LOG_COMPONENT = Base.LOG_COMPONENT;
+    static private final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_CHARSET = "UTF-8";
 
     private final Luwrain luwrain;
@@ -40,7 +38,7 @@ public final class UrlLoader
     private String requestedContentType = "";
     private String requestedTagRef = "";
     private String requestedCharset = "";
-    private ParaStyle requestedTxtParaStyle = ParaStyle.EMPTY_LINES;
+    private ParagraphStyle requestedTxtParaStyle = ParagraphStyle.EMPTY_LINES;
 
     private URL responseUrl = null;
     private String responseContentType = "";
@@ -87,7 +85,7 @@ public final class UrlLoader
 	return requestedCharset != null?requestedCharset:"";
     }
 
-    void setTxtParaStyle(ParaStyle paraStyle)
+    void setTxtParaStyle(ParagraphStyle paraStyle)
     {
 	NullCheck.notNull(paraStyle, "paraStyle");
 	this.requestedTxtParaStyle = paraStyle;
