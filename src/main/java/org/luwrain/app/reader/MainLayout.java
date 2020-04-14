@@ -55,6 +55,13 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 			return true;
 		    return super.onSystemEvent(event);
 		}
+				@Override public boolean onAreaQuery(AreaQuery query)
+		{
+		    NullCheck.notNull(query, "query");
+		    if (app.onAreaQuery(this, query))
+			return true;
+		    return super.onAreaQuery(query);
+		}
 		@Override public Action[] getAreaActions()
 		{
 		    return null;
@@ -257,7 +264,7 @@ return app.getBookContainer().jump(sect.href, 0, 0, ()->{
 
     AreaLayout getLayout()
     {
-	return new AreaLayout(readerArea);
+	return new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea);
     }
 
     private final class BookTreeModelSource implements CachedTreeModelSource

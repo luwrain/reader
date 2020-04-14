@@ -199,7 +199,6 @@ successNotification.run();
 
     Book.Section[] getSections()
     {
-	return new Book.Section[0];
+	return this.book.getBookSections();
     }
-
 }
