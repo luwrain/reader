@@ -103,31 +103,6 @@ interface Settings
 	    note.setUniRef(noteUniRef);
     }
 
-    static org.luwrain.app.reader.Note[] getNotesImpl(Registry registry, String path)
-    {
-	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(path, "path");
-	registry.addDirectory(path);
-	final LinkedList<org.luwrain.app.reader.Note> res = new LinkedList<org.luwrain.app.reader.Note>();
-	for(String p: registry.getDirectories(path))
-	{
-	    if (p.isEmpty())
-		continue;
-	    final Note note = createNote(registry, Registry.join(path, p));
-	    final int num;
-	    try {
-		num = Integer.parseInt(p);
-	    }
-	    catch(NumberFormatException e)
-	    {
-		Log.warning("reader", "registry directory " + path + " contains entries with illegal names");
-		continue;
-	    }
-	    res.add(new org.luwrain.app.reader.Note(num, note));
-	}
-	return res.toArray(new org.luwrain.app.reader.Note[res.size()]);
-    }
-
     static Props createProperties(Registry registry, String path)
     {
 	NullCheck.notNull(registry, "registry");

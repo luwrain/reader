@@ -24,11 +24,14 @@ import java.nio.file.*;
 import org.luwrain.core.*;
 import org.luwrain.reader.*;
 import org.luwrain.util.*;
+import org.luwrain.reader.*;
 import org.luwrain.app.reader.*;
 
 public final class BookFactory
 {
-    static public Book initDaisy2(Luwrain luwrain, Document nccDoc)
+    static final String LOG_COMPONENT = "reader";
+    
+    private Book initDaisy2(Luwrain luwrain, Document nccDoc)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(nccDoc, "nccDoc");
@@ -41,6 +44,21 @@ public final class BookFactory
     {
 	final UrlLoader loader = new UrlLoader(luwrain, new URL(url));
 	final UrlLoader.Result res = loader.load();
+	final Document doc = res.doc;
+	final URL docUrl;
+	try {
+	    docUrl = new URL(doc.getProperty("url"));
+	}
+	catch(MalformedURLException e)
+	{
+	    Log.warning(LOG_COMPONENT, "unable to extract the URL of the loaded document: " + e.getClass().getName() + ":" + e.getMessage());
+	    return new SingleFileBook(luwrain, doc);
+	}
+		    if (docUrl.getFile().toLowerCase().endsWith("/ncc.html"))
+		    {
+			Log.debug(LOG_COMPONENT, "opening the book as DAISY v2.2");
+return initDaisy2(luwrain, doc);
+		    }
 	return new SingleFileBook(luwrain, res.doc);
     }
 }

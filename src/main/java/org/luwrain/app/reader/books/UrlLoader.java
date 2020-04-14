@@ -136,11 +136,6 @@ public final class UrlLoader
 	    res.doc.setProperty("contenttype", selectedContentType);
 	    if (requestedTagRef != null)
 		res.doc.setProperty("startingref", requestedTagRef);
-	    if (responseUrl.getFile().toLowerCase().endsWith("/ncc.html"))
-	    {
-		res.book = BookFactory.initDaisy2(luwrain, res.doc);
-		res.doc = null;
-	    }
 	    return res;
 	}
 	finally {
