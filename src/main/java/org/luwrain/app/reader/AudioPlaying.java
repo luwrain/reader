@@ -27,8 +27,6 @@ import org.luwrain.app.reader.books.*;
 
 class AudioPlaying  implements Listener
 {
-    static private final String LOG_COMPONENT = "reader";
-
     private final Luwrain luwrain;
     private final Player player;
 
@@ -66,7 +64,7 @@ class AudioPlaying  implements Listener
 	    final AudioFragment audioInfo = book.findAudioForId(url.toString() + "#" + id);
 	    if (audioInfo != null)
 	    {
-		URL audioFileUrl = null;
+final URL audioFileUrl;
 		try {
 		    audioFileUrl = new URL(url, audioInfo.src);
 		}
@@ -78,7 +76,7 @@ class AudioPlaying  implements Listener
 		this.doc = doc;
 		this.area = area;
 		this.currentPlaylist = new Playlist(audioFileUrl.toString());
-		luwrain.playSound(Sounds.PLAYING);
+		//luwrain.playSound(Sounds.PLAYING);
 		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS, null);
 		return true;
 	    }
@@ -91,7 +89,7 @@ class AudioPlaying  implements Listener
 	if (player.getState() != Player.State.PLAYING || this.currentPlaylist != player.getPlaylist())
 	    return false;
 	player.stop();
-	luwrain.playSound(Sounds.PLAYING);
+	//luwrain.playSound(Sounds.PLAYING);
 	return true;
     }
 
@@ -118,7 +116,6 @@ class AudioPlaying  implements Listener
 	}
 	catch(MalformedURLException e)
 	{
-	    Log.debug(LOG_COMPONENT, "unable to parse the URL to find the text for new playing time:" + link + ":" + e.getMessage());
 	    return;
 	}
 	if (!doc.getUrl().equals(docUrl))
@@ -170,13 +167,11 @@ class AudioPlaying  implements Listener
     {
 	private String desiredId;
 	private Run resultingRun = null;
-
 	AudioFollowingVisitor(String desiredId)
 	{
 	    NullCheck.notEmpty(desiredId, "desiredId");
 	    this.desiredId = desiredId;
 	}
-
 	@Override public void visit(Paragraph para)
 	{
 	    NullCheck.notNull(para, "para");
@@ -185,31 +180,24 @@ class AudioPlaying  implements Listener
 	    for(Run r: para.getRuns())
 		    checkRun(r);
 	}
-
 	@Override public void visitNode(Node node)
 	{
 	}
-
 	@Override public void visit(ListItem node)
 	{
 	}
-
 	@Override public void visit(Section node)
 	{
 	}
-
 	@Override public void visit(TableCell node)
 	{
 	}
-
 	@Override public void visit(Table node)
 	{
 	}
-
 	@Override public void visit(TableRow node)
 	{
 	}
-
 	private void checkRun(Run run)
 	{
 	    if (resultingRun != null)
@@ -219,7 +207,7 @@ class AudioPlaying  implements Listener
 	    {
 		if (info.attrs.containsKey("id") && info.attrs.get("id").equals(desiredId))
 		{
-		    resultingRun = run;
+		    this.resultingRun = run;
 		    return;
 		}
 		info = info.parent;
@@ -227,7 +215,7 @@ class AudioPlaying  implements Listener
 	}
 	Run result()
 	{
-	    return resultingRun;
+	    return this.resultingRun;
 	}
     }
 }

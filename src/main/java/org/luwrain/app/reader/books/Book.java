@@ -25,12 +25,18 @@ import org.luwrain.reader.*;
 
 public interface Book
 {
+    Document getStartingDocument();
+    AudioFragment findAudioForId(String ids);
+    String findTextForAudio(String audioFileUrl, long msec);
+    //Expecting that href is absolute
+    Document getDocument(String href) throws java.io.IOException;
+    Section[] getBookSections();
+
     static public final class Section
     {
 	public final int level;
 	public final String title;
 	public final String href;
-
 	public Section(int level,
 		       String title, String href)
 	{
@@ -40,17 +46,10 @@ public interface Book
 	    this.title = title;
 	    this.href = href;
 	}
-
 	@Override public String toString()
 	{
 	    return title;
 	}
     }
 
-    Document getStartingDocument();
-    AudioFragment findAudioForId(String ids);
-    String findTextForAudio(String audioFileUrl, long msec);
-    //Expecting that href is absolute
-        Document getDocument(String href) throws java.io.IOException;
-    Section[] getBookSections();
 }

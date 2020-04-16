@@ -49,9 +49,10 @@ final class BookContainer
 	this.doc = this.book.getStartingDocument();
     }
 
-    boolean jump(String href, int currentRowNum, int newRowNum, Runnable onSuccess)
+    boolean jump(String href, org.luwrain.controls.reader.ReaderArea readerArea, int newRowNum, Runnable onSuccess)
     {
 	NullCheck.notEmpty(href, "href");
+	NullCheck.notNull(readerArea, "readerArea");
 	NullCheck.notNull(onSuccess, "onSuccess");
 	final App.TaskId taskId = app.newTaskId();
 	return app.runTask(taskId, ()->{	
@@ -66,8 +67,9 @@ final class BookContainer
 		}
 		if (doc == null)//should not happen, all errors must be indicated through exceptions
 	    return;
-	if (doc != doc)
+	if (doc != this.doc)
 	{
+	    final int currentRowNum = readerArea.getCurrentRowIndex();
 	    if (currentRowNum >= 0 && !history.isEmpty())
 		history.getLast().lastRowIndex = currentRowNum;
 	    history.add(new HistoryItem(doc));

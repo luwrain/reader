@@ -141,7 +141,13 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	    };
     }
 
-    void update()
+    void updateInitial()
+    {
+		this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+		app.getLuwrain().setActiveArea(this.readerArea);
+    }
+
+        void updateAfterJump()
     {
 		this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
 		app.getLuwrain().setActiveArea(this.readerArea);
@@ -154,9 +160,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
-return app.getBookContainer().jump(sect.href, 0, 0, ()->{
-		    //FIXME:
-    });
+	return app.getBookContainer().jump(sect.href, readerArea, 0, ()->updateAfterJump());
     }
 
     @Override public boolean onReaderClick(ReaderArea area, Run run)
@@ -165,7 +169,7 @@ return app.getBookContainer().jump(sect.href, 0, 0, ()->{
 	    NullCheck.notNull(run, "run");
 	    final String href = run.href();
 	    if (!href.isEmpty())
-		return app.getBookContainer().jump(href, readerArea.getCurrentRowIndex(), 0, ()->update());
+		return app.getBookContainer().jump(href, readerArea, 0, ()->updateAfterJump());
 			    //	    return actions.onPlayAudio(area);
 	    return false;
 	}

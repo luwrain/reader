@@ -82,7 +82,7 @@ final class App extends AppBase<Strings>
 			this.bookContainer = new BookContainer(this, book);
 			final MainLayout mainLayout = new MainLayout(this);
 			getLayout().setBasicLayout(mainLayout.getLayout());
-			mainLayout.update();
+			mainLayout.updateInitial();
 		});
 	    });
 	{
