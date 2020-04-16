@@ -55,7 +55,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 			return true;
 		    return super.onSystemEvent(event);
 		}
-				@Override public boolean onAreaQuery(AreaQuery query)
+		@Override public boolean onAreaQuery(AreaQuery query)
 		{
 		    NullCheck.notNull(query, "query");
 		    if (app.onAreaQuery(this, query))
@@ -143,21 +143,21 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     void updateInitial()
     {
-		this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
-		app.getLuwrain().setActiveArea(this.readerArea);
+	this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+	app.getLuwrain().setActiveArea(this.readerArea);
     }
 
-        void updateAfterJump()
+    void updateAfterJump()
     {
-		this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
-		app.getLuwrain().setActiveArea(this.readerArea);
+	this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+	app.getLuwrain().setActiveArea(this.readerArea);
     }
 
     @Override public boolean onTreeClick(TreeArea treeArea, Object obj)
     {
 	NullCheck.notNull(treeArea, "treeArea");
 	NullCheck.notNull(obj, "obj");
-		if (!(obj instanceof Book.Section))
+	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
 	return app.getBookContainer().jump(sect.href, readerArea, 0, ()->updateAfterJump());
@@ -165,56 +165,31 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     @Override public boolean onReaderClick(ReaderArea area, Run run)
     {
-	    NullCheck.notNull(area, "area");
-	    NullCheck.notNull(run, "run");
-	    final String href = run.href();
-	    if (!href.isEmpty())
-		return app.getBookContainer().jump(href, readerArea, 0, ()->updateAfterJump());
-			    //	    return actions.onPlayAudio(area);
+	NullCheck.notNull(area, "area");
+	NullCheck.notNull(run, "run");
+	final String href = run.href();
+	if (!href.isEmpty())
+	    return app.getBookContainer().jump(href, readerArea, 0, ()->updateAfterJump());
+	final String[] ids = readerArea.getHtmlIds();
+	if (ids == null || ids.length == 0)
 	    return false;
-	}
+	return app.getBookContainer().playAudio(readerArea, ids);
+    }
 
     private int getSuitableWidth()
     {
 	/*
-	final int areaWidth = luwrain.getAreaVisibleWidth(readerArea);
-	final int screenWidth = luwrain.getScreenWidth();
-	int width = areaWidth;
-	if (width < 80)
-	    width = screenWidth;
-	if (width < 80)
-	    width = 80;
-	return width;
+	  final int areaWidth = luwrain.getAreaVisibleWidth(readerArea);
+	  final int screenWidth = luwrain.getScreenWidth();
+	  int width = areaWidth;
+	  if (width < 80)
+	  width = screenWidth;
+	  if (width < 80)
+	  width = 80;
+	  return width;
 	*/
 	return -1;
     }
-
-    private boolean addNote()
-    {
-	/*
-	if (!base.hasDocument())
-	    return false;
-	if (!base.addNote(readerArea.getCurrentRowIndex()))
-	    return true;
-	notesArea.refresh();
-	*/
-	return true;
-    }
-
-    private boolean onDeleteNote()
-    {
-	/*
-	if (notesArea.selected() == null || !(notesArea.selected() instanceof Note))
-	    return false;
-	final Note note = (Note)notesArea.selected();
-	if (!Popups.confirmDefaultNo(luwrain, "Удаление закладки", "Вы действительно хотите удалить закладку \"" + note.comment + "\"?"))
-	    return true;
-	base.deleteNote(note);
-	notesArea.refresh();
-	*/
-	return true;
-    }
-
 
     /*
     boolean addNote(int pos)
@@ -234,7 +209,6 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	Settings.deleteNote(luwrain.getRegistry(), getNotesUrl().toString(), note.num);
 	updateNotesModel();
     }
-
     */
 
     private TreeArea.Params createTreeParams()
@@ -247,12 +221,12 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	return params;
     }
 
-        final ReaderArea.Params createReaderParams()
+    final ReaderArea.Params createReaderParams()
     {
     	final ReaderArea.Params params = new ReaderArea.Params();
 	params.context = new DefaultControlContext(app.getLuwrain());
 	params.clickHandler = this;
-		return params;
+	return params;
     }
 
     private ListArea.Params createNotesParams()

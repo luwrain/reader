@@ -141,27 +141,23 @@ successNotification.run();
     }
     */
 
-    /*
-    boolean playAudio(ReaderArea area, String[] ids)
+    boolean playAudio(org.luwrain.controls.reader.ReaderArea area, String[] ids)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
-	if (!isInBookMode())
-	    return false;
+	final AudioPlaying audioPlaying = app.getAudioPlaying();
 	if (audioPlaying == null)
 	return false;
-	return audioPlaying.playAudio(res.book, res.doc, area, ids);
+	return audioPlaying.playAudio(this.book, this.doc, area, ids);
     }
-    */
 
-    /*
     boolean stopAudio()
     {
+	final AudioPlaying audioPlaying = app.getAudioPlaying();
 	if (audioPlaying == null)
 	    return false;
 	return audioPlaying.stop();
     }
-    */
 
     /*
     private URL getNotesUrl()

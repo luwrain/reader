@@ -139,6 +139,11 @@ final class App extends AppBase<Strings>
     {
     }
 
+    AudioPlaying getAudioPlaying()
+    {
+	return this.audioPlaying;
+    }
+
     BookContainer getBookContainer()
     {
 	return this.bookContainer;
