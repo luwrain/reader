@@ -36,6 +36,7 @@ final class App extends AppBase<Strings>
     static private final String DEFAULT_ENCODING = "UTF-8";
 
     private final String arg;
+    private Conversations conv = null;
     private BookContainer bookContainer = null;
         private AudioPlaying audioPlaying = null;
     private StartingLayout startingLayout = null;
@@ -54,6 +55,7 @@ final class App extends AppBase<Strings>
 
     @Override protected boolean onAppInit()
     {
+	this.conv = new Conversations(getLuwrain(), getStrings());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
 		this.audioPlaying = null;
@@ -137,6 +139,11 @@ final class App extends AppBase<Strings>
 
     void showErrorLayout(Exception e)
     {
+    }
+
+    Conversations conv()
+    {
+	return this.conv;
     }
 
     AudioPlaying getAudioPlaying()

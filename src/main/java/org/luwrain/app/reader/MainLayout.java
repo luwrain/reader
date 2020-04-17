@@ -18,6 +18,7 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.io.*;
 import java.net.*;
 
 import org.luwrain.core.*;
@@ -40,7 +41,13 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;
+	final ActionInfo openFile = action("open-file", app.getStrings().actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F3, EnumSet.of(KeyboardEvent.Modifiers.SHIFT)), MainLayout.this::actOpenFile);
+		final ActionInfo openUrl = action("open-url", app.getStrings().actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F4, EnumSet.of(KeyboardEvent.Modifiers.SHIFT)), MainLayout.this::actOpenUrl);
 	this.treeArea = new TreeArea(createTreeParams()) {
+		final Actions actions = actions(
+						openFile,
+						openUrl
+						);
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -51,7 +58,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
+		    if (app.onSystemEvent(this, event, actions))
 			return true;
 		    return super.onSystemEvent(event);
 		}
@@ -64,10 +71,15 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return null;
+		    return actions.getAreaActions();
 		}
 	    };
+	
 	this.readerArea = new ReaderArea(createReaderParams()){
+		final Actions actions = actions(
+						openFile,
+						openUrl
+						);
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -78,7 +90,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
+		    if (app.onSystemEvent(this, event, actions))
 			return true;
 		    return super.onSystemEvent(event);
 		}
@@ -91,7 +103,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return new Action[0];
+		    return actions.getAreaActions();
 		}
 		@Override public String getAreaName()
 		{
@@ -112,7 +124,12 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		    return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
 		}
 	    };
+
 	this.notesArea = new ListArea(createNotesParams()) {
+		final Actions actions = actions(
+						openFile,
+						openUrl
+						);
 		@Override public boolean onInputEvent(KeyboardEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -123,7 +140,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		@Override public boolean onSystemEvent(EnvironmentEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
+		    if (app.onSystemEvent(this, event, actions))
 			return true;
 		    return super.onSystemEvent(event);
 		}
@@ -136,7 +153,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		}
 		@Override public Action[] getAreaActions()
 		{
-		    return new Action[0];
+		    return actions.getAreaActions();
 		}
 	    };
     }
@@ -176,6 +193,22 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	return app.getBookContainer().playAudio(readerArea, ids);
     }
 
+    private boolean actOpenFile()
+    {
+	final File file = app.conv().fileToOpen();
+	if (file == null)
+	    return false;
+	return true;
+    }
+
+    private boolean actOpenUrl()
+    {
+	final URL url = app.conv().urlToOpen(readerArea.getDocUrl());
+	if (url == null)
+	    return false;
+	return false;
+    }
+
     private int getSuitableWidth()
     {
 	/*
@@ -210,6 +243,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	updateNotesModel();
     }
     */
+
+    
 
     private TreeArea.Params createTreeParams()
     {

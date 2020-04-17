@@ -197,6 +197,7 @@ successNotification.run();
 
     Book.Section[] getSections()
     {
-	return this.book.getBookSections();
+	final Book.Section[] res = this.book.getBookSections();
+	return res != null?res:new Book.Section[0];
     }
 }
