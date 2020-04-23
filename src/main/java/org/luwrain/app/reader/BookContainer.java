@@ -47,6 +47,7 @@ final class BookContainer
 	this.app = app;
 	this.book = book;
 	this.doc = this.book.getStartingDocument();
+	app.setAppName(doc.getTitle());
     }
 
     boolean jump(String href, org.luwrain.controls.reader.ReaderArea readerArea, int newRowNum, Runnable onSuccess)
@@ -54,6 +55,8 @@ final class BookContainer
 	NullCheck.notEmpty(href, "href");
 	NullCheck.notNull(readerArea, "readerArea");
 	NullCheck.notNull(onSuccess, "onSuccess");
+	if (app.isBusy())
+	    return false;
 	final App.TaskId taskId = app.newTaskId();
 	return app.runTask(taskId, ()->{	
 		final Document doc;
@@ -78,6 +81,7 @@ final class BookContainer
 	    doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, String.valueOf(newRowNum));
 	app.finishedTask(taskId, ()->{
 			this.doc = doc;
+			this.app.setAppName(doc.getTitle());
 			onSuccess.run();
 	    });
 	    });

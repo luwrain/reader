@@ -22,6 +22,7 @@ import java.net.*;
 import java.io.*;
 
 import org.luwrain.core.*;
+import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.reader.*;
@@ -137,6 +138,32 @@ final class App extends AppBase<Strings>
     }
     */
 
+        boolean onInputEvent(Area area, KeyboardEvent event, Runnable closing)
+    {
+	NullCheck.notNull(area, "area");
+	NullCheck.notNull(event, "event");
+	if (super.onInputEvent(area, event))
+	    return true;
+	if (event.isSpecial())
+	    switch(event.getSpecial())
+	    {
+	    case ESCAPE:
+		if (closing != null)
+		    closing.run(); else
+		closeApp();
+		return true;
+	    }
+	return false;
+    }
+
+    @Override public boolean onInputEvent(Area area, KeyboardEvent event)
+    {
+	NullCheck.notNull(area, "area");
+	NullCheck.notNull(event, "event");
+	return onInputEvent(area, event, null);
+    }
+
+
     void showErrorLayout(Exception e)
     {
     }
@@ -159,5 +186,11 @@ final class App extends AppBase<Strings>
     @Override public AreaLayout getDefaultAreaLayout()
     {
 	return this.startingLayout.getLayout();
+    }
+
+    @Override public void setAppName(String name)
+    {
+	NullCheck.notNull(name, "name");
+	super.setAppName(!name.isEmpty()?name:getStrings().appName());
     }
 }
