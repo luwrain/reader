@@ -299,11 +299,11 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return index < layout.getLineCount()?layout.getLine(index):"";
     }
 
-    @Override public boolean onInputEvent(KeyboardEvent event) 
+    @Override public boolean onInputEvent(InputEvent event) 
     {
 	NullCheck.notNull(event, "event");
 	if (!event.isSpecial() && !event.isModified())
-	    switch(KeyboardEvent.getKeyboardLayout().getAsciiOfButton(event.getChar()))
+	    switch(InputEvent.getKeyboardLayout().getAsciiOfButton(event.getChar()))
 	    {
 	    case ' ':
 		return onFindNextHref();
@@ -549,7 +549,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return clickHandler.onReaderClick(this, run);
     }
 
-    protected boolean onTransition(KeyboardEvent event, Transition.Type type, boolean briefAnnouncement, Hint hintFailed)
+    protected boolean onTransition(InputEvent event, Transition.Type type, boolean briefAnnouncement, Hint hintFailed)
     {
 	NullCheck.notNull(event, "event");
 	NullCheck.notNull(type, "type");
@@ -562,7 +562,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onAltEnd(KeyboardEvent event)
+    protected boolean onAltEnd(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -571,7 +571,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onAltHome(KeyboardEvent event)
+    protected boolean onAltHome(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -580,7 +580,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onNextSentence(KeyboardEvent event)
+    protected boolean onNextSentence(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -612,7 +612,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onMoveLeft(KeyboardEvent event)
+    protected boolean onMoveLeft(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -637,7 +637,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onMoveRight(KeyboardEvent event)
+    protected boolean onMoveRight(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -666,7 +666,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onAltLeft(KeyboardEvent event)
+    protected boolean onAltLeft(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -683,7 +683,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onAltRight(KeyboardEvent event)
+    protected boolean onAltRight(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -702,7 +702,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onHome(KeyboardEvent event)
+    protected boolean onHome(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;
@@ -715,7 +715,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return true;
     }
 
-    protected boolean onEnd(KeyboardEvent event)
+    protected boolean onEnd(InputEvent event)
     {
 	if (noContentCheck())
 	    return true;

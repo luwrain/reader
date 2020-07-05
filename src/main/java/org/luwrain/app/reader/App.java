@@ -138,7 +138,7 @@ final class App extends AppBase<Strings>
     }
     */
 
-        boolean onInputEvent(Area area, KeyboardEvent event, Runnable closing)
+        boolean onInputEvent(Area area, InputEvent event, Runnable closing)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNull(event, "event");
@@ -156,7 +156,7 @@ final class App extends AppBase<Strings>
 	return false;
     }
 
-    @Override public boolean onInputEvent(Area area, KeyboardEvent event)
+    @Override public boolean onInputEvent(Area area, InputEvent event)
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNull(event, "event");

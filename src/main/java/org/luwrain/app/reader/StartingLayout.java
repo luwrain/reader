@@ -39,7 +39,7 @@ final class StartingLayout extends LayoutBase
 	NullCheck.notNull(app, "app");
 	this.app = app;
 	this.listArea = new ListArea(createListParams()) {
-		@Override public boolean onInputEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onInputEvent(this, event))

@@ -60,7 +60,7 @@ public final class App implements Application
 	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(listArea, obj);
 	librariesParams.name = strings.librariesAreaName();
 	this.librariesArea = new ListArea(librariesParams){
-		@Override public boolean onInputEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -95,7 +95,7 @@ public final class App implements Application
 	params.clickHandler = (area, index, obj)->actions.onListClick( listArea, obj);
 	params.name = strings.itemsAreaName();
 	this.listArea = new ListArea(params){
-		@Override public boolean onInputEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && !event.isModified())
@@ -177,7 +177,7 @@ public final class App implements Application
 	//	params.clickHandler = (area, index, obj)->onClick(obj);
 detailsParams.name = strings.detailsAreaName();
 this.detailsArea = new ListArea(detailsParams){
-	@Override public boolean onInputEvent(KeyboardEvent event)
+	@Override public boolean onInputEvent(InputEvent event)
 	{
 	    NullCheck.notNull(event, "event");
 	    if (event.isSpecial() && !event.isModified())

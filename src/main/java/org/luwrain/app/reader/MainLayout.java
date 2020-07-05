@@ -41,14 +41,14 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;
-	final ActionInfo openFile = action("open-file", app.getStrings().actionOpenFile(), new KeyboardEvent(KeyboardEvent.Special.F3, EnumSet.of(KeyboardEvent.Modifiers.SHIFT)), MainLayout.this::actOpenFile);
-		final ActionInfo openUrl = action("open-url", app.getStrings().actionOpenUrl(), new KeyboardEvent(KeyboardEvent.Special.F4, EnumSet.of(KeyboardEvent.Modifiers.SHIFT)), MainLayout.this::actOpenUrl);
+	final ActionInfo openFile = action("open-file", app.getStrings().actionOpenFile(), new InputEvent(InputEvent.Special.F3, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenFile);
+		final ActionInfo openUrl = action("open-url", app.getStrings().actionOpenUrl(), new InputEvent(InputEvent.Special.F4, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenUrl);
 	this.treeArea = new TreeArea(createTreeParams()) {
 		final Actions actions = actions(
 						openFile,
 						openUrl
 						);
-		@Override public boolean onInputEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onInputEvent(this, event))
@@ -80,7 +80,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 						openFile,
 						openUrl
 						);
-		@Override public boolean onInputEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onInputEvent(this, event))
@@ -130,7 +130,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 						openFile,
 						openUrl
 						);
-		@Override public boolean onInputEvent(KeyboardEvent event)
+		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onInputEvent(this, event))
