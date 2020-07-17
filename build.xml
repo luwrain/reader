@@ -12,6 +12,7 @@
   <target name="clean">
     <delete dir="build"/>
     <delete dir="jar"/>
+    <delete dir="target"/>
   </target>
   <target name="compile" depends="clean">
     <mkdir dir="build"/>
@@ -25,7 +26,7 @@
     <jar jarfile="jar/luwrain-reader.jar">
       <manifest>
         <section name="org/luwrain">
-          <attribute name="Extensions" value="org.luwrain.reader.Extension"/>
+          <attribute name="Extensions" value="org.luwrain.app.reader.Extension"/>
         </section>
       </manifest>
       <fileset dir="./build/main">

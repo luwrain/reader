@@ -46,7 +46,7 @@ final class StartingLayout extends LayoutBase
 			return true;
 		    return super.onInputEvent(event);
 		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(SystemEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onSystemEvent(this, event))

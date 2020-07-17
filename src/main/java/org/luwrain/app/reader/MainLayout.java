@@ -55,7 +55,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 			return true;
 		    return super.onInputEvent(event);
 		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(SystemEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onSystemEvent(this, event, actions))
@@ -87,7 +87,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 			return true;
 		    return super.onInputEvent(event);
 		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(SystemEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onSystemEvent(this, event, actions))
@@ -137,7 +137,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 			return true;
 		    return super.onInputEvent(event);
 		}
-		@Override public boolean onSystemEvent(EnvironmentEvent event)
+		@Override public boolean onSystemEvent(SystemEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (app.onSystemEvent(this, event, actions))
