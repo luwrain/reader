@@ -29,7 +29,7 @@ import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
-import org.luwrain.template.*;
+import org.luwrain.app.base.*;
 
 final class App extends AppBase<Strings>
 {
@@ -50,7 +50,7 @@ final class App extends AppBase<Strings>
 
     App(String arg)
     {
-	super(Strings.NAME, Strings.class);
+	super(Strings.NAME, Strings.class, "luwrain.reader");
 	this.arg = arg;
     }
 

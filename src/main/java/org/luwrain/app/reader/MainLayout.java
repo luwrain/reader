@@ -28,7 +28,7 @@ import org.luwrain.controls.*;
 import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
-import org.luwrain.template.*;
+import org.luwrain.app.base.*;
 
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {

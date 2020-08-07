@@ -25,7 +25,7 @@ import org.luwrain.core.*;
 import org.luwrain.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
-import org.luwrain.template.*;
+import org.luwrain.app.base.*;
 
 /*
 	if (savedPosition > 0)

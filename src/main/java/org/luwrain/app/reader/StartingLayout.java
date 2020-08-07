@@ -27,7 +27,7 @@ import org.luwrain.controls.*;
 import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
-import org.luwrain.template.*;
+import org.luwrain.app.base.*;
 
 final class StartingLayout extends LayoutBase
 {
