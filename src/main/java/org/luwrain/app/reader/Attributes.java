@@ -60,6 +60,15 @@ final class Attributes
     {
 	@SerializedName("title")
 	private String title = null;
+	Note(String title)
+	{
+	    NullCheck.notEmpty(title, "title");
+	    this.title = title;
+	}
+	@Override public String toString()
+	{
+	    return this.title != null?title:"";
+	}
     }
 
     static final class Bookmark

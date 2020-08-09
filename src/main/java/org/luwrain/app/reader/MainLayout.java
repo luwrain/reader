@@ -127,9 +127,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
 	this.notesArea = new EditableListArea(createNotesParams()) {
 		final Actions actions = actions(
-						openFile,
-						openUrl
-						);
+						action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
+						openFile, openUrl);
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -224,27 +223,18 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	return -1;
     }
 
-    /*
-    boolean addNote(int pos)
+    private boolean actAddNote()
     {
-	NullCheck.notNull(res.doc, "res.doc");
-	final String text = Popups.simple(luwrain, strings.addNotePopupName(), strings.addNotePopupPrefix(), "");
+	final String text = app.conv().newNote();
 	if (text == null)
 	    return false;
-	Settings.addNote(luwrain.getRegistry(), getNotesUrl().toString(), res.doc.getUrl().toString(), pos, text, "");
-	updateNotesModel();
+	final int selected = notesArea.selectedIndex();
+	if (selected >= 0)
+	    app.getBookContainer().getAttr().getNotes().add(selected, new Attributes.Note(text)); else
+	    app.getBookContainer().getAttr().getNotes().add(new Attributes.Note(text));
+	notesArea.refresh();
 	return true;
     }
-
-    void deleteNote(Note note)
-    {
-	NullCheck.notNull(note, "note");
-	Settings.deleteNote(luwrain.getRegistry(), getNotesUrl().toString(), note.num);
-	updateNotesModel();
-    }
-    */
-
-    
 
     private TreeArea.Params createTreeParams()
     {
@@ -270,8 +260,19 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	params.context = new DefaultControlContext(app.getLuwrain());
 	params.model = new NotesModel();
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
-	//params.clickHandler = clickHandler;
 	params.name = app.getStrings().notesAreaName();
+	params.clipboardSaver = (area, model, appearance, fromIndex, toIndex, clipboard)->{
+	    final List<Attributes.Note> n = new LinkedList();
+	    final List<String> s = new LinkedList();
+	    for(int i = fromIndex;i < toIndex;i++)
+	    {
+		final Attributes.Note note = (Attributes.Note)model.getItem(i);
+		n.add(note);
+		s.add(note.toString());
+	    }
+	    clipboard.set(n.toArray(new Attributes.Note[n.size()]), s.toArray(new String[s.size()]));
+	    return true;
+	};
 	return params;
     }
 
@@ -346,7 +347,11 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	}
 	@Override public boolean removeFromModel(int pos)
 	{
-	    return false;
+	    final List<Attributes.Note> notes = app.getBookContainer().getAttr().getNotes();
+	    	    if (pos < 0 || pos >= notes.size())
+		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and less than " + String.valueOf(notes.size()));
+		    notes.remove(pos);
+	    return true;
 	}
 	@Override public Object getItem(int index)
 	{

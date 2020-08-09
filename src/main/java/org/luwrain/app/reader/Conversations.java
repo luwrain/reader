@@ -61,17 +61,12 @@ final class Conversations
 
     File fileToOpen()
     {
-	return Popups.path(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix(),
-			   luwrain.getFileProperty("luwrain.dir.userhome"),
-			   (fileToCheck, announce)->{
-			       if (fileToCheck.isDirectory())
-			       {
-				   if (announce)
-				       luwrain.message(strings.pathToOpenMayNotBeDirectory(), Luwrain.MessageType.ERROR);
-				   return false;
-			       }
-			       return true;
-			   });
+	return Popups.existingFile(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix());
+    }
+
+    String newNote()
+    {
+	return Popups.textNotEmpty(luwrain, strings.addNotePopupName(), strings.addNotePopupPrefix(), "");
     }
 
     /*
