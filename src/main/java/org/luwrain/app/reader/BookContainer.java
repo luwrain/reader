@@ -39,6 +39,7 @@ final class BookContainer
     private Document doc = null;
         private final LinkedList<HistoryItem> history = new LinkedList();
         private Book.Section[] sections = new Book.Section[0];
+    private Attributes.BookAttr attr = null;
 
     BookContainer(App app, Book book)
     {
@@ -47,6 +48,7 @@ final class BookContainer
 	this.app = app;
 	this.book = book;
 	this.doc = this.book.getStartingDocument();
+	this.attr = new Attributes.BookAttr();	
 	app.setAppName(doc.getTitle());
     }
 
@@ -86,7 +88,6 @@ final class BookContainer
 	    });
 	    });
 	    }
-
 
         boolean changeCharset(String newCharset)
     {
@@ -164,27 +165,6 @@ successNotification.run();
     }
 
     /*
-    private URL getNotesUrl()
-    {
-	if (isInBookMode())
-	    return res.book.getStartingDocument().getUrl();
-	return res.doc.getUrl();
-    }
-    */
-
-
-
-    /*
-    String getDocHash()
-    {
-	if (!hasDocument())
-	    return "";
-	final String res = getDocument().getProperty("hash");
-	return res != null?res:"";
-    }
-    */
-
-    /*
     String getContentType()
     {
 	if (!hasDocument())
@@ -198,6 +178,13 @@ successNotification.run();
     {
 	return this.doc;
     }
+
+    Attributes.BookAttr getAttr()
+    {
+	return this.attr;
+    }
+
+    
 
     Book.Section[] getSections()
     {

@@ -35,7 +35,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     private App app;
     private final TreeArea treeArea;
     private final ReaderArea readerArea;
-    private final ListArea notesArea;
+    private final EditableListArea notesArea;
 
     MainLayout(App app)
     {
@@ -125,7 +125,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		}
 	    };
 
-	this.notesArea = new ListArea(createNotesParams()) {
+	this.notesArea = new EditableListArea(createNotesParams()) {
 		final Actions actions = actions(
 						openFile,
 						openUrl
@@ -264,11 +264,11 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	return params;
     }
 
-    private ListArea.Params createNotesParams()
+    private EditableListArea.Params createNotesParams()
     {
-	final ListArea.Params params = new ListArea.Params();
+	final EditableListArea.Params params = new EditableListArea.Params();
 	params.context = new DefaultControlContext(app.getLuwrain());
-	params.model = new ListUtils.FixedModel();
+	params.model = new NotesModel();
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
 	//params.clickHandler = clickHandler;
 	params.name = app.getStrings().notesAreaName();
@@ -277,7 +277,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     AreaLayout getLayout()
     {
-	return new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea);
+	return new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea);
     }
 
     private final class BookTreeModelSource implements CachedTreeModelSource
@@ -316,6 +316,48 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		}
 	    }
 	    return res.toArray(new Object[res.size()]);
+	}
+    }
+
+    private final class NotesModel implements EditableListArea.Model
+    {
+	@Override public boolean clearModel()
+	{
+	    return false;
+	}
+	@Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
+	{
+	    NullCheck.notNull(supplier, "supplier");
+	    final List<Attributes.Note> notes = app.getBookContainer().getAttr().getNotes();
+	    if (pos < 0 || pos > notes.size())
+		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(notes.size()));
+	    final Object supplied = supplier.get();
+	    if (supplied == null)
+		return false;
+	    final Object[] newNotes;
+	    if (supplied instanceof Object[])
+		newNotes = (Object[])supplied; else
+		newNotes = new Object[]{supplied};
+	    for(Object o: newNotes)
+		if (!(o instanceof Attributes.Note))
+		    return false;
+	    notes.addAll(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Attributes.Note[].class)));
+	    return true;
+	}
+	@Override public boolean removeFromModel(int pos)
+	{
+	    return false;
+	}
+	@Override public Object getItem(int index)
+	{
+	    return app.getBookContainer().getAttr().getNotes().get(index);
+	}
+	@Override public int getItemCount()
+	{
+	    return app.getBookContainer().getAttr().getNotes().size();
+	}
+	@Override public void refresh()
+	{
 	}
     }
 }

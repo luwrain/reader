@@ -41,7 +41,7 @@ final class App extends AppBase<Strings>
     private BookContainer bookContainer = null;
         private AudioPlaying audioPlaying = null;
     private StartingLayout startingLayout = null;
-    private StoredProperties storedProps = null;
+    private Attributes attr = null;
 
     App()
     {
@@ -57,6 +57,7 @@ final class App extends AppBase<Strings>
     @Override protected boolean onAppInit()
     {
 	this.conv = new Conversations(getLuwrain(), getStrings());
+	this.attr = new Attributes(getLuwrain().getRegistry());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
 		this.audioPlaying = null;
@@ -171,6 +172,11 @@ final class App extends AppBase<Strings>
     Conversations conv()
     {
 	return this.conv;
+    }
+
+    Attributes getAttr()
+    {
+	return this.attr;
     }
 
     AudioPlaying getAudioPlaying()

@@ -19,86 +19,70 @@ package org.luwrain.app.reader;
 
 import java.util.*;
 
+import com.google.gson.*;
 import com.google.gson.annotations.*;
 
 import org.luwrain.core.*;
-import org.luwrain.util.*;
 
-final class StoredProperties
+final class Attributes
 {
     private final Registry registry;
-    private final String path;
-    private final Settings.Props sett;
-    private final Properties props;
+    private final Gson gson = new Gson();
 
-    StoredProperties(Registry registry, String url)
+    Attributes(Registry registry)
     {
 	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(url, "url");
 	this.registry = registry;
-	this.path = Registry.join(Settings.PROPERTIES_PATH, Sha1.getSha1(url, "UTF-8"));
-	registry.addDirectory(this.path);
-	this.sett = Settings.createProperties(registry, path);
-	this.props = Settings.decodeProperties(sett.getProps(""));
+	this.registry.addDirectory(Settings.ATTRIBUTES_PATH);
     }
 
-    static boolean hasProperties(Registry registry, String url)
+    BookAttr load(String id)
     {
-	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(url, "url");
-	return registry.hasDirectory(Registry.join(Settings.PROPERTIES_PATH, Sha1.getSha1(url, "UTF-8")));
+	NullCheck.notEmpty(id, "id");
+	final String path = Registry.join(Settings.ATTRIBUTES_PATH, id);
+	if (registry.getTypeOf(path) != Registry.STRING)
+	    return null;
+	final String value = registry.getString(path);
+	if (value.isEmpty())
+	    return null;
+	return gson.fromJson(value, BookAttr.class);
     }
 
-    String getCharset()
+    void save(String id, BookAttr bookAttr)
     {
-	final String res = props.getProperty("charset");
-	return res != null?res:"";
+	NullCheck.notEmpty(id, "id");
+	NullCheck.notNull(bookAttr, "bookAttr");
+	final String path = Registry.join(Settings.ATTRIBUTES_PATH, id);
+	registry.setString(path, gson.toJson(bookAttr));
     }
 
-    void setCharset(String charset)
+    static final class Note
     {
-	NullCheck.notNull(charset, "charset");
-	this.props.setProperty("charset", charset);
-	save();
+	@SerializedName("title")
+	private String title = null;
     }
 
-    String getParaStyle()
+    static final class Bookmark
     {
-	final String res = props.getProperty("para-style");
-	return res != null?res:"";
+	@SerializedName("pos")
+	private int pos = 0;
     }
 
-    void setParaStyle(String paraStyle)
+    static final class BookAttr
     {
-	NullCheck.notNull(paraStyle, "paraStyle");
-	this.props.setProperty("para-style", paraStyle);
-	save();
-    }
-
-    int getBookmarkPos()
-    {
-	final String res = props.getProperty("bookmark-pos");
-	if (res == null || res.trim().isEmpty())
-	    return -1;
-	try {
-	    return Integer.parseInt(res);
-	}
-	catch(NumberFormatException e)
+	@SerializedName("notes")
+	private List<Note> notes = null;
+	@SerializedName("bookmark")
+	private Bookmark bookmark = null;
+	@SerializedName("charset")
+	private String charset = null;
+	@SerializedName("paragraphType")
+	private String paragraphType = null;
+	List<Note> getNotes()
 	{
-	    return -1;
+	    if (this.notes == null)
+		this.notes = new ArrayList();
+	    return this.notes;
 	}
-    }
-
-    void setBookmarkPos(int pos)
-    {
-	if (pos < 0)
-	    throw new IllegalArgumentException("pos (" + pos + ") may not be negative");
-	props.setProperty("bookmark-pos", String.valueOf(pos));
-	save();
-    }
-
-    private void save()
-    {
-	this.sett.setProps(Settings.encodeProperties(props));
     }
 }
