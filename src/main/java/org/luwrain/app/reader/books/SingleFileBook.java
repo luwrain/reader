@@ -38,6 +38,16 @@ public final class SingleFileBook implements Book
 	this.doc = doc;
     }
 
+    @Override public String getBookId()
+    {
+	return "FIXME";
+    }
+
+    @Override public Set<Flags> getBookFlags()
+    {
+	return EnumSet.noneOf(Flags.class);
+    }
+
         @Override public Document getDocument(String href) throws IOException
     {
 	NullCheck.notEmpty(href, "href");
@@ -46,7 +56,7 @@ public final class SingleFileBook implements Book
 	return res.doc;
     }
 
-    @Override public Document getStartingDocument()
+    @Override public Document getDefaultDocument()
     {
 	return this.doc;
     }

@@ -44,7 +44,17 @@ final class Daisy2 implements Book
 	this.luwrain = luwrain;
     }
 
-    @Override public Document getStartingDocument()
+    @Override public String getBookId()
+    {
+	return "FIXME";
+    }
+
+    public Set<Flags> getBookFlags()
+    {
+	return EnumSet.of(Flags.OPEN_IN_SECTION_TREE);
+    }
+
+    @Override public Document getDefaultDocument()
     {
 	return nccDoc;
     }

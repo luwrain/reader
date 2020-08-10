@@ -25,23 +25,27 @@ import org.luwrain.reader.*;
 
 public interface Book
 {
-    Document getStartingDocument();
+    public enum Flags {OPEN_IN_SECTION_TREE};
+
+    String getBookId();
+    Set<Flags> getBookFlags();
+    Section[] getBookSections();
+    Document getDocument(String href) throws java.io.IOException;
+    Document getDefaultDocument();
     AudioFragment findAudioForId(String ids);
     String findTextForAudio(String audioFileUrl, long msec);
-    //Expecting that href is absolute
-    Document getDocument(String href) throws java.io.IOException;
-    Section[] getBookSections();
 
     static public final class Section
     {
 	public final int level;
 	public final String title;
 	public final String href;
-	public Section(int level,
-		       String title, String href)
+	public Section(int level, String title, String href)
 	{
 	    NullCheck.notNull(title, "title");
 	    NullCheck.notNull(href, "href");
+	    if (level < 0)
+		throw new IllegalArgumentException("level (" + String.valueOf(level) + ") can't be negative");
 	    this.level = level;
 	    this.title = title;
 	    this.href = href;

@@ -47,7 +47,7 @@ final class BookContainer
 	NullCheck.notNull(book, "book");
 	this.app = app;
 	this.book = book;
-	this.doc = this.book.getStartingDocument();
+	this.doc = this.book.getDefaultDocument();
 	this.attr = new Attributes.BookAttr();	
 	app.setAppName(doc.getTitle());
     }

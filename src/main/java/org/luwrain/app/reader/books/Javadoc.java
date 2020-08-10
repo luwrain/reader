@@ -40,7 +40,17 @@ final class Javadoc implements Book
 	this.baseUrl = baseUrl;
     }
 
-    @Override public Document getStartingDocument()
+    @Override public String getBookId()
+    {
+	return "FIXME";
+    }
+
+    @Override public Set<Flags> getBookFlags()
+    {
+	return EnumSet.of(Flags.OPEN_IN_SECTION_TREE);
+    }
+
+    @Override public Document getDefaultDocument()
     {
 	return null;
     }
