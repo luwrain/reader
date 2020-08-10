@@ -179,6 +179,11 @@ successNotification.run();
 	return this.doc;
     }
 
+    Set<Book.Flags> getBookFlags()
+    {
+	return this.book.getBookFlags();
+    }
+
     Attributes.BookAttr getAttr()
     {
 	return this.attr;

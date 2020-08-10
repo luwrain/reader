@@ -139,6 +139,12 @@ final class App extends AppBase<Strings>
     }
     */
 
+    void layout(AreaLayout layout)
+    {
+	NullCheck.notNull(layout, "layout");
+	getLayout().setBasicLayout(layout);
+    }
+
         boolean onInputEvent(Area area, InputEvent event, Runnable closing)
     {
 	NullCheck.notNull(area, "area");

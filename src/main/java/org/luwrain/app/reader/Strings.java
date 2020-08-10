@@ -26,6 +26,7 @@ public interface Strings
     String actionChangeTextParaStyle();
     String actionDeleteNote();
     String actionHideSectionsTree();
+    String actionHideNotes();
     String actionOpenFile();
     String actionOpenUrl();
     String actionRestoreBookmark();

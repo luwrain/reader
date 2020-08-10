@@ -32,22 +32,33 @@ import org.luwrain.app.base.*;
 
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
-    private App app;
+    private final App app;
+    private final BookContainer bookContainer;
     private final TreeArea treeArea;
     private final ReaderArea readerArea;
     private final EditableListArea notesArea;
+
+    private boolean sectionsTreeShown = true;
+        private boolean notesShown = false;
 
     MainLayout(App app)
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;
+	this.bookContainer = app.getBookContainer();
+	this.sectionsTreeShown = bookContainer.getBookFlags().contains(Book.Flags.OPEN_IN_SECTION_TREE);
+
 	final ActionInfo openFile = action("open-file", app.getStrings().actionOpenFile(), new InputEvent(InputEvent.Special.F3, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenFile);
 		final ActionInfo openUrl = action("open-url", app.getStrings().actionOpenUrl(), new InputEvent(InputEvent.Special.F4, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenUrl);
+				final ActionInfo showSectionsTree = action("show-sections-tree", app.getStrings().actionShowSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actShowSectionsTree);
+								final ActionInfo showNotes = action("show-notes", app.getStrings().actionShowNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actShowNotes);
+
 	this.treeArea = new TreeArea(createTreeParams()) {
 		final Actions actions = actions(
-						openFile,
-						openUrl
-						);
+						openFile, openUrl,
+						action("hide-sections-tree", app.getStrings().actionHideSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actHideSectionsTree),
+						showNotes
+								);
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -74,11 +85,10 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		    return actions.getAreaActions();
 		}
 	    };
-	
+
 	this.readerArea = new ReaderArea(createReaderParams()){
 		final Actions actions = actions(
-						openFile,
-						openUrl
+						openFile, openUrl, showSectionsTree, showNotes
 						);
 		@Override public boolean onInputEvent(InputEvent event)
 		{
@@ -128,7 +138,9 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	this.notesArea = new EditableListArea(createNotesParams()) {
 		final Actions actions = actions(
 						action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
-						openFile, openUrl);
+						openFile, openUrl, showSectionsTree,
+												action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes)
+												);
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -159,15 +171,54 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     void updateInitial()
     {
-	this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+	if (sectionsTreeShown)
+	    	app.getLuwrain().setActiveArea(this.treeArea); else
 	app.getLuwrain().setActiveArea(this.readerArea);
     }
 
     void updateAfterJump()
     {
-	this.readerArea.setDocument(app.getBookContainer().getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
+	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
 	app.getLuwrain().setActiveArea(this.readerArea);
     }
+
+    private boolean actShowSectionsTree()
+    {
+	this.sectionsTreeShown = true;
+	app.layout(getLayout());
+	app.getLuwrain().setActiveArea(treeArea);
+	return true;
+    }
+
+    private boolean actHideSectionsTree()
+    {
+	if (!this.sectionsTreeShown)
+	    return false;
+	this.sectionsTreeShown = false;
+	app.layout(getLayout());
+		app.getLuwrain().setActiveArea(readerArea);
+	return true;
+    }
+
+        private boolean actShowNotes()
+    {
+	this.notesShown = true;
+	app.layout(getLayout());
+	app.getLuwrain().setActiveArea(notesArea);
+	return true;
+    }
+
+    private boolean actHideNotes()
+    {
+	if (!this.notesShown)
+	    return false;
+	this.notesShown = false;
+	app.layout(getLayout());
+	app.getLuwrain().setActiveArea(readerArea);
+	return true;
+    }
+
 
     @Override public boolean onTreeClick(TreeArea treeArea, Object obj)
     {
@@ -176,7 +227,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
-	return app.getBookContainer().jump(sect.href, readerArea, 0, ()->updateAfterJump());
+	return bookContainer.jump(sect.href, readerArea, 0, ()->updateAfterJump());
     }
 
     @Override public boolean onReaderClick(ReaderArea area, Run run)
@@ -278,7 +329,13 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     AreaLayout getLayout()
     {
+	if (sectionsTreeShown && notesShown)
 	return new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea);
+	if (sectionsTreeShown)
+	    	return new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea);
+	if (notesShown)
+		return new AreaLayout(AreaLayout.TOP_BOTTOM, readerArea, notesArea);
+			return new AreaLayout(readerArea);
     }
 
     private final class BookTreeModelSource implements CachedTreeModelSource
@@ -329,7 +386,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	@Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
 	{
 	    NullCheck.notNull(supplier, "supplier");
-	    final List<Attributes.Note> notes = app.getBookContainer().getAttr().getNotes();
+	    final List<Attributes.Note> notes = bookContainer.getAttr().getNotes();
 	    if (pos < 0 || pos > notes.size())
 		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(notes.size()));
 	    final Object supplied = supplier.get();
@@ -347,7 +404,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	}
 	@Override public boolean removeFromModel(int pos)
 	{
-	    final List<Attributes.Note> notes = app.getBookContainer().getAttr().getNotes();
+	    final List<Attributes.Note> notes = bookContainer.getAttr().getNotes();
 	    	    if (pos < 0 || pos >= notes.size())
 		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and less than " + String.valueOf(notes.size()));
 		    notes.remove(pos);
@@ -355,11 +412,11 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	}
 	@Override public Object getItem(int index)
 	{
-	    return app.getBookContainer().getAttr().getNotes().get(index);
+	    return bookContainer.getAttr().getNotes().get(index);
 	}
 	@Override public int getItemCount()
 	{
-	    return app.getBookContainer().getAttr().getNotes().size();
+	    return bookContainer.getAttr().getNotes().size();
 	}
 	@Override public void refresh()
 	{
