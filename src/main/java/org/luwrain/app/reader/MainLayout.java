@@ -93,6 +93,9 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
+			app.stopAudio())
+			return true;
 		    if (app.onInputEvent(this, event))
 			return true;
 		    return super.onInputEvent(event);
@@ -236,7 +239,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	NullCheck.notNull(run, "run");
 	final String href = run.href();
 	if (!href.isEmpty())
-	    return app.getBookContainer().jump(href, readerArea, 0, ()->updateAfterJump());
+	    return bookContainer.jump(href, readerArea, 0, ()->updateAfterJump());
 	final String[] ids = readerArea.getHtmlIds();
 	if (ids == null || ids.length == 0)
 	    return false;

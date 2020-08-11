@@ -117,27 +117,15 @@ final class App extends AppBase<Strings>
     */
 
 
-    /*
-    boolean playAudio(ReaderArea area, String[] ids)
-    {
-	NullCheck.notNull(area, "area");
-	NullCheck.notNullItems(ids, "ids");
-	if (!isInBookMode())
-	    return false;
-	if (audioPlaying == null)
-	return false;
-	return audioPlaying.playAudio(res.book, res.doc, area, ids);
-    }
-    */
-
-    /*
     boolean stopAudio()
     {
-	if (audioPlaying == null)
+	if (this.audioPlaying == null)
 	    return false;
-	return audioPlaying.stop();
+	if (!this.audioPlaying.stop())
+	    return false;
+	getLuwrain().playSound(Sounds.PLAYING);
+	return true;
     }
-    */
 
     void layout(AreaLayout layout)
     {
@@ -198,6 +186,13 @@ final class App extends AppBase<Strings>
     @Override public AreaLayout getDefaultAreaLayout()
     {
 	return this.startingLayout.getLayout();
+    }
+
+    @Override public void closeApp()
+    {
+	if (audioPlaying != null)
+	    audioPlaying.stop();
+	super.closeApp();
     }
 
     @Override public void setAppName(String name)

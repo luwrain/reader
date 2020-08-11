@@ -89,7 +89,6 @@ final URL audioFileUrl;
 	if (player.getState() != Player.State.PLAYING || this.currentPlaylist != player.getPlaylist())
 	    return false;
 	player.stop();
-	//luwrain.playSound(Sounds.PLAYING);
 	return true;
     }
 
