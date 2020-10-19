@@ -196,7 +196,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	final String addr = getDocUrl();
 	if (addr.isEmpty())
 	    return "";
-	return UniRefUtils.makeUniRef(UniRefUtils.URL, addr);
+	return UniRefInfo.makeValue(UniRefProcs.TYPE_URL, addr);
     }
 
     public Run getCurrentRun()
