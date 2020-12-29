@@ -17,7 +17,6 @@
 
 package org.luwrain.app.reader;
 
-import java.util.*;
 import java.io.*;
 
 import org.luwrain.core.*;
@@ -28,17 +27,21 @@ import org.luwrain.app.base.*;
 final class ErrorLayout extends LayoutBase
 {
     private final App app;
+    private final Throwable ex;
     private final SimpleArea errorArea;
 
-    ErrorLayout(App app)
+    ErrorLayout(App app, Throwable ex, Runnable closing)
     {
 	NullCheck.notNull(app, "app");
+	NullCheck.notNull(ex, "ex");
+	NullCheck.notNull(closing, "closing");
 	this.app = app;
+	this.ex = ex;
 	this.errorArea = new SimpleArea(new DefaultControlContext(app.getLuwrain()), "FIXME") {
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (app.onInputEvent(this, event))
+		    if (app.onInputEvent(this, event, closing))
 			return true;
 		    return super.onInputEvent(event);
 		}
@@ -57,11 +60,28 @@ final class ErrorLayout extends LayoutBase
 		    return super.onAreaQuery(query);
 		}
 	    };
+	fillContent();
     }
 
-    AreaLayout getAreaLayout()
+    private void fillContent()
+    {
+	final StringWriter sw = new StringWriter();
+	final PrintWriter pw = new PrintWriter(sw);
+	ex.printStackTrace(pw);
+	pw.flush();
+	sw.flush();
+	final String[] trace = sw.toString().split(System.lineSeparator(), -1);
+	errorArea.beginLinesTrans();
+	errorArea.addLine("");
+	for(String s: trace)
+	    errorArea.addLine(s);
+	errorArea.addLine("");
+	errorArea.endLinesTrans();
+	errorArea.endLinesTrans();
+    }
+
+    AreaLayout getLayout()
     {
 	return new AreaLayout(errorArea);
     }
-
-    }
+}

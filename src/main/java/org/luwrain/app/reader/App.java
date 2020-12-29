@@ -38,10 +38,12 @@ final class App extends AppBase<Strings>
 
     private final String arg;
     private Conversations conv = null;
-    private BookContainer bookContainer = null;
         private AudioPlaying audioPlaying = null;
+        private Attributes attr = null;
+
+        private BookContainer bookContainer = null;
+    private MainLayout mainLayout = null;
     private StartingLayout startingLayout = null;
-    private Attributes attr = null;
 
     App()
     {
@@ -85,12 +87,12 @@ final class App extends AppBase<Strings>
 		}
 		catch(IOException e)
 		{
-		    showErrorLayout(e);
+		    finishedTask(taskId, ()->showErrorLayout(e));
 		    return;
 		}
 		finishedTask(taskId, ()->{
 			this.bookContainer = new BookContainer(this, book);
-			final MainLayout mainLayout = new MainLayout(this);
+this.mainLayout = new MainLayout(this);
 			getLayout().setBasicLayout(mainLayout.getLayout());
 			mainLayout.updateInitial();
 		});
@@ -115,9 +117,17 @@ final class App extends AppBase<Strings>
 	getLayout().setBasicLayout(layout);
     }
 
-    void showErrorLayout(Exception e)
+    void showErrorLayout(Throwable e)
     {
-	
+	NullCheck.notNull(e, "e");
+	final ErrorLayout errorLayout = new ErrorLayout(this, e, ()->{
+		if (mainLayout != null)
+		    layout(mainLayout.getLayout()); else
+		    layout(startingLayout.getLayout());
+		getLuwrain().announceActiveArea();
+	    });
+	layout(errorLayout.getLayout());
+	getLuwrain().playSound(Sounds.ERROR);
     }
 
     @Override public boolean onEscape(InputEvent event)
