@@ -38,10 +38,10 @@ final class App extends AppBase<Strings>
 
     private final String arg;
     private Conversations conv = null;
-        private AudioPlaying audioPlaying = null;
-        private Attributes attr = null;
+    private AudioPlaying audioPlaying = null;
+    private Attributes attr = null;
 
-        private BookContainer bookContainer = null;
+    private BookContainer bookContainer = null;
     private MainLayout mainLayout = null;
     private StartingLayout startingLayout = null;
 
@@ -62,19 +62,19 @@ final class App extends AppBase<Strings>
 	this.attr = new Attributes(getLuwrain().getRegistry());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
-		this.audioPlaying = null;
+	    this.audioPlaying = null;
 	this.startingLayout = new StartingLayout(this);
-		setAppName(getStrings().appName());
-		try {
-	if (arg != null && !arg.isEmpty())
-	    open(new URI(arg));
-		}
-		catch(URISyntaxException e)
-		{
-		    showErrorLayout(e);
-		}
-		return true;
-		    }
+	setAppName(getStrings().appName());
+	try {
+	    if (arg != null && !arg.isEmpty())
+		open(new URI(arg));
+	}
+	catch(URISyntaxException e)
+	{
+	    showErrorLayout(e);
+	}
+	return true;
+    }
 
     void open(URI uri)
     {
@@ -92,10 +92,10 @@ final class App extends AppBase<Strings>
 		}
 		finishedTask(taskId, ()->{
 			this.bookContainer = new BookContainer(this, book);
-this.mainLayout = new MainLayout(this);
+			this.mainLayout = new MainLayout(this);
 			getLayout().setBasicLayout(mainLayout.getLayout());
 			mainLayout.updateInitial();
-		});
+		    });
 	    });
 	{
 	}
@@ -120,12 +120,13 @@ this.mainLayout = new MainLayout(this);
     void showErrorLayout(Throwable e)
     {
 	NullCheck.notNull(e, "e");
-	final ErrorLayout errorLayout = new ErrorLayout(this, e, ()->{
-		if (mainLayout != null)
-		    layout(mainLayout.getLayout()); else
-		    layout(startingLayout.getLayout());
-		getLuwrain().announceActiveArea();
-	    });
+	final ErrorLayout errorLayout;
+	if (mainLayout != null)
+	    errorLayout = new ErrorLayout(this, e, ()->{
+		    layout(mainLayout.getLayout());
+		    getLuwrain().announceActiveArea();
+		}); else
+	    errorLayout = new ErrorLayout(this, e, null);
 	layout(errorLayout.getLayout());
 	getLuwrain().playSound(Sounds.ERROR);
     }
@@ -153,7 +154,7 @@ this.mainLayout = new MainLayout(this);
 	NullCheck.notNull(name, "name");
 	super.setAppName(!name.isEmpty()?name:getStrings().appName());
     }
-        Conversations getConv()
+    Conversations getConv()
     {
 	return this.conv;
     }
@@ -172,5 +173,4 @@ this.mainLayout = new MainLayout(this);
     {
 	return this.bookContainer;
     }
-
 }

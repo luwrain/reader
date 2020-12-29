@@ -34,14 +34,18 @@ final class ErrorLayout extends LayoutBase
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(ex, "ex");
-	NullCheck.notNull(closing, "closing");
 	this.app = app;
 	this.ex = ex;
 	this.errorArea = new SimpleArea(new DefaultControlContext(app.getLuwrain()), "FIXME") {
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
+		    if (closing != null)
+		    {
 		    if (app.onInputEvent(this, event, closing))
+			return true;
+		    } else
+					    if (app.onInputEvent(this, event))
 			return true;
 		    return super.onInputEvent(event);
 		}
