@@ -63,23 +63,29 @@ final class App extends AppBase<Strings>
 		this.audioPlaying = null;
 	this.startingLayout = new StartingLayout(this);
 		setAppName(getStrings().appName());
+		try {
 	if (arg != null && !arg.isEmpty())
-	    open(arg);
+	    open(new URI(arg));
+		}
+		catch(URISyntaxException e)
+		{
+		    showErrorLayout(e);
+		}
 		return true;
 		    }
 
-    void open(String url)
+    void open(URI uri)
     {
-	NullCheck.notEmpty(url, "url");
+	NullCheck.notNull(uri, "uri");
 	final TaskId taskId = newTaskId();
 	runTask(taskId, ()->{
 		final Book book;
 		try {
-		    book = new BookFactory().newBook(getLuwrain(), url);
+		    book = new BookFactory().newBook(getLuwrain(), uri.toString());
 		}
 		catch(IOException e)
 		{
-		    getLuwrain().crash(e);
+		    showErrorLayout(e);
 		    return;
 		}
 		finishedTask(taskId, ()->{
@@ -92,30 +98,6 @@ final class App extends AppBase<Strings>
 	{
 	}
     }
-
-    /*
-	final UrlLoader urlLoader;
-	try {
-	    urlLoader = new UrlLoader(luwrain, url);
-	}
-	catch(MalformedURLException e)
-	{
-	    luwrain.crash(e);
-	    return false;
-	    	}
-	if (StoredProperties.hasProperties(luwrain.getRegistry(), url.toString()))
-	{
-	    final StoredProperties props = new StoredProperties(luwrain.getRegistry(), url.toString());
-	    if (!props.getCharset().isEmpty())
-		urlLoader.setCharset(props.getCharset());
-	    	final ParaStyle paraStyle = translateParaStyle(props.getParaStyle());
-		if (paraStyle != null)
-		    urlLoader.setTxtParaStyle(paraStyle);
-	}
-	if (!contentType.isEmpty())
-	    urlLoader.setContentType(contentType);
-    */
-
 
     boolean stopAudio()
     {
@@ -135,26 +117,13 @@ final class App extends AppBase<Strings>
 
     void showErrorLayout(Exception e)
     {
+	
     }
 
-    Conversations conv()
+    @Override public boolean onEscape(InputEvent event)
     {
-	return this.conv;
-    }
-
-    Attributes getAttr()
-    {
-	return this.attr;
-    }
-
-    AudioPlaying getAudioPlaying()
-    {
-	return this.audioPlaying;
-    }
-
-    BookContainer getBookContainer()
-    {
-	return this.bookContainer;
+	closeApp();
+	return true;
     }
 
     @Override public AreaLayout getDefaultAreaLayout()
@@ -174,4 +143,24 @@ final class App extends AppBase<Strings>
 	NullCheck.notNull(name, "name");
 	super.setAppName(!name.isEmpty()?name:getStrings().appName());
     }
+        Conversations getConv()
+    {
+	return this.conv;
+    }
+
+    Attributes getAttr()
+    {
+	return this.attr;
+    }
+
+    AudioPlaying getAudioPlaying()
+    {
+	return this.audioPlaying;
+    }
+
+    BookContainer getBookContainer()
+    {
+	return this.bookContainer;
+    }
+
 }

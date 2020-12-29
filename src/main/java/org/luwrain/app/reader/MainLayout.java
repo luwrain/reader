@@ -248,7 +248,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     private boolean actOpenFile()
     {
-	final File file = app.conv().fileToOpen();
+	final File file = app.getConv().fileToOpen();
 	if (file == null)
 	    return false;
 	return true;
@@ -256,7 +256,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     private boolean actOpenUrl()
     {
-	final URL url = app.conv().urlToOpen(readerArea.getDocUrl());
+	final URL url = app.getConv().urlToOpen(readerArea.getDocUrl());
 	if (url == null)
 	    return false;
 	return false;
@@ -279,7 +279,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     private boolean actAddNote()
     {
-	final String text = app.conv().newNote();
+	final String text = app.getConv().newNote();
 	if (text == null)
 	    return false;
 	final int selected = notesArea.selectedIndex();
