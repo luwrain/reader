@@ -225,7 +225,7 @@ new Shortcut() {
 		    final String url = uniRef.substring(TYPE.length() + 1);
 		    if (url.isEmpty())
 			return null;
-		    return new UniRefInfo(uniRef, "", url);
+		    return new UniRefInfo(uniRef, "reader", url, url);
 		}
 		@Override public boolean openUniRef(String uniRef, Luwrain luwrain)
 		{
