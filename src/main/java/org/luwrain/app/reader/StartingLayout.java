@@ -32,13 +32,15 @@ import org.luwrain.app.base.*;
 final class StartingLayout extends LayoutBase
 {
     private App app;
-    private final ListArea listArea;
+    private final WizardArea wizardArea;
+
+    private final WizardArea.WizardFrame introFrame;
 
     StartingLayout(App app)
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;
-	this.listArea = new ListArea(createListParams()) {
+	this.wizardArea = new WizardArea(new DefaultControlContext(app.getLuwrain())) {
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -65,21 +67,15 @@ final class StartingLayout extends LayoutBase
 		    return new Action[0];
 		}
 	    };
-    }
-
-    private ListArea.Params createListParams()
-    {
-	final ListArea.Params params = new ListArea.Params();
-	params.context = new DefaultControlContext(app.getLuwrain());
-	params.model = new ListUtils.FixedModel();
-	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
-	//params.clickHandler = clickHandler;
-	params.name = app.getStrings().appName();
-	return params;
-    }
+			this.introFrame = wizardArea.addFrame()
+			.addText("Выберите, пожалуйста, способ, с помощью которого вы желаете открыть книгу или документ для чтения:")
+			.addClickable("Открыть файл на диске", ()->{})
+			.addClickable("Подключиться к облачному сервису LUWRAIN Books", ()->{});
+			wizardArea.show(introFrame);
+	    }
 
     AreaLayout getLayout()
     {
-	return new AreaLayout(listArea);
+	return new AreaLayout(wizardArea);
     }
     }
