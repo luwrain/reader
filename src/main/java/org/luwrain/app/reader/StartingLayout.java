@@ -34,7 +34,8 @@ final class StartingLayout extends LayoutBase
     private App app;
     private final WizardArea wizardArea;
 
-    private final WizardArea.WizardFrame introFrame;
+    private final WizardArea.Frame introFrame;
+    private final WizardArea.Frame loginFrame;
 
     StartingLayout(App app)
     {
@@ -67,12 +68,30 @@ final class StartingLayout extends LayoutBase
 		    return new Action[0];
 		}
 	    };
-			this.introFrame = wizardArea.addFrame()
+			this.introFrame = wizardArea.newFrame()
 			.addText("Выберите, пожалуйста, способ, с помощью которого вы желаете открыть книгу или документ для чтения:")
-			.addClickable("Открыть файл на диске", ()->{})
-			.addClickable("Подключиться к облачному сервису LUWRAIN Books", ()->{});
+			.addClickable("Открыть файл на диске", (values)->{ return false; })
+			.addClickable("Подключиться к облачному сервису LUWRAIN Books", (values)->connectFrame());
+			this.loginFrame = wizardArea.newFrame()
+			.addText("Имя пользователя и пароль")
+			.addInput("Адрес электронной почты:", "")
+			.addInput("Пароль:", "")
+			.addClickable("Подключиться", (values)->connect(values));
 			wizardArea.show(introFrame);
 	    }
+
+    private boolean connectFrame()
+    {
+	wizardArea.show(loginFrame);
+	return true;
+    }
+
+    private boolean connect(WizardArea.WizardValues values)
+    {
+	NullCheck.notNull(values, "values");
+	app.getLuwrain().message(values.getText(0));
+	return true;
+    }
 
     AreaLayout getLayout()
     {

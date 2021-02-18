@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.luwrain</groupId>
+    <artifactId>luwrain-parent</artifactId>
+    <version>2.0.0</version>
+  </parent>
+  <artifactId>luwrain-reader</artifactId>
+  <name>A personal information manager for LUWRAIN</name>
+  <url>https://github.com/luwrain/reader/</url>
+  <packaging>jar</packaging>
+  <dependencies>
+    <dependency>
+      <groupId>org.luwrain</groupId>
+      <artifactId>luwrain-base</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.luwrain</groupId>
+      <artifactId>luwrain</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+                <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>2.0.20</version>
+	    </dependency>
+
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>javax.mail-api</artifactId>
+      <version>1.6.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dizitart</groupId>
+      <artifactId>nitrite</artifactId>
+      <version>3.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.rometools</groupId>
+      <artifactId>rome</artifactId>
+      <version>1.14.1</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
