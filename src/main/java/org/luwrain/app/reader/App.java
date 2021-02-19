@@ -40,11 +40,15 @@ final class App extends AppBase<Strings>
     private Conversations conv = null;
     private AudioPlaying audioPlaying = null;
     private final org.luwrain.io.api.books.v1.Books books;
+    private org.luwrain.io.api.books.v1.Book[] remoteBooks = new org.luwrain.io.api.books.v1.Book[0];
+    private String accessToken = "";
     private Attributes attr = null;
 
     private BookContainer bookContainer = null;
+
     private MainLayout mainLayout = null;
     private StartingLayout startingLayout = null;
+    private RemoteBooksLayout remoteBooksLayout = null;
 
     App()
     {
@@ -66,6 +70,7 @@ final class App extends AppBase<Strings>
 	if (!audioPlaying.isLoaded())
 	    this.audioPlaying = null;
 	this.startingLayout = new StartingLayout(this);
+	this.remoteBooksLayout = new RemoteBooksLayout(this);
 	setAppName(getStrings().appName());
 	try {
 	    if (arg != null && !arg.isEmpty())
@@ -117,6 +122,18 @@ final class App extends AppBase<Strings>
     {
 	NullCheck.notNull(layout, "layout");
 	getLayout().setBasicLayout(layout);
+    }
+
+    Layouts layouts()
+    {
+	return new Layouts(){
+	    @Override public void remoteBooks()
+	    {
+		getLayout().setBasicLayout(remoteBooksLayout.getLayout());
+		remoteBooksLayout.listArea.refresh();
+		getLuwrain().announceActiveArea();
+	    }
+	};
     }
 
     void showErrorLayout(Throwable e)
@@ -176,8 +193,35 @@ final class App extends AppBase<Strings>
 	return this.books;
     }
 
+    org.luwrain.io.api.books.v1.Book[] getRemoteBooks()
+    {
+	return this.remoteBooks;
+    }
+
+    void setRemoteBooks(org.luwrain.io.api.books.v1.Book[] remoteBooks)
+    {
+	NullCheck.notNullItems(remoteBooks, "remoteBooks");
+	this.remoteBooks = remoteBooks;
+    }
+
+    String getAccessToken()
+    {
+	return accessToken;
+    }
+
+    void setAccessToken(String accessToken)
+    {
+	NullCheck.notEmpty(accessToken, "accessToken");
+	this.accessToken = accessToken;
+    }
+
     BookContainer getBookContainer()
     {
 	return this.bookContainer;
+    }
+
+    interface Layouts
+    {
+	void remoteBooks();
     }
 }

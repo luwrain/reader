@@ -22,15 +22,12 @@ import java.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
-import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
-import org.luwrain.reader.*;
-import org.luwrain.controls.reader.*;
-import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
 
 import org.luwrain.io.api.books.v1.*;
 import org.luwrain.io.api.books.v1.users.*;
+import org.luwrain.io.api.books.v1.collection.*;
 
 final class StartingLayout extends LayoutBase
 {
@@ -147,6 +144,20 @@ final class StartingLayout extends LayoutBase
 		    app.getLuwrain().crash(e);
 		    return;
 		}
+		final CollectionQuery.Response collectionResp;
+		try {
+		    collectionResp = app.getBooks().collection().collection().accessToken(resp.getAccessToken()).exec();
+		}
+		catch(IOException e)
+		{
+		    app.getLuwrain().crash(e);
+		    return;
+		}
+		app.finishedTask(taskId, ()->{
+			app.setAccessToken(resp.getAccessToken());
+			app.setRemoteBooks(collectionResp.getBooks() != null?collectionResp.getBooks():new org.luwrain.io.api.books.v1.Book[0]);
+			app.layouts().remoteBooks();
+		    });
 	    });
     }
 
