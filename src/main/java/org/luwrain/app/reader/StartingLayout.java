@@ -37,8 +37,8 @@ final class StartingLayout extends LayoutBase
     private App app;
     private final WizardArea wizardArea;
 
-    private final WizardArea.Frame introFrame;
-    private final WizardArea.Frame loginFrame;
+    private final WizardArea.Frame introFrame, loginFrame, confirmationFrame;
+    private String mail = "", passwd = "";
 
     StartingLayout(App app)
     {
@@ -81,6 +81,11 @@ final class StartingLayout extends LayoutBase
 			.addInput("Пароль:", "")
 			.addClickable("Подключиться", (values)->connect(values));
 			wizardArea.show(introFrame);
+						this.confirmationFrame = wizardArea.newFrame()
+			.addText("Подтверждение")
+			.addInput("Код подтверждения:", "")
+			.addClickable("Подтвердить", (values)->confirm(values));
+			wizardArea.show(introFrame);
 	    }
 
     private boolean connectFrame()
@@ -92,8 +97,8 @@ final class StartingLayout extends LayoutBase
     private boolean connect(WizardArea.WizardValues values)
     {
 	NullCheck.notNull(values, "values");
-	final String mail = values.getText(0).trim();
-	final String passwd = values.getText(1).trim();
+	this.mail = values.getText(0).trim();
+	this.passwd = values.getText(1).trim();
 	if (mail.isEmpty())
 	{
 	    app.getLuwrain().message("Не указан адрес электронной почты для подключения", Luwrain.MessageType.ERROR);
@@ -118,12 +123,116 @@ final class StartingLayout extends LayoutBase
 			app.getLuwrain().crash(e);
 			return;
 		    }
-		    if (er.getType().equals(AccessTokenQuery.INVALID_CREDENTIALS))
+		    switch(er.getType())
 		    {
+		    case AccessTokenQuery.INVALID_CREDENTIALS:
 			app.getLuwrain().message("Указан неверный пароль, попробуйте ещё раз", Luwrain.MessageType.ERROR);
 			return;
-		    }
+		case AccessTokenQuery.NOT_REGISTERED:
+			register(taskId);
+			return;
+	    case AccessTokenQuery.NOT_CONFIRMED:
+		app.finishedTask(taskId, ()->{
+		wizardArea.show(confirmationFrame);
+		//FIXME:announcement
+		    });
+		return;
+	    default:
+		    app.getLuwrain().crash(e);
 		    return;
+	    }
+		}
+		catch(IOException e)
+		{
+		    app.getLuwrain().crash(e);
+		    return;
+		}
+	    });
+    }
+
+    private void register(App.TaskId taskId)
+    {
+	NullCheck.notNull(taskId, "taskId");
+	NullCheck.notNull(mail, "mail");
+	NullCheck.notNull(passwd, "passwd");
+	final RegisterQuery.Response resp; 
+	try {
+resp = app.getBooks().users().register().mail(mail).passwd(passwd).exec();
+	}
+	catch(BooksException e)
+	{
+	    final ErrorResponse er = e.getErrorResponse();
+	    if (er == null || er.getType() == null)
+	    {
+		app.getLuwrain().crash(e);
+		return;
+	    }
+	    switch(er.getType())
+	    {
+	    case RegisterQuery.INVALID_MAIL:
+		app.getLuwrain().message("Указан недопустимый адрес электронной почты", Luwrain.MessageType.ERROR);
+		return;
+case RegisterQuery.INVALID_PASSWORD:
+    		app.getLuwrain().message("Указан недопустимый пароль", Luwrain.MessageType.ERROR);
+		return;
+	    case RegisterQuery.MAIL_ADDRESS_ALREADY_IN_USE:
+				app.getLuwrain().message("На сервере уже зарегистрирован пользователь с таким адресом электронной почты", Luwrain.MessageType.ERROR);
+				return;
+	    case RegisterQuery.TOO_SHORT_PASSWORD:
+						app.getLuwrain().message("Указан слишком короткий пароль.", Luwrain.MessageType.ERROR);
+						return;
+	    default:
+		app.getLuwrain().crash(e);
+		return;
+	    }
+	}
+	catch(IOException e)
+	{
+	    app.getLuwrain().crash(e);
+	    return;
+	}
+	app.finishedTask(taskId, ()->wizardArea.show(confirmationFrame));
+    }
+
+        private boolean confirm(WizardArea.WizardValues values)
+    {
+	NullCheck.notNull(values, "values");
+	Log.debug("proba", "" + values.getText(0));
+	final String code = values.getText(0).trim();
+	if (code.isEmpty())
+	{
+	    app.getLuwrain().message("Не указан код подтверждения.", Luwrain.MessageType.ERROR);
+	    return true;
+	}
+	final App.TaskId taskId = app.newTaskId();
+	return app.runTask(taskId, ()->{
+		final ConfirmQuery.Response resp;
+		try {
+		    resp = app.getBooks().users().confirm().mail(this .mail).confirmationCode(code).exec();
+		}
+		catch(BooksException e)
+		{
+		    final ErrorResponse er = e.getErrorResponse();
+		    if (er == null || er.getType() == null)
+		    {
+			app.getLuwrain().crash(e);
+			return;
+		    }
+		    switch(er.getType())
+		    {
+		    case ConfirmQuery.TOO_MANY_ATTEMPTS:
+			app.finishedTask(taskId, ()->{
+			wizardArea.show(loginFrame);
+			app.getLuwrain().message("Превышено максимальное число попыток, попробуйте зарегистрироваться ещё раз.", Luwrain.MessageType.ERROR);
+			    });
+			return;
+		    case ConfirmQuery.INVALID_CONFIRMATION_CODE:
+			app.getLuwrain().message("Указан неверный код подтверждения, попробуйте ещё раз.", Luwrain.MessageType.ERROR);
+			return;
+		    default:
+			app.getLuwrain().crash(e);
+			return;
+		    }
 		}
 		catch(IOException e)
 		{
