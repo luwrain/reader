@@ -18,7 +18,7 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
-import java.net.*;
+import java.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
@@ -28,6 +28,9 @@ import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
+
+import org.luwrain.io.api.books.v1.*;
+import org.luwrain.io.api.books.v1.users.*;
 
 final class StartingLayout extends LayoutBase
 {
@@ -89,8 +92,45 @@ final class StartingLayout extends LayoutBase
     private boolean connect(WizardArea.WizardValues values)
     {
 	NullCheck.notNull(values, "values");
-	app.getLuwrain().message(values.getText(0));
-	return true;
+	final String mail = values.getText(0).trim();
+	final String passwd = values.getText(1).trim();
+	if (mail.isEmpty())
+	{
+	    app.getLuwrain().message("Не указан адрес электронной почты для подключения", Luwrain.MessageType.ERROR);
+	    return true;
+	}
+	if (passwd.isEmpty())
+	{
+	    app.getLuwrain().message("Не указан пароль для подключения", Luwrain.MessageType.ERROR);
+		    return true;
+	}
+	final App.TaskId taskId = app.newTaskId();
+	return app.runTask(taskId, ()->{
+		final AccessTokenQuery.Response resp;
+		try {
+		    resp = app.getBooks().users().accessToken().mail(mail).passwd(passwd).exec();
+		}
+		catch(BooksException e)
+		{
+		    final ErrorResponse er = e.getErrorResponse();
+		    if (er == null || er.getType() == null)
+		    {
+			app.getLuwrain().crash(e);
+			return;
+		    }
+		    if (er.getType().equals(AccessTokenQuery.INVALID_CREDENTIALS))
+		    {
+			app.getLuwrain().message("Указан неверный пароль, попробуйте ещё раз", Luwrain.MessageType.ERROR);
+			return;
+		    }
+		    return;
+		}
+		catch(IOException e)
+		{
+		    app.getLuwrain().crash(e);
+		    return;
+		}
+	    });
     }
 
     AreaLayout getLayout()

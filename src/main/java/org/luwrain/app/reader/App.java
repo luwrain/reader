@@ -39,6 +39,7 @@ final class App extends AppBase<Strings>
     private final String arg;
     private Conversations conv = null;
     private AudioPlaying audioPlaying = null;
+    private final org.luwrain.io.api.books.v1.Books books;
     private Attributes attr = null;
 
     private BookContainer bookContainer = null;
@@ -54,6 +55,7 @@ final class App extends AppBase<Strings>
     {
 	super(Strings.NAME, Strings.class, "luwrain.reader");
 	this.arg = arg;
+	this.books = new org.luwrain.io.api.books.v1.Factory().newInstance();
     }
 
     @Override protected boolean onAppInit()
@@ -167,6 +169,11 @@ final class App extends AppBase<Strings>
     AudioPlaying getAudioPlaying()
     {
 	return this.audioPlaying;
+    }
+
+    org.luwrain.io.api.books.v1.Books getBooks()
+    {
+	return this.books;
     }
 
     BookContainer getBookContainer()
