@@ -38,6 +38,7 @@ final class App extends AppBase<Strings>
 
     private final String arg;
     private Conversations conv = null;
+    private final LocalRepo localRepo = new LocalRepo();
     private AudioPlaying audioPlaying = null;
     private final org.luwrain.io.api.books.v1.Books books;
     private org.luwrain.io.api.books.v1.Book[] remoteBooks = new org.luwrain.io.api.books.v1.Book[0];
@@ -231,6 +232,11 @@ final class App extends AppBase<Strings>
     BookContainer getBookContainer()
     {
 	return this.bookContainer;
+    }
+
+    LocalRepo getLocalRepo()
+    {
+	return localRepo;
     }
 
     interface Layouts

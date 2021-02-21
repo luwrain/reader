@@ -73,9 +73,11 @@ final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandle
 		try {
 		    final Book book = app.getBooks().book().id(remoteBook.getId()).accessToken(app.getAccessToken()).exec();
 		    final Download download = app.getBooks().download(book);
-		    try (final OutputStream os = new FileOutputStream("/tmp/download.zip")) {
-		    download.downloadDaisy(os, app.getBooksDownloadListener(), app.getAccessToken());
+		    try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream("/tmp/download.zip"))) {
+			download.downloadDaisy(os, app.getBooksDownloadListener(), app.getAccessToken());
+			os.flush();
 		    }
+		    app.getLocalRepo().addDaisy(remoteBook, new File("/tmp/download.zip"));
 		}
 		catch(IOException e)
 		{
