@@ -70,7 +70,7 @@ final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandle
 	final Book remoteBook = (Book)obj;
 	if (remoteBook.getId() == null || remoteBook.getId().isEmpty())
 	{
-	    app.getLuwrain().message("Выбрананя книга не имеет идентификатора. Её невозможно загрузить для прослушивания.", Luwrain.MessageType.ERROR);
+	    app.message("Выбрананя книга не имеет идентификатора. Её невозможно загрузить для прослушивания.", Luwrain.MessageType.ERROR);
 	    return true;
 	}
 	if (app.getLocalRepo().hasBook(remoteBook))
@@ -105,7 +105,7 @@ app.open(mainFile.toURI());
 			final File mainFile = app.getLocalRepo().findDaisyMainFile(remoteBook);
 			if (mainFile == null)
 			{
-			    app.getLuwrain().message("Доставленная книга имеет некорректную структуру. Её воспроизведение невозможно.");
+			    app.message("Доставленная книга имеет некорректную структуру. Её воспроизведение невозможно.");
 			    return;
 			}
 			Log.debug("proba", "opening " + mainFile.getAbsolutePath());

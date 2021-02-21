@@ -73,13 +73,13 @@ final class StartingLayout extends LayoutBase
 	.addClickable("Открыть файл на диске", (values)->{ return false; })
 	.addClickable("Подключиться к облачному сервису LUWRAIN Books", (values)->connectFrame());
 	this.loginFrame = wizardArea.newFrame()
-	.addText("Имя пользователя и пароль")
+	.addText("Введите в текстовые поля ниже ваш адрес электронной почты и пароль для доступа к облачному сервису books.luwrain.org. Если вы в настоящий момент не зарегистрированы, регистрация произойдёт автоматически. В случае автоматической регистрации на следующем шаге потребуется ввести код подтверждения из письма, которое сервис направит вам для проверки, что указанный адрес именно ваш.")
 	.addInput("Адрес электронной почты:", "")
 	.addInput("Пароль:", "")
 	.addClickable("Подключиться", (values)->connect(values));
 	wizardArea.show(introFrame);
 	this.confirmationFrame = wizardArea.newFrame()
-	.addText("Подтверждение")
+	.addText("Укажите код подтверждения, который должен быть в письме, отправленном сервисам на указанный адрес электронной почты. Обратите внимание, что подтверждение регистрации означает полное согласие с правилами использования books.luwrain.org. Для подтверждения разрешается предпринимать не более пяти попыток. В случае превышения этого числа адрес будет освобождён, и вы сможете предпринять новую попытку регистрации.")
 	.addInput("Код подтверждения:", "")
 	.addClickable("Подтвердить", (values)->confirm(values));
 	wizardArea.show(introFrame);
@@ -87,6 +87,7 @@ final class StartingLayout extends LayoutBase
 
     private boolean connectFrame()
     {
+	app.getLuwrain().setEventResponse(DefaultEventResponse.text(Sounds.CLICK, "Подключение к books.luwrain.org"));
 	wizardArea.show(loginFrame);
 	return true;
     }
@@ -130,6 +131,7 @@ final class StartingLayout extends LayoutBase
 			return;
 		    case AccessTokenQuery.NOT_CONFIRMED:
 			app.finishedTask(taskId, ()->{
+	app.getLuwrain().setEventResponse(DefaultEventResponse.text(Sounds.CLICK, "Код подтверждения"));
 				wizardArea.show(confirmationFrame);
 				//FIXME:announcement
 			    });
@@ -202,7 +204,10 @@ final class StartingLayout extends LayoutBase
 	    app.crash(e);
 	    return;
 	}
-	app.finishedTask(taskId, ()->wizardArea.show(confirmationFrame));
+	app.finishedTask(taskId, ()->{
+	app.getLuwrain().setEventResponse(DefaultEventResponse.text(Sounds.CLICK, "Код подтверждения"));
+	wizardArea.show(confirmationFrame);
+	    });
     }
 
     private boolean confirm(WizardArea.WizardValues values)
