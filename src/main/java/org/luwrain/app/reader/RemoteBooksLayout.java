@@ -65,19 +65,36 @@ final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandle
     @Override public boolean onListClick(ListArea listArea, int index, Object obj)
     {
 	NullCheck.notNull(obj, "obj");
-	if (!(obj instanceof Book))
+	if (app.isBusy() || !(obj instanceof Book))
 	    return false ;
 	final Book remoteBook = (Book)obj;
+	if (remoteBook.getId() == null || remoteBook.getId().isEmpty())
+	{
+	    app.getLuwrain().message("Выбрананя книга не имеет идентификатора. Её невозможно загрузить для прослушивания.", Luwrain.MessageType.ERROR);
+	    return true;
+	}
+	if (app.getLocalRepo().hasBook(remoteBook))
+	{
+final File mainFile = app.getLocalRepo().findDaisyMainFile(remoteBook);
+app.open(mainFile.toURI());
+	    return true;
+	}
 	final App.TaskId taskId = app.newTaskId();
 	return app.runTask(taskId, ()->{
 		try {
 		    final Book book = app.getBooks().book().id(remoteBook.getId()).accessToken(app.getAccessToken()).exec();
-		    final Download download = app.getBooks().download(book);
-		    try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream("/tmp/download.zip"))) {
-			download.downloadDaisy(os, app.getBooksDownloadListener(), app.getAccessToken());
-			os.flush();
+		    final File tmpFile = File.createTempFile(".lwr-reader-daisy-download-", ".zip");
+		    try {
+			final Download download = app.getBooks().download(book);
+			try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile))) {
+			    download.downloadDaisy(os, app.getBooksDownloadListener(), app.getAccessToken());
+			    os.flush();
+			}
+			app.getLocalRepo().addDaisy(remoteBook, tmpFile);
 		    }
-		    app.getLocalRepo().addDaisy(remoteBook, new File("/tmp/download.zip"));
+		    finally {
+			tmpFile.delete();
+		    }
 		}
 		catch(IOException e)
 		{

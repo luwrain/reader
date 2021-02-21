@@ -60,6 +60,15 @@ final class LocalRepoMetadata
 	sett.setLocalRepoMetadata(gson.toJson(data));
     }
 
+    Book findBook(String id)
+    {
+	NullCheck.notEmpty(id, "id");
+	for(Book b: getBooks())
+	    if (b.getId().equals(id))
+		return b;
+	return null;
+    }
+
     void addBook(Book book)
     {
 	NullCheck.notNull(book, "book");

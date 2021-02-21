@@ -65,4 +65,38 @@ final class LocalRepo
 	}
 	metadata.addBook(book);
     }
+
+    File findDaisyMainFile(Book book)
+    {
+	NullCheck.notNull(book, "book");
+	NullCheck.notEmpty(book.getId(), "book.getId()");
+	return findNcc(new File(repoDir, book.getId()));
+    }
+
+    private File findNcc(File file)
+    {
+	NullCheck.notNull(file, "file");
+	if (!file.isDirectory())
+	{
+	    final String name = file.getName().toLowerCase();
+	    return (name.equals("ncc.html") || name.equals("ncc.htm"))?file:null;
+	}
+	final File[] files = file.listFiles();
+	if (files == null)
+	    return null;
+	for(File f: files)
+	    if (f != null)
+	    {
+		final File res = findNcc(f);
+		if (res != null)
+		    return res;
+	    }
+	return null;
+    }
+
+    boolean hasBook(Book book)
+    {
+	NullCheck.notNull(book, "book");
+	return metadata.findBook(book.getId()) != null;
+    }
 }
