@@ -61,4 +61,12 @@ public interface Strings
     String searchGooglePopupName();
     String searchGooglePopupPrefix();
     String treeAreaName();
+
+    String wizardLoginIntro();
+    String wizardLoginMail();
+    String wizardLoginPasswd();
+    String wizardLoginConnect();
+
+    String wizardConfirmationIntro();
+    String wizardConfirmationCode();
 }

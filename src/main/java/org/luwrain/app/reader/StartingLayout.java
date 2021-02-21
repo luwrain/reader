@@ -73,14 +73,14 @@ final class StartingLayout extends LayoutBase
 	.addClickable("Открыть файл на диске", (values)->{ return false; })
 	.addClickable("Подключиться к облачному сервису LUWRAIN Books", (values)->connectFrame());
 	this.loginFrame = wizardArea.newFrame()
-	.addText("Введите в текстовые поля ниже ваш адрес электронной почты и пароль для доступа к облачному сервису books.luwrain.org. Если вы в настоящий момент не зарегистрированы, регистрация произойдёт автоматически. В случае автоматической регистрации на следующем шаге потребуется ввести код подтверждения из письма, которое сервис направит вам для проверки, что указанный адрес именно ваш.")
-	.addInput("Адрес электронной почты:", "")
-	.addInput("Пароль:", "")
-	.addClickable("Подключиться", (values)->connect(values));
+	.addText(app.getStrings().wizardLoginIntro())
+	.addInput(app.getStrings().wizardLoginMail(), "")
+	.addInput(app.getStrings().wizardLoginPasswd(), "")
+	.addClickable(app.getStrings().wizardLoginConnect(), (values)->connect(values));
 	wizardArea.show(introFrame);
 	this.confirmationFrame = wizardArea.newFrame()
-	.addText("Укажите код подтверждения, который должен быть в письме, отправленном сервисам на указанный адрес электронной почты. Обратите внимание, что подтверждение регистрации означает полное согласие с правилами использования books.luwrain.org. Для подтверждения разрешается предпринимать не более пяти попыток. В случае превышения этого числа адрес будет освобождён, и вы сможете предпринять новую попытку регистрации.")
-	.addInput("Код подтверждения:", "")
+	.addText(app.getStrings().wizardConfirmationIntro())
+	.addInput(app.getStrings().wizardConfirmationCode(), "")
 	.addClickable("Подтвердить", (values)->confirm(values));
 	wizardArea.show(introFrame);
     }
