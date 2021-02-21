@@ -94,6 +94,12 @@ final class LocalRepo
 	return null;
     }
 
+    Book[] getBooks()
+    {
+	final List<Book> books = metadata.getBooks();
+	return books.toArray(new Book[books.size()]);
+    }
+
     boolean hasBook(Book book)
     {
 	NullCheck.notNull(book, "book");
