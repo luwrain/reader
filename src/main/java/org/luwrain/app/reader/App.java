@@ -104,6 +104,7 @@ final class App extends AppBase<Strings>
 		    return;
 		}
 		finishedTask(taskId, ()->{
+			Log.debug("proba", "updating UI");
 			this.bookContainer = new BookContainer(this, book);
 			this.mainLayout = new MainLayout(this);
 			getLayout().setBasicLayout(mainLayout.getLayout());

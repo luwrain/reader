@@ -98,12 +98,12 @@ final class StartingLayout extends LayoutBase
 	this.passwd = values.getText(1).trim();
 	if (mail.isEmpty())
 	{
-	    app.getLuwrain().message("Не указан адрес электронной почты для подключения", Luwrain.MessageType.ERROR);
+	    app.message("Не указан адрес электронной почты для подключения", Luwrain.MessageType.ERROR);
 	    return true;
 	}
 	if (passwd.isEmpty())
 	{
-	    app.getLuwrain().message("Не указан пароль для подключения", Luwrain.MessageType.ERROR);
+	    app.message("Не указан пароль для подключения", Luwrain.MessageType.ERROR);
 	    return true;
 	}
 	final App.TaskId taskId = app.newTaskId();
@@ -117,13 +117,13 @@ final class StartingLayout extends LayoutBase
 		    final ErrorResponse er = e.getErrorResponse();
 		    if (er == null || er.getType() == null)
 		    {
-			app.getLuwrain().crash(e);
+			app.crash(e);
 			return;
 		    }
 		    switch(er.getType())
 		    {
 		    case AccessTokenQuery.INVALID_CREDENTIALS:
-			app.getLuwrain().message("Указан неверный пароль, попробуйте ещё раз", Luwrain.MessageType.ERROR);
+			app.message("Указан неверный пароль, попробуйте ещё раз", Luwrain.MessageType.ERROR);
 			return;
 		    case AccessTokenQuery.NOT_REGISTERED:
 			register(taskId);
@@ -135,13 +135,13 @@ final class StartingLayout extends LayoutBase
 			    });
 			return;
 		    default:
-			app.getLuwrain().crash(e);
+			app.crash(e);
 			return;
 		    }
 		}
 		catch(IOException e)
 		{
-		    app.getLuwrain().crash(e);
+		    app.crash(e);
 		    return;
 		}
 		final CollectionQuery.Response collectionResp;
@@ -150,7 +150,7 @@ final class StartingLayout extends LayoutBase
 		}
 		catch(IOException e)
 		{
-		    app.getLuwrain().crash(e);
+		    app.crash(e);
 		    return;
 		}
 		app.finishedTask(taskId, ()->{
@@ -175,31 +175,31 @@ final class StartingLayout extends LayoutBase
 	    final ErrorResponse er = e.getErrorResponse();
 	    if (er == null || er.getType() == null)
 	    {
-		app.getLuwrain().crash(e);
+		app.crash(e);
 		return;
 	    }
 	    switch(er.getType())
 	    {
 	    case RegisterQuery.INVALID_MAIL:
-		app.getLuwrain().message("Указан недопустимый адрес электронной почты", Luwrain.MessageType.ERROR);
+		app.message("Указан недопустимый адрес электронной почты", Luwrain.MessageType.ERROR);
 		return;
 	    case RegisterQuery.INVALID_PASSWORD:
-    		app.getLuwrain().message("Указан недопустимый пароль", Luwrain.MessageType.ERROR);
+    		app.message("Указан недопустимый пароль", Luwrain.MessageType.ERROR);
 		return;
 	    case RegisterQuery.MAIL_ADDRESS_ALREADY_IN_USE:
-		app.getLuwrain().message("На сервере уже зарегистрирован пользователь с таким адресом электронной почты", Luwrain.MessageType.ERROR);
+		app.message("На сервере уже зарегистрирован пользователь с таким адресом электронной почты", Luwrain.MessageType.ERROR);
 		return;
 	    case RegisterQuery.TOO_SHORT_PASSWORD:
-		app.getLuwrain().message("Указан слишком короткий пароль.", Luwrain.MessageType.ERROR);
+		app.message("Указан слишком короткий пароль.", Luwrain.MessageType.ERROR);
 		return;
 	    default:
-		app.getLuwrain().crash(e);
+		app.crash(e);
 		return;
 	    }
 	}
 	catch(IOException e)
 	{
-	    app.getLuwrain().crash(e);
+	    app.crash(e);
 	    return;
 	}
 	app.finishedTask(taskId, ()->wizardArea.show(confirmationFrame));
@@ -212,7 +212,7 @@ final class StartingLayout extends LayoutBase
 	final String code = values.getText(0).trim();
 	if (code.isEmpty())
 	{
-	    app.getLuwrain().message("Не указан код подтверждения.", Luwrain.MessageType.ERROR);
+	    app.message("Не указан код подтверждения.", Luwrain.MessageType.ERROR);
 	    return true;
 	}
 	final App.TaskId taskId = app.newTaskId();
@@ -226,7 +226,7 @@ final class StartingLayout extends LayoutBase
 		    final ErrorResponse er = e.getErrorResponse();
 		    if (er == null || er.getType() == null)
 		    {
-			app.getLuwrain().crash(e);
+			app.crash(e);
 			return;
 		    }
 		    switch(er.getType())
@@ -234,20 +234,20 @@ final class StartingLayout extends LayoutBase
 		    case ConfirmQuery.TOO_MANY_ATTEMPTS:
 			app.finishedTask(taskId, ()->{
 				wizardArea.show(loginFrame);
-				app.getLuwrain().message("Превышено максимальное число попыток, попробуйте зарегистрироваться ещё раз.", Luwrain.MessageType.ERROR);
+				app.message("Превышено максимальное число попыток, попробуйте зарегистрироваться ещё раз.", Luwrain.MessageType.ERROR);
 			    });
 			return;
 		    case ConfirmQuery.INVALID_CONFIRMATION_CODE:
-			app.getLuwrain().message("Указан неверный код подтверждения, попробуйте ещё раз.", Luwrain.MessageType.ERROR);
+			app.message("Указан неверный код подтверждения, попробуйте ещё раз.", Luwrain.MessageType.ERROR);
 			return;
 		    default:
-			app.getLuwrain().crash(e);
+			app.crash(e);
 			return;
 		    }
 		}
 		catch(IOException e)
 		{
-		    app.getLuwrain().crash(e);
+		    app.crash(e);
 		    return;
 		}
 	    });

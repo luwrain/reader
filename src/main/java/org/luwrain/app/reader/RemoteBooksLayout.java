@@ -102,7 +102,14 @@ app.open(mainFile.toURI());
 		    return;
 		}
 		app.finishedTask(taskId, ()->{
-			app.getLuwrain().playSound(Sounds.DONE);
+			final File mainFile = app.getLocalRepo().findDaisyMainFile(remoteBook);
+			if (mainFile == null)
+			{
+			    app.getLuwrain().message("Доставленная книга имеет некорректную структуру. Её воспроизведение невозможно.");
+			    return;
+			}
+			Log.debug("proba", "opening " + mainFile.getAbsolutePath());
+app.open(mainFile.toURI());
 		    });
 	    });
     }
