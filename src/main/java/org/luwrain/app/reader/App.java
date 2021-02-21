@@ -38,7 +38,9 @@ final class App extends AppBase<Strings>
 
     private final String arg;
     private Conversations conv = null;
-    private final LocalRepo localRepo = new LocalRepo();
+    private Settings sett = null;
+    private LocalRepoMetadata localRepoMetadata = null;
+    private LocalRepo localRepo = null;
     private AudioPlaying audioPlaying = null;
     private final org.luwrain.io.api.books.v1.Books books;
     private org.luwrain.io.api.books.v1.Book[] remoteBooks = new org.luwrain.io.api.books.v1.Book[0];
@@ -65,6 +67,9 @@ final class App extends AppBase<Strings>
 
     @Override protected boolean onAppInit()
     {
+	this.sett = Settings.create(getLuwrain());
+	this.localRepoMetadata = new LocalRepoMetadata(sett);
+	this.localRepo = new LocalRepo(this.localRepoMetadata);
 	this.conv = new Conversations(getLuwrain(), getStrings());
 	this.attr = new Attributes(getLuwrain().getRegistry());
 	this.audioPlaying = new AudioPlaying(getLuwrain());

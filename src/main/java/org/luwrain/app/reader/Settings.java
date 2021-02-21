@@ -24,5 +24,16 @@ import org.luwrain.core.*;
 
 interface Settings
 {
-    static final String ATTRIBUTES_PATH = "/org/luwrain/app/reader/attributes";
+    static final String
+	PATH = "/org/luwrain/app/reader",
+	ATTRIBUTES_PATH = "/org/luwrain/app/reader/attributes";
+
+    String getLocalRepoMetadata(String defValue);
+    void setLocalRepoMetadata(String value);
+
+    static Settings create(Luwrain luwrain)
+    {
+	NullCheck.notNull(luwrain, "luwrain");
+	return RegistryProxy.create(luwrain.getRegistry(), PATH, Settings.class);
+    }
 }

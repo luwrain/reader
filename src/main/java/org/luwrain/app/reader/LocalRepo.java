@@ -29,6 +29,13 @@ import org.luwrain.io.api.books.v1.*;
 final class LocalRepo
 {
     private File repoDir = new File("/tmp/repo");
+    private final LocalRepoMetadata metadata;
+
+    LocalRepo(LocalRepoMetadata metadata)
+    {
+	NullCheck.notNull(metadata, "metadata");
+	this.metadata = metadata;
+    }
 
     void addDaisy(Book book, File zipFile) throws IOException
     {
@@ -39,23 +46,23 @@ final class LocalRepo
 	    throw new IllegalArgumentException("The book diesn't have an ID");
 	final File bookDir = new File(repoDir, id);
 	FileUtils.createSubdirs(bookDir);
-
-	
         try (final BufferedInputStream is = new BufferedInputStream(new FileInputStream(zipFile))) {
 	    final ZipInputStream stream = new ZipInputStream(is);
-	{
-            ZipEntry entry = null;
-            while ((entry = stream.getNextEntry()) != null) {
-		if (entry.isDirectory())
-		    continue;
-		final File destFile = new File(bookDir, entry.getName());
-		FileUtils.createSubdirs(destFile.getParentFile());
-                try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(destFile))){
+	    {
+		ZipEntry entry = null;
+		while ((entry = stream.getNextEntry()) != null) {
+		    if (entry.isDirectory())
+			continue;
+		    final File destFile = new File(bookDir, entry.getName());
+		    FileUtils.createSubdirs(destFile.getParentFile());
+		    try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(destFile))){
 			StreamUtils.copyAllBytes(stream, os);
 			os.flush();
 		    }
-                    }
-    }
+		    stream.closeEntry();
+		}
+	    }
 	}
-}
+	metadata.addBook(book);
+    }
 }
