@@ -36,6 +36,7 @@ final class App extends AppBase<Strings>
     static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
 
+    boolean cancelled = false;
     private final String arg;
     private Conversations conv = null;
     private Settings sett = null;
@@ -52,6 +53,7 @@ final class App extends AppBase<Strings>
     private MainLayout mainLayout = null;
     private StartingLayout startingLayout = null;
     private RemoteBooksLayout remoteBooksLayout = null;
+    private LocalRepoLayout localRepoLayout = null;
 
     App()
     {
@@ -77,6 +79,7 @@ final class App extends AppBase<Strings>
 	    this.audioPlaying = null;
 	this.startingLayout = new StartingLayout(this);
 	this.remoteBooksLayout = new RemoteBooksLayout(this);
+	this.localRepoLayout = new LocalRepoLayout(this);
 	setAppName(getStrings().appName());
 	try {
 	    if (arg != null && !arg.isEmpty())
@@ -104,7 +107,6 @@ final class App extends AppBase<Strings>
 		    return;
 		}
 		finishedTask(taskId, ()->{
-			Log.debug("proba", "updating UI");
 			this.bookContainer = new BookContainer(this, book);
 			this.mainLayout = new MainLayout(this);
 			getLayout().setBasicLayout(mainLayout.getLayout());
@@ -140,6 +142,12 @@ final class App extends AppBase<Strings>
 		remoteBooksLayout.listArea.refresh();
 		getLuwrain().announceActiveArea();
 	    }
+	    	    @Override public void localRepo()
+	    {
+		getLayout().setBasicLayout(localRepoLayout.getLayout());
+		localRepoLayout.listArea.refresh();
+		getLuwrain().announceActiveArea();
+	    }
 	};
     }
 
@@ -155,6 +163,11 @@ final class App extends AppBase<Strings>
 	    errorLayout = new ErrorLayout(this, e, null);
 	layout(errorLayout.getLayout());
 	getLuwrain().playSound(Sounds.ERROR);
+    }
+
+    @Override public void onCancelledTask()
+    {
+	this.cancelled = true;
     }
 
     @Override public boolean onEscape(InputEvent event)
@@ -210,7 +223,7 @@ final class App extends AppBase<Strings>
 	return new org.luwrain.io.api.books.v1.Download.Listener(){
 	    @Override public boolean interrupting()
 	    {
-		return false;
+		return cancelled;
 	    }
 	    @Override public void processed(int chunkBytes, long totalBytes)
 	    {
@@ -248,5 +261,6 @@ final class App extends AppBase<Strings>
     interface Layouts
     {
 	void remoteBooks();
+	void localRepo();
     }
 }

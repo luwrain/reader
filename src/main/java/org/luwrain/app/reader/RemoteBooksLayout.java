@@ -79,6 +79,7 @@ final File mainFile = app.getLocalRepo().findDaisyMainFile(remoteBook);
 app.open(mainFile.toURI());
 	    return true;
 	}
+	app.cancelled = false;
 	final App.TaskId taskId = app.newTaskId();
 	return app.runTask(taskId, ()->{
 		try {
@@ -90,7 +91,8 @@ app.open(mainFile.toURI());
 			    download.downloadDaisy(os, app.getBooksDownloadListener(), app.getAccessToken());
 			    os.flush();
 			}
-			app.getLocalRepo().addDaisy(remoteBook, tmpFile);
+			if (!app.cancelled)
+			    app.getLocalRepo().addDaisy(remoteBook, tmpFile);
 		    }
 		    finally {
 			tmpFile.delete();
