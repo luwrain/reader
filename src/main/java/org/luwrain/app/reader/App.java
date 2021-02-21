@@ -198,6 +198,19 @@ final class App extends AppBase<Strings>
 	return this.remoteBooks;
     }
 
+    org.luwrain.io.api.books.v1.Download.Listener getBooksDownloadListener()
+    {
+	return new org.luwrain.io.api.books.v1.Download.Listener(){
+	    @Override public boolean interrupting()
+	    {
+		return false;
+	    }
+	    @Override public void processed(int chunkBytes, long totalBytes)
+	    {
+	    }
+	};
+    }
+
     void setRemoteBooks(org.luwrain.io.api.books.v1.Book[] remoteBooks)
     {
 	NullCheck.notNullItems(remoteBooks, "remoteBooks");

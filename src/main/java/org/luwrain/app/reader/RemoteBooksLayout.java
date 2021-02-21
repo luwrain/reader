@@ -28,7 +28,7 @@ import org.luwrain.app.base.*;
 import org.luwrain.io.api.books.v1.*;
 import org.luwrain.io.api.books.v1.collection.*;
 
-final class RemoteBooksLayout extends LayoutBase
+final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandler
 {
     private App app;
     final ListArea listArea;
@@ -62,6 +62,32 @@ final class RemoteBooksLayout extends LayoutBase
 	    };
     }
 
+    @Override public boolean onListClick(ListArea listArea, int index, Object obj)
+    {
+	NullCheck.notNull(obj, "obj");
+	if (!(obj instanceof Book))
+	    return false ;
+	final Book remoteBook = (Book)obj;
+	final App.TaskId taskId = app.newTaskId();
+	return app.runTask(taskId, ()->{
+		try {
+		    final Book book = app.getBooks().book().id(remoteBook.getId()).accessToken(app.getAccessToken()).exec();
+		    final Download download = app.getBooks().download(book);
+		    try (final OutputStream os = new FileOutputStream("/tmp/download.zip")) {
+		    download.downloadDaisy(os, app.getBooksDownloadListener(), app.getAccessToken());
+		    }
+		}
+		catch(IOException e)
+		{
+		    app.getLuwrain().crash(e);
+		    return;
+		}
+		app.finishedTask(taskId, ()->{
+			app.getLuwrain().playSound(Sounds.DONE);
+		    });
+	    });
+    }
+
     private ListArea.Params createListParams()
     {
 	final ListArea.Params params = new ListArea.Params();
@@ -69,6 +95,7 @@ final class RemoteBooksLayout extends LayoutBase
 	params.name = "Ваша коллекция";
 	params.model = new ListUtils.ArrayModel(()->app.getRemoteBooks());
 	params.appearance = new ListUtils.DefaultAppearance(params.context);
+	params.clickHandler = this;
 	return params;
     }
 
