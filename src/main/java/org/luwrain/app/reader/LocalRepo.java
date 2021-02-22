@@ -28,13 +28,15 @@ import org.luwrain.io.api.books.v1.*;
 
 final class LocalRepo
 {
-    private File repoDir = new File("/tmp/repo");
+    private File repoDir;
     private final LocalRepoMetadata metadata;
 
-    LocalRepo(LocalRepoMetadata metadata)
+    LocalRepo(LocalRepoMetadata metadata, File repoDir)
     {
 	NullCheck.notNull(metadata, "metadata");
+	NullCheck.notNull(repoDir, "repoDir");
 	this.metadata = metadata;
+	this.repoDir = repoDir;
     }
 
     void addDaisy(Book book, File zipFile) throws IOException

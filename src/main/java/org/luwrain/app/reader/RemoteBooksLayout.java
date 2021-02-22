@@ -76,8 +76,11 @@ final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandle
 	if (app.getLocalRepo().hasBook(remoteBook))
 	{
 final File mainFile = app.getLocalRepo().findDaisyMainFile(remoteBook);
+if (mainFile != null)
+{
 app.open(mainFile.toURI());
 	    return true;
+}
 	}
 	app.cancelled = false;
 	final App.TaskId taskId = app.newTaskId();

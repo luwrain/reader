@@ -70,9 +70,17 @@ final class App extends AppBase<Strings>
     @Override protected boolean onAppInit()
     {
 	final Standalone standalone = new Standalone("lwr-books", "LwrBooks");
-	this.sett = Settings.create(getLuwrain());
-	this.localRepoMetadata = new LocalRepoMetadata(sett);
-	this.localRepo = new LocalRepo(this.localRepoMetadata);
+	if (standalone.isStandalone())
+	{
+	    this.sett = new StandaloneSettings(standalone.getDataDir());
+	    this.localRepoMetadata = new LocalRepoMetadata(sett);
+	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(standalone.getDataDir(), "repo"));
+	} else
+	{
+	    this.sett = Settings.create(getLuwrain());
+	    this.localRepoMetadata = new LocalRepoMetadata(sett);
+	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
+	}
 	this.conv = new Conversations(getLuwrain(), getStrings());
 	this.attr = new Attributes(getLuwrain().getRegistry());
 	this.audioPlaying = new AudioPlaying(getLuwrain());

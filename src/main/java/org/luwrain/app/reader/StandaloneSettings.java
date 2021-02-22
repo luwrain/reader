@@ -56,7 +56,8 @@ final class StandaloneSettings  implements Settings
 	NullCheck.notNull(value, "value");
 	final File repoFile = new File(dir, REPO_FILE);
 	try {
-	    FileUtils.writeTextFileSingleString(repoFile, "UTF-8", value);
+	    FileUtils.createSubdirs(dir);
+	    FileUtils.writeTextFileSingleString(repoFile, value, "UTF-8");
 	}
 	catch(IOException e)
 	{
