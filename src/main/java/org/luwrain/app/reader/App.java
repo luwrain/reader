@@ -69,6 +69,7 @@ final class App extends AppBase<Strings>
 
     @Override protected boolean onAppInit()
     {
+	final Standalone standalone = new Standalone("lwr-books", "LwrBooks");
 	this.sett = Settings.create(getLuwrain());
 	this.localRepoMetadata = new LocalRepoMetadata(sett);
 	this.localRepo = new LocalRepo(this.localRepoMetadata);
