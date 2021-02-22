@@ -69,9 +69,9 @@ final class StartingLayout extends LayoutBase
 		}
 	    };
 	this.introFrame = wizardArea.newFrame()
-	.addText("Выберите, пожалуйста, способ, с помощью которого вы желаете открыть книгу или документ для чтения:")
-	.addClickable("Открыть файл на диске", (values)->{ return false; })
-	.addClickable("Подключиться к облачному сервису LUWRAIN Books", (values)->connectFrame());
+	.addText(app.getStrings().wizardGreetingIntro())
+	.addClickable(app.getStrings().wizardGreetingRemote(), (values)->connectFrame())
+	.addClickable(app.getStrings().wizardGreetingLocal(), (values)->{ app.layouts().localRepo(); return true; });
 	this.loginFrame = wizardArea.newFrame()
 	.addText(app.getStrings().wizardLoginIntro())
 	.addInput(app.getStrings().wizardLoginMail(), "")

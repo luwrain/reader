@@ -62,6 +62,11 @@ public interface Strings
     String searchGooglePopupPrefix();
     String treeAreaName();
 
+    String wizardGreetingIntro();
+    String wizardGreetingRemote();
+    String wizardGreetingLocal();
+    
+
     String wizardLoginIntro();
     String wizardLoginMail();
     String wizardLoginPasswd();
@@ -69,4 +74,5 @@ public interface Strings
 
     String wizardConfirmationIntro();
     String wizardConfirmationCode();
+    
 }
