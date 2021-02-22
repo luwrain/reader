@@ -69,6 +69,12 @@ final class Conversations
 	return Popups.textNotEmpty(luwrain, strings.addNotePopupName(), strings.addNotePopupPrefix(), "");
     }
 
+    boolean confirmLocalBookDeleting(String title)
+    {
+	NullCheck.notNull(title, "title");
+	return Popups.confirmDefaultYes(luwrain, strings.localRepoDeletePopupName(), strings.localRepoDeletePopupText(title));
+    }
+
     /*
     ParaStyle textParaStyle()
     {

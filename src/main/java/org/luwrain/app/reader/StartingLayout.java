@@ -77,11 +77,10 @@ final class StartingLayout extends LayoutBase
 	.addInput(app.getStrings().wizardLoginMail(), "")
 	.addInput(app.getStrings().wizardLoginPasswd(), "")
 	.addClickable(app.getStrings().wizardLoginConnect(), (values)->connect(values));
-	wizardArea.show(introFrame);
 	this.confirmationFrame = wizardArea.newFrame()
 	.addText(app.getStrings().wizardConfirmationIntro())
 	.addInput(app.getStrings().wizardConfirmationCode(), "")
-	.addClickable("Подтвердить", (values)->confirm(values));
+	.addClickable(app.getStrings().wizardConfirmationConfirm(), (values)->confirm(values));
 	wizardArea.show(introFrame);
     }
 

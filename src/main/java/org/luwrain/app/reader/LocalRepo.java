@@ -68,6 +68,13 @@ final class LocalRepo
 	metadata.addBook(book);
     }
 
+    boolean remove(Book book)
+    {
+	NullCheck.notNull(book, "book");
+	return metadata.removeBook(book);
+	//FIXME: Remove DAISY files
+    }
+
     File findDaisyMainFile(Book book)
     {
 	NullCheck.notNull(book, "book");

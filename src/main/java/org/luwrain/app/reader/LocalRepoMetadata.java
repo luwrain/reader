@@ -83,6 +83,24 @@ final class LocalRepoMetadata
 	save();
     }
 
+    boolean removeBook(Book book)
+    {
+	NullCheck.notNull(book, "book");
+	if (book.getId() == null || book.getId().isEmpty())
+	    throw new IllegalArgumentException("The book doesn't have an ID");
+	if (this.books == null)
+	    getBooks();
+	for(int i = 0;i < books.size();i++)
+	    if (books.get(i).equals(book))
+	    {
+		books.remove(i);
+		save();
+		return true;
+	    }
+	return false;
+    }
+
+
     static private final class  Data
     {
 	@SerializedName("books")

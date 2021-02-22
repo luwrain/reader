@@ -21,6 +21,13 @@ public interface Strings
 {
     static final String NAME = "luwrain.reader";
 
+        String appName();
+
+    String localRepoAreaName();
+        String treeAreaName();
+        String notesAreaName();
+        String errorAreaName();
+
     String actionAddNote();
     String actionChangeCharset();
     String actionChangeTextParaStyle();
@@ -35,17 +42,14 @@ public interface Strings
     String actionShowSectionsTree();
     String addNotePopupName();
     String addNotePopupPrefix();
-    String appName();
     String badUrl();
     String bookmarkSaved();
     String bookTreeRoot();
     String changeCharsetPopupName();
-    String errorAreaName();
     String fetching();
     String noBookmark();
     String noContent();
     String noContentFetching();
-    String notesAreaName();
     String openAutodetectPopupName();
     String openAutodetectPopupPrefix();
     String openPathPopupName();
@@ -58,21 +62,23 @@ public interface Strings
     String propertiesAreaFormat(String value);
     String propertiesAreaName();
     String propertiesAreaUrl(String value);
-    String searchGooglePopupName();
-    String searchGooglePopupPrefix();
-    String treeAreaName();
+
+
+    String localRepoActDelete();
+    String localRepoDeletePopupName();
+    String localRepoDeletePopupText(String title);
+        String localRepoBookCorrupted();
 
     String wizardGreetingIntro();
     String wizardGreetingRemote();
     String wizardGreetingLocal();
     
-
     String wizardLoginIntro();
     String wizardLoginMail();
     String wizardLoginPasswd();
     String wizardLoginConnect();
-
+    
     String wizardConfirmationIntro();
     String wizardConfirmationCode();
-    
+    String wizardConfirmationConfirm();
 }

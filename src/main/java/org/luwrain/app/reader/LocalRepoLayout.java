@@ -38,6 +38,9 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 	NullCheck.notNull(app, "app");
 	this.app = app;
 	this.listArea = new ListArea(createListParams()) {
+		final Actions actions = actions(
+						action("delete", app.getStrings().localRepoActDelete(), new InputEvent(InputEvent.Special.DELETE),LocalRepoLayout.this::actDelete )
+						);
 		@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
@@ -48,7 +51,7 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 		@Override public boolean onSystemEvent(SystemEvent event)
 		{
 		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
+		    if (app.onSystemEvent(this, event, actions))
 			return true;
 		    return super.onSystemEvent(event);
 		}
@@ -59,12 +62,44 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 			return true;
 		    return super.onAreaQuery(query);
 		}
+		@Override public Action[] getAreaActions()
+		{
+		    return actions.getAreaActions();
+		}
 	    };
     }
 
     @Override public boolean onListClick(ListArea listArea, int index, Object obj)
     {
 	NullCheck.notNull(obj, "obj");
+	if (!(obj instanceof Book))
+	    return false;
+	final Book book = (Book)obj;
+	if (!app.getLocalRepo().hasBook(book))
+	{
+	    app.message(app.getStrings().localRepoBookCorrupted(), Luwrain.MessageType.ERROR);
+	    return true;
+	}
+	final File mainFile = app.getLocalRepo().findDaisyMainFile(book);
+	if (mainFile == null)
+	{
+	    app.message(app.getStrings().localRepoBookCorrupted(), Luwrain.MessageType.ERROR);
+	    return true;
+	}
+	app.open(mainFile.toURI());
+	return true;
+    }
+
+    private boolean actDelete()
+    {
+	final Object obj = listArea.selected();
+	if (obj == null || !(obj instanceof Book))
+	    return false;
+	final Book book = (Book)obj;
+	if (!app.getConv().confirmLocalBookDeleting(book.getName()))
+	    return true;
+	app.getLocalRepo().remove(book);
+	listArea.refresh();
 	return true;
     }
 
@@ -72,7 +107,7 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
     {
 	final ListArea.Params params = new ListArea.Params();
 	params.context = new DefaultControlContext(app.getLuwrain());
-	params.name = "Загруженные книги";
+	params.name = app.getStrings().localRepoAreaName();
 	params.model = new ListUtils.ArrayModel(()->app.getLocalRepo().getBooks());
 	params.appearance = new ListUtils.DefaultAppearance(params.context);
 	params.clickHandler = this;
