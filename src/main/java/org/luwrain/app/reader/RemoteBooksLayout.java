@@ -30,6 +30,8 @@ import org.luwrain.io.api.books.v1.collection.*;
 
 final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandler
 {
+    static private final String LOG_COMPONENT = App.LOG_COMPONENT;
+    
     private App app;
     final ListArea listArea;
 
@@ -88,6 +90,7 @@ app.open(mainFile.toURI());
 		try {
 		    final Book book = app.getBooks().book().id(remoteBook.getId()).accessToken(app.getAccessToken()).exec();
 		    final File tmpFile = File.createTempFile(".lwr-reader-daisy-download-", ".zip");
+		    Log.debug(LOG_COMPONENT, "starting downloading to " + tmpFile.getAbsolutePath());
 		    try {
 			final Download download = app.getBooks().download(book);
 			try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile))) {
@@ -95,7 +98,11 @@ app.open(mainFile.toURI());
 			    os.flush();
 			}
 			if (!app.cancelled)
+			{
+			    Log.debug(LOG_COMPONENT, "unpacking and saving");
 			    app.getLocalRepo().addDaisy(remoteBook, tmpFile);
+			} else
+			    Log.debug(LOG_COMPONENT, "not saving, the downloading is cancelled");
 		    }
 		    finally {
 			tmpFile.delete();
@@ -107,6 +114,7 @@ app.open(mainFile.toURI());
 		    return;
 		}
 		app.finishedTask(taskId, ()->{
+			Log.debug(LOG_COMPONENT, "reading the newly downloaded book");
 			final File mainFile = app.getLocalRepo().findDaisyMainFile(remoteBook);
 			if (mainFile == null)
 			{
