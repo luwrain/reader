@@ -75,7 +75,7 @@ final class StartingLayout extends LayoutBase
 	this.loginFrame = wizardArea.newFrame()
 	.addText(app.getStrings().wizardLoginIntro())
 	.addInput(app.getStrings().wizardLoginMail(), "")
-	.addInput(app.getStrings().wizardLoginPasswd(), "")
+	.addPasswd(app.getStrings().wizardLoginPasswd(), "")
 	.addClickable(app.getStrings().wizardLoginConnect(), (values)->connect(values));
 	this.confirmationFrame = wizardArea.newFrame()
 	.addText(app.getStrings().wizardConfirmationIntro())
