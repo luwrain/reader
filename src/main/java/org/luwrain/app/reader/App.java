@@ -69,7 +69,7 @@ final class App extends AppBase<Strings>
 
     @Override protected boolean onAppInit()
     {
-	final Standalone standalone = new Standalone("lwr-books", "LwrBooks");
+	final Standalone standalone = new Standalone("lwr-books", "LWRBooks");
 	if (standalone.isStandalone())
 	{
 	    this.sett = new StandaloneSettings(standalone.getDataDir());

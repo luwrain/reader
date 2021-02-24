@@ -221,33 +221,43 @@ final class StartingLayout extends LayoutBase
 	}
 	final App.TaskId taskId = app.newTaskId();
 	return app.runTask(taskId, ()->{
-		final ConfirmQuery.Response resp;
 		try {
-		    resp = app.getBooks().users().confirm().mail(this .mail).confirmationCode(code).exec();
-		}
-		catch(BooksException e)
-		{
-		    final ErrorResponse er = e.getErrorResponse();
-		    if (er == null || er.getType() == null)
-		    {
-			app.crash(e);
-			return;
+		    final ConfirmQuery.Response resp;
+		    try {
+			resp = app.getBooks().users().confirm().mail(this .mail).confirmationCode(code).exec();
 		    }
-		    switch(er.getType())
+		    catch(BooksException e)
 		    {
-		    case ConfirmQuery.TOO_MANY_ATTEMPTS:
-			app.finishedTask(taskId, ()->{
-				wizardArea.show(loginFrame);
-				app.message("Превышено максимальное число попыток, попробуйте зарегистрироваться ещё раз.", Luwrain.MessageType.ERROR);
-			    });
-			return;
-		    case ConfirmQuery.INVALID_CONFIRMATION_CODE:
-			app.message("Указан неверный код подтверждения, попробуйте ещё раз.", Luwrain.MessageType.ERROR);
-			return;
-		    default:
-			app.crash(e);
-			return;
+			final ErrorResponse er = e.getErrorResponse();
+			if (er == null || er.getType() == null)
+			{
+			    app.crash(e);
+			    return;
+			}
+			switch(er.getType())
+			{
+			case ConfirmQuery.TOO_MANY_ATTEMPTS:
+			    app.finishedTask(taskId, ()->{
+				    wizardArea.show(loginFrame);
+				    app.message("Превышено максимальное число попыток, попробуйте зарегистрироваться ещё раз.", Luwrain.MessageType.ERROR);
+				});
+			    return;
+			case ConfirmQuery.INVALID_CONFIRMATION_CODE:
+			    app.message("Указан неверный код подтверждения, попробуйте ещё раз.", Luwrain.MessageType.ERROR);
+			    return;
+			default:
+			    app.crash(e);
+			    return;
+			}
 		    }
+		    final AccessTokenQuery.Response accessTokenResp = app.getBooks().users().accessToken().mail(mail).passwd(passwd).exec();
+		    final String accessToken = accessTokenResp.getAccessToken();
+		    final CollectionQuery.Response collectionResp = app.getBooks().collection().collection().accessToken(accessToken).exec();
+		    app.finishedTask(taskId, ()->{
+			    app.setAccessToken(accessToken);
+			    app.setRemoteBooks(collectionResp.getBooks() != null?collectionResp.getBooks():new org.luwrain.io.api.books.v1.Book[0]);
+			    app.layouts().remoteBooks();
+			});
 		}
 		catch(IOException e)
 		{
