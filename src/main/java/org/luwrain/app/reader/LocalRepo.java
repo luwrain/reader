@@ -71,8 +71,30 @@ final class LocalRepo
     boolean remove(Book book)
     {
 	NullCheck.notNull(book, "book");
-	return metadata.removeBook(book);
-	//FIXME: Remove DAISY files
+	if (!metadata.removeBook(book))
+	    return false;
+	deleteDir(new File(repoDir, book.getId()));
+	return true;
+    }
+
+    private void deleteDir(File file)
+    {
+	NullCheck.notNull(file, "file");
+	if (!file.exists())
+	    return;
+	if (!file.isDirectory())
+	{
+	    file.delete();
+	    return;
+	}
+	final File[] files = file.listFiles();
+	if (files != null)
+	{
+	    for(File f: files)
+		if (f != null)
+		    deleteDir(f);
+	}
+	file.delete();
     }
 
     File findDaisyMainFile(Book book)
