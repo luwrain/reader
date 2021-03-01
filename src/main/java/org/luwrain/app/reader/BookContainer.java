@@ -36,19 +36,22 @@ final class BookContainer
 {
     private final App app;
     private final Book book;
+        private final String bookId;
+        private final Attributes attr;
     private Document doc = null;
         private final LinkedList<HistoryItem> history = new LinkedList();
         private Book.Section[] sections = new Book.Section[0];
-    private Attributes.BookAttr attr = null;
 
-    BookContainer(App app, Book book)
+    BookContainer(App app, Book book, String bookId)
     {
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(book, "book");
+	NullCheck.notEmpty(bookId, "bookId");
 	this.app = app;
 	this.book = book;
+	this.bookId = bookId;
 	this.doc = this.book.getDefaultDocument();
-	this.attr = new Attributes.BookAttr();	
+	this.attr = new Attributes(app);
 	app.setAppName(doc.getTitle());
     }
 
@@ -184,7 +187,7 @@ successNotification.run();
 	return this.book.getBookFlags();
     }
 
-    Attributes.BookAttr getAttr()
+    Attributes getAttr()
     {
 	return this.attr;
     }

@@ -29,6 +29,7 @@ import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
+import org.luwrain.io.api.books.v1.Note;
 
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
@@ -284,8 +285,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	    return false;
 	final int selected = notesArea.selectedIndex();
 	if (selected >= 0)
-	    app.getBookContainer().getAttr().getNotes().add(selected, new Attributes.Note(text)); else
-	    app.getBookContainer().getAttr().getNotes().add(new Attributes.Note(text));
+	    app.getBookContainer().getAttr().addNote(selected, text); else
+	    app.getBookContainer().getAttr().addNote(0, text);
 	notesArea.refresh();
 	return true;
     }
@@ -316,6 +317,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
 	params.name = app.getStrings().notesAreaName();
 	params.clipboardSaver = (area, model, appearance, fromIndex, toIndex, clipboard)->{
+	    /*
 	    final List<Attributes.Note> n = new LinkedList();
 	    final List<String> s = new LinkedList();
 	    for(int i = fromIndex;i < toIndex;i++)
@@ -325,6 +327,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		s.add(note.toString());
 	    }
 	    clipboard.set(n.toArray(new Attributes.Note[n.size()]), s.toArray(new String[s.size()]));
+	    */
 	    return true;
 	};
 	return params;
@@ -389,9 +392,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	@Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
 	{
 	    NullCheck.notNull(supplier, "supplier");
-	    final List<Attributes.Note> notes = bookContainer.getAttr().getNotes();
-	    if (pos < 0 || pos > notes.size())
-		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(notes.size()));
+	    if (pos < 0 || pos > app.getBookContainer().getAttr().getNoteCount())
+		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(app.getBookContainer().getAttr().getNoteCount()));
 	    final Object supplied = supplier.get();
 	    if (supplied == null)
 		return false;
@@ -400,26 +402,25 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		newNotes = (Object[])supplied; else
 		newNotes = new Object[]{supplied};
 	    for(Object o: newNotes)
-		if (!(o instanceof Attributes.Note))
+		if (!(o instanceof Note))
 		    return false;
-	    notes.addAll(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Attributes.Note[].class)));
+	    app.getBookContainer().getAttr().addNotes(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Note[].class)));
 	    return true;
 	}
 	@Override public boolean removeFromModel(int pos)
 	{
-	    final List<Attributes.Note> notes = bookContainer.getAttr().getNotes();
-	    	    if (pos < 0 || pos >= notes.size())
-		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and less than " + String.valueOf(notes.size()));
-		    notes.remove(pos);
+	    if (pos < 0 || pos >= app.getBookContainer().getAttr().getNoteCount())
+		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and less than " + String.valueOf(app.getBookContainer().getAttr().getNoteCount()));
+	    app.getBookContainer().getAttr().removeNote(pos);
 	    return true;
 	}
 	@Override public Object getItem(int index)
 	{
-	    return bookContainer.getAttr().getNotes().get(index);
+	    return bookContainer.getAttr().getNote(index);
 	}
 	@Override public int getItemCount()
 	{
-	    return bookContainer.getAttr().getNotes().size();
+	    return bookContainer.getAttr().getNoteCount();
 	}
 	@Override public void refresh()
 	{

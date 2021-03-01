@@ -23,75 +23,45 @@ import com.google.gson.*;
 import com.google.gson.annotations.*;
 
 import org.luwrain.core.*;
+import org.luwrain.io.api.books.v1.*;
 
 final class Attributes
 {
-    private final Registry registry;
-    private final Gson gson = new Gson();
+    private final App app;
 
-    Attributes(Registry registry)
+    Attributes(App app)
     {
-	NullCheck.notNull(registry, "registry");
-	this.registry = registry;
-	this.registry.addDirectory(Settings.ATTRIBUTES_PATH);
+	NullCheck.notNull(app, "app");
+	this.app = app;
     }
 
-    BookAttr load(String id)
+    void addNote(int pos, String text)
     {
-	NullCheck.notEmpty(id, "id");
-	final String path = Registry.join(Settings.ATTRIBUTES_PATH, id);
-	if (registry.getTypeOf(path) != Registry.STRING)
-	    return null;
-	final String value = registry.getString(path);
-	if (value.isEmpty())
-	    return null;
-	return gson.fromJson(value, BookAttr.class);
     }
 
-    void save(String id, BookAttr bookAttr)
+    void addNotes(int pos, List<Note> notes)
     {
-	NullCheck.notEmpty(id, "id");
-	NullCheck.notNull(bookAttr, "bookAttr");
-	final String path = Registry.join(Settings.ATTRIBUTES_PATH, id);
-	registry.setString(path, gson.toJson(bookAttr));
     }
 
-    static final class Note
+    void removeNote(int pos)
     {
-	@SerializedName("title")
-	private String title = null;
-	Note(String title)
-	{
-	    NullCheck.notEmpty(title, "title");
-	    this.title = title;
-	}
-	@Override public String toString()
-	{
-	    return this.title != null?title:"";
-	}
     }
 
-    static final class Bookmark
+    int getNoteCount()
     {
-	@SerializedName("pos")
-	private int pos = 0;
+	return 0;
+    }
+
+    Note getNote(int index)
+    {
+	return null;
     }
 
     static final class BookAttr
     {
-	@SerializedName("notes")
-	private List<Note> notes = null;
-	@SerializedName("bookmark")
-	private Bookmark bookmark = null;
 	@SerializedName("charset")
 	private String charset = null;
 	@SerializedName("paragraphType")
 	private String paragraphType = null;
-	List<Note> getNotes()
-	{
-	    if (this.notes == null)
-		this.notes = new ArrayList();
-	    return this.notes;
-	}
     }
 }

@@ -46,7 +46,6 @@ final class App extends AppBase<Strings>
     private final org.luwrain.io.api.books.v1.Books books;
     private org.luwrain.io.api.books.v1.Book[] remoteBooks = new org.luwrain.io.api.books.v1.Book[0];
     private String accessToken = "";
-    private Attributes attr = null;
 
     private BookContainer bookContainer = null;
 
@@ -82,7 +81,6 @@ final class App extends AppBase<Strings>
 	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
 	}
 	this.conv = new Conversations(getLuwrain(), getStrings());
-	this.attr = new Attributes(getLuwrain().getRegistry());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
 	    this.audioPlaying = null;
@@ -116,7 +114,7 @@ final class App extends AppBase<Strings>
 		    return;
 		}
 		finishedTask(taskId, ()->{
-			this.bookContainer = new BookContainer(this, book);
+			this.bookContainer = new BookContainer(this, book, org.luwrain.util.Sha1.getSha1(uri.toString(), "UTF-8"));
 			this.mainLayout = new MainLayout(this);
 			getLayout().setBasicLayout(mainLayout.getLayout());
 			mainLayout.updateInitial();
@@ -205,11 +203,6 @@ final class App extends AppBase<Strings>
     Conversations getConv()
     {
 	return this.conv;
-    }
-
-    Attributes getAttr()
-    {
-	return this.attr;
     }
 
     AudioPlaying getAudioPlaying()
