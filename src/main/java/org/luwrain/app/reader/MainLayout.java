@@ -313,7 +313,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	final EditableListArea.Params params = new EditableListArea.Params();
 	params.context = new DefaultControlContext(app.getLuwrain());
-	params.model = new NotesModel();
+	params.model = app.getBookContainer().getAttr();
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
 	params.name = app.getStrings().notesAreaName();
 	params.clipboardSaver = (area, model, appearance, fromIndex, toIndex, clipboard)->{
@@ -380,50 +380,6 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		}
 	    }
 	    return res.toArray(new Object[res.size()]);
-	}
-    }
-
-    private final class NotesModel implements EditableListArea.Model
-    {
-	@Override public boolean clearModel()
-	{
-	    return false;
-	}
-	@Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
-	{
-	    NullCheck.notNull(supplier, "supplier");
-	    if (pos < 0 || pos > app.getBookContainer().getAttr().getNoteCount())
-		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(app.getBookContainer().getAttr().getNoteCount()));
-	    final Object supplied = supplier.get();
-	    if (supplied == null)
-		return false;
-	    final Object[] newNotes;
-	    if (supplied instanceof Object[])
-		newNotes = (Object[])supplied; else
-		newNotes = new Object[]{supplied};
-	    for(Object o: newNotes)
-		if (!(o instanceof Note))
-		    return false;
-	    app.getBookContainer().getAttr().addNotes(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Note[].class)));
-	    return true;
-	}
-	@Override public boolean removeFromModel(int pos)
-	{
-	    if (pos < 0 || pos >= app.getBookContainer().getAttr().getNoteCount())
-		throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and less than " + String.valueOf(app.getBookContainer().getAttr().getNoteCount()));
-	    app.getBookContainer().getAttr().removeNote(pos);
-	    return true;
-	}
-	@Override public Object getItem(int index)
-	{
-	    return bookContainer.getAttr().getNote(index);
-	}
-	@Override public int getItemCount()
-	{
-	    return bookContainer.getAttr().getNoteCount();
-	}
-	@Override public void refresh()
-	{
 	}
     }
 }
