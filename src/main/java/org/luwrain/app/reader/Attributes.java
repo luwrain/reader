@@ -18,6 +18,7 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import com.google.gson.*;
 import com.google.gson.annotations.*;
@@ -26,29 +27,47 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.io.api.books.v1.*;
 
-final class Attributes implements EditableListArea.Model
+final class Attributes extends ArrayList<Note> implements EditableListArea.Model
 {
         private final App app;
+    private FutureTask task = null;
 
     Attributes(App app)
     {
 	NullCheck.notNull(app, "app");
 	this.app = app;
+	/*
+	try {
+	    app.getBooks().
+	}catch(IOException e)
+	{
+	    app.getLuwrain().crash(e);
+	}
+	*/
     }
 
-    void addNote(int pos, String text)
+    boolean addNote(int pos, String text)
     {
+	if (isBusy())
+	    return false;
+	return true;
     }
 
-    void addNotes(int pos, List<Note> notes)
+    boolean addNotes(int pos, List<Note> notes)
     {
+	if (isBusy())
+	    return false;
+	return true;
     }
 
-    void removeNote(int pos)
+    boolean removeNotes(int posFrom, int posTo)
     {
+	if (isBusy())
+	return false;
+	return true;
     }
 
-    int getNoteCount()
+    int ggetNoteCount()
     {
 	return 0;
     }
@@ -58,16 +77,11 @@ final class Attributes implements EditableListArea.Model
 	return null;
     }
 
-    @Override public boolean clearModel()
-    {
-	return false;
-    }
-
     @Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
     {
 	NullCheck.notNull(supplier, "supplier");
-	if (pos < 0 || pos > getNoteCount())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(getNoteCount()));
+	if (pos < 0 || pos > size())
+	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(size()));
 	final Object supplied = supplier.get();
 	if (supplied == null)
 	    return false;
@@ -78,30 +92,35 @@ final class Attributes implements EditableListArea.Model
 	for(Object o: newNotes)
 	    if (!(o instanceof Note))
 		return false;
-	addNotes(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Note[].class)));
-	return true;
+	return addNotes(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Note[].class)));
     }
 
-    @Override public boolean removeFromModel(int pos)
+    @Override public boolean removeFromModel(int posFrom, int posTo)
     {
-	if (pos < 0 || pos >= getNoteCount())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and less than " + String.valueOf(getNoteCount()));
-	removeNote(pos);
-	return true;
+	if (posFrom < 0 || posFrom>= size())
+	    throw new IllegalArgumentException("pos (" + String.valueOf(posFrom) + ") must be non-negative and less than " + String.valueOf(size()));
+		if (posTo < 0 || posTo >= size())
+	    throw new IllegalArgumentException("pos (" + String.valueOf(posTo) + ") must be non-negative and less or equal than " + String.valueOf(size()));
+	return removeNotes(posFrom, posTo);
     }
 
     @Override public Object getItem(int index)
     {
-	return getNote(index);
+	return get(index);
     }
 
     @Override public int getItemCount()
     {
-	return getNoteCount();
+	return size();
     }
 
     @Override public void refresh()
     {
+    }
+
+    private boolean isBusy()
+    {
+	return task != null && !task.isDone();
     }
 
     static final class BookAttr
