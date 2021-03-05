@@ -31,7 +31,7 @@ import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 import org.luwrain.app.base.*;
 
-final class App extends AppBase<Strings>
+public final class App extends AppBase<Strings>
 {
     static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
@@ -54,12 +54,12 @@ final class App extends AppBase<Strings>
     private RemoteBooksLayout remoteBooksLayout = null;
     private LocalRepoLayout localRepoLayout = null;
 
-    App()
+    public App()
     {
 	this(null);
     }
 
-    App(String arg)
+    public App(String arg)
     {
 	super(Strings.NAME, Strings.class, "luwrain.reader");
 	this.arg = arg;
