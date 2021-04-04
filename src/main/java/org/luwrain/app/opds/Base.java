@@ -62,7 +62,7 @@ final class Base
 	    }, null);
 	luwrain.executeBkg(task);
 	model.clear();
-	app.updateAreas();
+	//	app.updateAreas();
 	return true;
     }
 
@@ -83,7 +83,7 @@ final class Base
 	NullCheck.notNull(app, "app");
 	NullCheck.notNull(res, "res");
 	this.task = null;
-	app.updateAreas();
+	//	app.updateAreas();
 	if (res.error == Opds.Result.Errors.FETCHING_PROBLEM)
 	{
 	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);//FIXME:
@@ -204,10 +204,6 @@ final class Base
 	}
     }
 
-    ListArea.Model getModel()
-    {
-	return model;
-    }
 
     static Link getCatalogLink(Entry entry)
     {
