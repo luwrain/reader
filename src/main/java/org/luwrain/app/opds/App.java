@@ -41,6 +41,7 @@ public final class App extends AppBase<Strings>
     final List<Entry> entries = new ArrayList<Entry>();
 
     private Settings sett = null;
+    private Conversations conv = null;
     private MainLayout mainLayout = null;
 
     public App()
@@ -51,6 +52,7 @@ public final class App extends AppBase<Strings>
     @Override public boolean onAppInit()
     {
 	this.sett = Settings.create(getLuwrain());
+	this.conv = new Conversations(this);
 	loadLibraries();
 	this.mainLayout = new MainLayout(this);
 	setAppName(getStrings().appName());
@@ -88,6 +90,17 @@ public final class App extends AppBase<Strings>
 	final RemoteLibrary[] r = res.toArray(new RemoteLibrary[res.size()]);
 	Arrays.sort(r);
 	libraries.addAll(Arrays.asList(r));
+    }
+
+            void saveLibraries()
+    {
+	sett.setLibraries(gson.toJson(libraries));
+    }
+
+
+    Conversations getConv()
+    {
+	return conv;
     }
 
     @Override public boolean onEscape(InputEvent event)

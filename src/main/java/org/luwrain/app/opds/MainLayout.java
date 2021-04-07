@@ -35,49 +35,90 @@ final ListArea librariesArea;
 final ListArea listArea;
 final ListArea detailsArea;
 
-MainLayout(App app)
-{
-super(app);
-this.app = app;
+    MainLayout(App app)
+    {
+	super(app);
+	this.app = app;
 
-final Actions librariesActions;
-{
-	final ListArea.Params librariesParams = new ListArea.Params();
-	librariesParams.context = getControlContext();
-	librariesParams.model = new ListUtils.ListModel(app.libraries);
-	librariesParams.appearance = new ListUtils.DefaultAppearance(getControlContext());
-	//	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(listArea, obj);
-		librariesParams.name = app.getStrings().librariesAreaName();
-	this.librariesArea = new ListArea(librariesParams);
-	librariesActions = actions();
-}
+	final Actions librariesActions;
+	{
+	    final ListArea.Params librariesParams = new ListArea.Params();
+	    librariesParams.context = getControlContext();
+	    librariesParams.model = new ListUtils.ListModel(app.libraries);
+	    librariesParams.appearance = new ListUtils.DefaultAppearance(getControlContext());
+	    //	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(listArea, obj);
+	    librariesParams.name = app.getStrings().librariesAreaName();
+	    this.librariesArea = new ListArea(librariesParams){
+		    @Override public boolean onSystemEvent(SystemEvent event)
+		    {
+			NullCheck.notNull(event, "event");
+			if (event.getType() != SystemEvent.Type.REGULAR)
+			    return super.onSystemEvent(event);
+			switch(event.getCode())
+			{
+			case PROPERTIES:
+			    return editLibraryProps();
+			default:
+			    return super.onSystemEvent(event);
+			}
+		    }
+		};
+	    librariesActions = actions(
+				       action("new-library", "Подключить новую библиотеку", new InputEvent(InputEvent.Special.INSERT), this::actNewLibrary)
+);
+	}
 
-final Actions listActions;
-{
-	final ListArea.Params params = new ListArea.Params();
-	params.context = getControlContext();
-	params.model = new ListUtils.ListModel(app.entries);
-	params.appearance = new Appearance(getLuwrain(), app.getStrings());
-	//	params.clickHandler = (area, index, obj)->actions.onListClick( listArea, obj);
-	params.name = app.getStrings().itemsAreaName();
-	this.listArea = new ListArea(params);
-	listActions = actions();
-}
+	final Actions listActions;
+	{
+	    final ListArea.Params params = new ListArea.Params();
+	    params.context = getControlContext();
+	    params.model = new ListUtils.ListModel(app.entries);
+	    params.appearance = new Appearance(getLuwrain(), app.getStrings());
+	    //	params.clickHandler = (area, index, obj)->actions.onListClick( listArea, obj);
+	    params.name = app.getStrings().itemsAreaName();
+	    this.listArea = new ListArea(params);
+	    listActions = actions();
+	}
 
-final Actions detailsActions;
-{
-	final ListArea.Params params = new ListArea.Params();
-	params.context = getControlContext();
-	params.model = new ListUtils.FixedModel();
-	params.appearance = new ListUtils.DefaultAppearance(getControlContext(), Suggestions.CLICKABLE_LIST_ITEM);
-	//	params.clickHandler = (area, index, obj)->onClick(obj);
-	params.name = app.getStrings().detailsAreaName();
-this.detailsArea = new ListArea(params);
-detailsActions = actions();
-//detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(obj));
-}
+	final Actions detailsActions;
+	{
+	    final ListArea.Params params = new ListArea.Params();
+	    params.context = getControlContext();
+	    params.model = new ListUtils.FixedModel();
+	    params.appearance = new ListUtils.DefaultAppearance(getControlContext(), Suggestions.CLICKABLE_LIST_ITEM);
+	    //	params.clickHandler = (area, index, obj)->onClick(obj);
+	    params.name = app.getStrings().detailsAreaName();
+	    this.detailsArea = new ListArea(params);
+	    detailsActions = actions();
+	    //detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(obj));
+	}
 
-setAreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, librariesActions, listArea, listActions, detailsArea, detailsActions);
+	setAreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, librariesActions, listArea, listActions, detailsArea, detailsActions);
+    }
+
+    private boolean actNewLibrary()
+    {
+	final String name = app.getConv().newLibraryName();
+	if (name == null || name.trim().isEmpty())
+	    return true;
+	final RemoteLibrary r = new RemoteLibrary();
+	r.title = name.trim();
+	r.url = "https://";
+	app.libraries.add(r);
+	app.saveLibraries();
+	return true;
+    }
+
+    private boolean editLibraryProps()
+    {
+	final Object obj = librariesArea.selected();
+	if (obj == null || !(obj instanceof RemoteLibrary))
+	    return false;
+	final RemoteLibrary lib = (RemoteLibrary)obj;
+	final LibraryPropsLayout propsLayout = new LibraryPropsLayout(app, lib);
+	app.setAreaLayout(propsLayout);
+	getLuwrain().announceActiveArea();
+	return true;
     }
 
     private boolean onLibraryClick(Object obj)
