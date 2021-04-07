@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
 
    This file is part of LUWRAIN.
 
@@ -16,39 +16,33 @@
 
 package org.luwrain.app.opds;
 
+import com.google.gson.annotations.*;
+
 import org.luwrain.core.*;
 
 final class RemoteLibrary implements Comparable
 {
-    final String title;
-    final String url;
+    @SerializedName("title")
+    String title = null;
 
-    RemoteLibrary(Registry registry, String regPath)
-    {
-	NullCheck.notNull(registry, "registry");
-	NullCheck.notEmpty(regPath, "regPath");
-	final Settings sett = RegistryProxy.create(registry, regPath, Settings.class);
-	title = sett.getTitle("");
-	url = sett.getUrl("");
-    }
+    @SerializedName("url")
+    String url = null;
 
     @Override public String toString()
     {
-	return !title.trim().isEmpty()?title:url;
-    }
+	if (title != null && !title.isEmpty())
+	    return title;
+	if (url != null && !url.isEmpty())
+	    return url;
+	return "-";
+	    }
 
     @Override public int compareTo(Object o)
     {
 	if (o == null || !(o instanceof RemoteLibrary))
 	    return 0;
+	if (title == null || ((RemoteLibrary)o).title == null)
+	    return 0;
 	return title.compareTo(((RemoteLibrary)o).title);
-    }
-
-    interface Settings
-    {
-	String getTitle(String defValue);
-	void setTitle(String value);
-	String getUrl(String defValue);
-	void setUrl(String value);
     }
     }

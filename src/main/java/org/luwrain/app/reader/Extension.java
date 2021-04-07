@@ -31,9 +31,7 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 
     @Override public Command[] getCommands(Luwrain luwrain)
     {
-	return new Command[]{
-	    new SimpleShortcutCommand("reader")
-	};
+	return new Command[]{ new SimpleShortcutCommand("reader"), 	    new SimpleShortcutCommand("opds") };
     }
 
     /*	    new Command(){
@@ -120,36 +118,11 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 			luwrain.launchApp("reader", new String[]{constructGoogleUrl(luwrain.getRegistry(), query)});
 		}
 	    },
-
-	    new Command(){
-		@Override public String getName()
-		{
-		    return "reader-luwrain-homepage";
-		}
-		@Override public void onCommand(Luwrain luwrain)
-		{
-		    luwrain.launchApp("reader", new String[]{"http://luwrain.org/?mode=adapted&lang=en"});
-		}
-	    },
-
-	    new Command(){
-		@Override public String getName()
-		{
-		    return "opds";
-		}
-		@Override public void onCommand(Luwrain luwrain)
-		{
-		    luwrain.launchApp("opds");
-		}
-	    },
-
-	};
-    }
     */
 
     @Override public ExtensionObject[] getExtObjects(Luwrain luwrain)
     {
-	return new ExtensionObject[]{
+	return new ExtensionObject[]{ new SimpleShortcut("opds", org.luwrain.app.opds.App.class),
 
 	    new Shortcut() {
 		@Override public String getExtObjName()
@@ -169,20 +142,7 @@ public final class Extension extends org.luwrain.core.extensions.EmptyExtension
 		    */
 		    return new Application[]{new App()};
 		}
-	    },
-
-new Shortcut() {
-		@Override public String getExtObjName()
-		{
-		    return "opds";
-		}
-		@Override public Application[] prepareApp(String[] args)
-		{
-		    NullCheck.notNullItems(args, "args");
-		    return new Application[]{new org.luwrain.app.opds.App()};
-		}
-},
-
+	    }
 	};
 	    }
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
 
    This file is part of LUWRAIN.
 
@@ -41,24 +41,6 @@ final class Actions
 	this.strings = strings;
     }
 
-    boolean onLibraryClick(ListArea listArea, Object obj)
-    {
-	if (obj == null || !(obj instanceof RemoteLibrary))
-	    return false;
-	final RemoteLibrary library = (RemoteLibrary)obj;
-	base.clearHistory();
-	try {
-	    base.openCatalog(app, new URL(library.url));
-	    luwrain.setActiveArea(listArea);
-	    luwrain.onAreaNewBackgroundSound(listArea);
-	    return true;
-	}
-	catch(MalformedURLException e)
-	{
-	    luwrain.message(strings.badUrl(library.url), Luwrain.MessageType.ERROR);
-	    return true;
-	}
-    }
 
     boolean onListClick(ListArea listArea, Object obj)
     {

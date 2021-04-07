@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2018 Michael Pozhidaev <michael.pozhidaev@gmail.com>
+   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
 
    This file is part of LUWRAIN.
 
@@ -34,37 +34,12 @@ final class Base
     static final String BASE_TYPE_CATALOG = "application/atom+xml";
     static final String PRIMARY_TYPE_IMAGE = "image";
 
-    private final Luwrain luwrain;
-    private final Strings strings;
+    private final Luwrain luwrain = null;
+    private final Strings strings = null;
     private FutureTask task = null;
-    private final RemoteLibrary[] libraries;
-    private final ListUtils.FixedModel model = new ListUtils.FixedModel();
+    private final RemoteLibrary[] libraries = null;
+
     private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
-
-    Base(Luwrain luwrain, Strings strings)
-    {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
-	this.luwrain = luwrain;
-	this.strings = strings;
-	this.libraries = loadLibraries();
-    }
-
-    boolean openCatalog(App app, URL url)
-    {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(url, "url");
-	if (isBusy())
-	    return false;
-	this.task = new FutureTask<Opds.Result>(()->{
-		final Opds.Result res = Opds.fetch(url);
-		luwrain.runUiSafely(()->onFetchResult(url, app, res));
-	    }, null);
-	luwrain.executeBkg(task);
-	model.clear();
-	//	app.updateAreas();
-	return true;
-    }
 
     Opds.Entry returnBack()
     {
@@ -73,28 +48,8 @@ final class Base
 	if (history.size() <= 1)
 	    return null;
 	history.pollLast();
-	model.setItems(history.getLast().entries);
+	//	model.setItems(history.getLast().entries);
 	return history.getLast().selected;
-    }
-
-    private void onFetchResult(URL url, App app, Opds.Result res)
-    {
-	NullCheck.notNull(url, "url");
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(res, "res");
-	this.task = null;
-	//	app.updateAreas();
-	if (res.error == Opds.Result.Errors.FETCHING_PROBLEM)
-	{
-	    luwrain.message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);//FIXME:
-	    return;
-	}
-	if(res.hasEntries())
-	{
-	    model.setItems(res.getEntries());
-	    history.add(new HistoryItem(url, res.getEntries()));
-	    luwrain.playSound(Sounds.CLICK);
-	}
     }
 
     void clearHistory()
@@ -102,21 +57,6 @@ final class Base
 	history.clear();
     }
 
-    private RemoteLibrary[] loadLibraries()
-    {
-	final Registry registry = luwrain.getRegistry();
-	registry.addDirectory(Settings.LIBRARIES_PATH);
-	final List<RemoteLibrary> res = new LinkedList();
-	for(String s: registry.getDirectories(Settings.LIBRARIES_PATH))
-	{
-	    final RemoteLibrary l = new RemoteLibrary(registry, Registry.join(Settings.LIBRARIES_PATH, s));
-	    if (!l.url.isEmpty())
-		res.add(l);
-	}
-	final RemoteLibrary[] libraries = res.toArray(new RemoteLibrary[res.size()]);
-	Arrays.sort(libraries);
-	return libraries;
-    }
 
     boolean isBusy()
     {
@@ -139,7 +79,7 @@ final class Base
 	    return;
 	if (!history.isEmpty())
 	    history.getLast().selected = entry;
-	openCatalog(app, new URL(getCurrentUrl(), catalogLink.url));
+	//	openCatalog(app, new URL(getCurrentUrl(), catalogLink.url));
     }
 
     Link getSuitableBookLink(Entry entry)
