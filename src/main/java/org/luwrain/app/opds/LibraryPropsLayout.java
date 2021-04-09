@@ -33,7 +33,7 @@ final class LibraryPropsLayout extends LayoutBase
     private final App app;
     final FormArea formArea;
 
-    LibraryPropsLayout(App app, RemoteLibrary lib)
+    LibraryPropsLayout(App app, RemoteLibrary lib, Runnable closing)
     {
 	super(app);
 	NullCheck.notNull(lib, "lib");
@@ -41,6 +41,17 @@ final class LibraryPropsLayout extends LayoutBase
 	this.formArea = new FormArea(getControlContext(), "Параметры библиотеки");
 	formArea.addEdit("title", "Название:", lib.title != null?lib.title.trim():"");
 		formArea.addEdit("url", "Адрес:", lib.url != null?lib.url.trim():"");
+				setCloseHandler(()->{
+			closing.run();
+			return true;
+		    });
+		setOkHandler(()->{
+			lib.title = formArea.getEnteredText("title").trim();
+			lib.url = formArea.getEnteredText("url").trim();
+			app.saveLibraries();
+			closing.run();
+			return true;
+		    });
 	setAreaLayout(formArea, actions());
     }
 }

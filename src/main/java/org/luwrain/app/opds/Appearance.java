@@ -55,7 +55,7 @@ final class Appearance implements ListArea.Appearance
 	if (item instanceof Opds.Entry)
 	{
 	    final Opds.Entry entry = (Opds.Entry)item;
-	    if (Base.isCatalogOnly(entry))
+	    if (Utils.isCatalogOnly(entry))
 		return "[" + getString(entry) + "]";
 	    return " " + getString(entry) + " ";
 	}

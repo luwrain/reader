@@ -35,6 +35,8 @@ final ListArea librariesArea;
 final ListArea listArea;
 final ListArea detailsArea;
 
+        private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
+
     MainLayout(App app)
     {
 	super(app);
@@ -46,7 +48,7 @@ final ListArea detailsArea;
 	    librariesParams.context = getControlContext();
 	    librariesParams.model = new ListUtils.ListModel(app.libraries);
 	    librariesParams.appearance = new ListUtils.DefaultAppearance(getControlContext());
-	    //	librariesParams.clickHandler = (area, index, obj)->actions.onLibraryClick(listArea, obj);
+	    	librariesParams.clickHandler = (area, index, obj)->onLibraryClick(obj);
 	    librariesParams.name = app.getStrings().librariesAreaName();
 	    this.librariesArea = new ListArea(librariesParams){
 		    @Override public boolean onSystemEvent(SystemEvent event)
@@ -96,6 +98,8 @@ final ListArea detailsArea;
 	setAreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, librariesActions, listArea, listActions, detailsArea, detailsActions);
     }
 
+    
+
     private boolean actNewLibrary()
     {
 	final String name = app.getConv().newLibraryName();
@@ -115,7 +119,11 @@ final ListArea detailsArea;
 	if (obj == null || !(obj instanceof RemoteLibrary))
 	    return false;
 	final RemoteLibrary lib = (RemoteLibrary)obj;
-	final LibraryPropsLayout propsLayout = new LibraryPropsLayout(app, lib);
+	final LibraryPropsLayout propsLayout = new LibraryPropsLayout(app, lib, ()->{
+		app.setAreaLayout(MainLayout.this);
+		listArea.refresh();
+		getLuwrain().announceActiveArea();
+	    });
 	app.setAreaLayout(propsLayout);
 	getLuwrain().announceActiveArea();
 	return true;
@@ -123,14 +131,13 @@ final ListArea detailsArea;
 
     private boolean onLibraryClick(Object obj)
     {
-	if (obj == null || !(obj instanceof RemoteLibrary))
+	NullCheck.notNull(obj, "obj");
+	if (!(obj instanceof RemoteLibrary))
 	    return false;
 	final RemoteLibrary library = (RemoteLibrary)obj;
 	//	base.clearHistory();
 		try {
-	app.open(new URL(library.url));
-	//	    luwrain.setActiveArea(listArea);
-	    return true;
+	return app.open(new URL(library.url));
 	}
 	catch(MalformedURLException e)
 	{
@@ -138,7 +145,144 @@ final ListArea detailsArea;
 	    return true;
 	}
 }
+
+    boolean onListClick(ListArea listArea, Object obj)
+    {
+	NullCheck.notNull(listArea, "listArea");
+	if (obj == null || !(obj instanceof Opds.Entry))
+	    return false;
+	final Opds.Entry entry = (Opds.Entry)obj;
+try {
+		onEntry(entry);
+	    listArea.refresh();
+	    return true;
+	}
+	catch (MalformedURLException e)
+	{
+	    app.message(app.getStrings().badUrl(e.getMessage()), Luwrain.MessageType.ERROR);
+	    return true;
+	}
+    }
+
+    boolean onListProperties(ListArea detailsArea, Object obj)
+    {
+	NullCheck.notNull(detailsArea, "detailsArea");
+	if (obj == null || !(obj instanceof Opds.Entry))
+	    return false;
+	final Opds.Entry entry = (Opds.Entry)obj;
+	final List<PropertiesItem> items = new LinkedList();
+	for(Opds.Link l: entry.links)
+	{
+	    final URL url = prepareUrl(l.url);
+	    if (url != null)
+		items.add(new PropertiesItem(url.toString(), l.type));
+	}
+	final ListUtils.FixedModel model = (ListUtils.FixedModel)detailsArea.getListModel();
+	model.setItems(items.toArray(new PropertiesItem[items.size()]));
+	    setActiveArea(detailsArea);
+	return true;
+    }
+
+    boolean onLinkClick(Object obj)
+    {
+	if (obj == null || !(obj instanceof PropertiesItem))
+	    return false;
+	final PropertiesItem item = (PropertiesItem)obj;
+	launchReader(item.url, item.contentType);
+	return true;
+    }
+
+        private boolean openBook(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	final Link link = getSuitableBookLink(entry );
+	if (link == null)
+	    return false;
+		launchReader(prepareUrl(link.url).toString(), link.type);
+		return true;
+    }
+
+
+        void onEntry(Opds.Entry entry) throws MalformedURLException
+    {
+	NullCheck.notNull(entry, "entry");
+	if (openBook(entry))
+	    return;
+	final Opds.Link catalogLink = Utils.getCatalogLink(entry);
+	if (catalogLink == null)
+	    return;
+	if (!history.isEmpty())
+	    history.getLast().selected = entry;
+	//	openCatalog(app, new URL(getCurrentUrl(), catalogLink.url));
+    }
+
+
+
+    Link getSuitableBookLink(Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	for(Link link:entry.links)
+	    if (link.type.toLowerCase().equals(Utils.CONTENT_TYPE_FB2_ZIP))
+		return link;
+		/*
+	final LinkedList<Opds.Link> s = new LinkedList<Opds.Link>();
+	for(Opds.Link link: entry.links)
+	{
+	    if (isCatalog(link) || isImage(link))
+		continue;
+	    s.add(link);
+	}
+	final Opds.Link[] suitable = s.toArray(new Opds.Link[s.size()]);
+	if (suitable.length == 1)
+	{
+	    openReader(new URL(getCurrentUrl(), suitable[0].url.toString()), suitable[0].type);
+	    return;
+	}
+	for(Opds.Link link: suitable)
+	    if (link.type.equals("application/fb2+zip") ||
+		link.type.equals("application/fb2"))
+	    {
+		openReader(new URL(getCurrentUrl(), link.url.toString()), link.type);
+		return;
+	    }
+	luwrain.message(strings.noSuitableLinksInEntry(), Luwrain.MESSAGE_ERROR);
+	*/
+	return null;
+    }
+
+        URL prepareUrl(String href)
+    {
+	final URL currentUrl = getCurrentUrl();
+	NullCheck.notNull(currentUrl, "currentUrl");
+	try {
+	    return new URL(currentUrl, href);
+	}
+	catch(MalformedURLException e)
+	{
+	    return null;
+	}
+    }
+
+
+        void launchReader(String url, String contentType)
+    {
+	NullCheck.notEmpty(url, "url");
+	NullCheck.notNull(contentType, "contentType");
+	getLuwrain().launchApp("reader", new String[]{url, contentType});
+    }
+
+        URL getCurrentUrl()
+    {
+	return !history.isEmpty()?history.getLast().url:null;
+    }
+
+    
+    
 }
+
+
+
+
 
 
 	/*

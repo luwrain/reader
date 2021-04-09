@@ -75,7 +75,9 @@ public final class App extends AppBase<Strings>
 	    entries.clear();
 	    entries.addAll(Arrays.asList(res.getEntries()));
 	    //	    history.add(new HistoryItem(url, res.getEntries()));
-	    getLuwrain().playSound(Sounds.CLICK);
+	    mainLayout.listArea.refresh();
+	    mainLayout.listArea.reset(false);
+	    mainLayout.setActiveArea(mainLayout.listArea);
 	}
 	    });
 	    });
