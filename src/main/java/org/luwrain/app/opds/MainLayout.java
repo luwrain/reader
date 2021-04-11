@@ -35,8 +35,6 @@ final class MainLayout extends LayoutBase
     final ListArea listArea;
     final ListArea detailsArea;
 
-    private final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
-
     MainLayout(App app)
     {
 	super(app);
@@ -44,13 +42,13 @@ final class MainLayout extends LayoutBase
 
 	final Actions librariesActions;
 	{
-	    final ListArea.Params librariesParams = new ListArea.Params();
-	    librariesParams.context = getControlContext();
-	    librariesParams.model = new ListUtils.ListModel(app.libraries);
-	    librariesParams.appearance = new ListUtils.DefaultAppearance(getControlContext());
-	    librariesParams.clickHandler = (area, index, obj)->onLibraryClick(obj);
-	    librariesParams.name = app.getStrings().librariesAreaName();
-	    this.librariesArea = new ListArea(librariesParams){
+	    final ListArea.Params params = new ListArea.Params();
+	    params.context = getControlContext();
+	    params.model = new ListUtils.ListModel(app.libraries);
+	    params.appearance = new ListUtils.DefaultAppearance(getControlContext());
+	    params.clickHandler = (area, index, obj)->onLibraryClick(obj);
+	    params.name = app.getStrings().librariesAreaName();
+	    this.librariesArea = new ListArea(params){
 		    @Override public boolean onSystemEvent(SystemEvent event)
 		    {
 			NullCheck.notNull(event, "event");
@@ -76,7 +74,7 @@ final class MainLayout extends LayoutBase
 	    params.context = getControlContext();
 	    params.model = new ListUtils.ListModel(app.entries);
 	    params.appearance = new Appearance(getLuwrain(), app.getStrings());
-	    //	params.clickHandler = (area, index, obj)->actions.onListClick( listArea, obj);
+	    	params.clickHandler = (area, index, obj)->onListClick(obj);
 	    params.name = app.getStrings().itemsAreaName();
 	    this.listArea = new ListArea(params);
 	    listActions = actions();
@@ -134,32 +132,18 @@ final class MainLayout extends LayoutBase
 	    return false;
 	final RemoteLibrary library = (RemoteLibrary)obj;
 	//	base.clearHistory();
-	try {
-	    return app.open(new URL(library.url));
-	}
-	catch(MalformedURLException e)
-	{
-	    app.message(app.getStrings().badUrl(library.url), Luwrain.MessageType.ERROR);
-	    return true;
-	}
+	return app.open(url(library.url));
     }
 
-    private boolean onListClick(ListArea listArea, Object obj)
+    private boolean onListClick(Object obj)
     {
-	NullCheck.notNull(listArea, "listArea");
-	if (obj == null || !(obj instanceof Opds.Entry))
+	NullCheck.notNull(obj, "obj");
+	if (!(obj instanceof Opds.Entry))
 	    return false;
 	final Opds.Entry entry = (Opds.Entry)obj;
-	try {
 	    onEntry(entry);
 	    listArea.refresh();
 	    return true;
-	}
-	catch (MalformedURLException e)
-	{
-	    app.message(app.getStrings().badUrl(e.getMessage()), Luwrain.MessageType.ERROR);
-	    return true;
-	}
     }
 
     private boolean onListProperties(ListArea detailsArea, Object obj)
@@ -190,6 +174,23 @@ final class MainLayout extends LayoutBase
 	return true;
     }
 
+        private boolean onEntry(Opds.Entry entry)
+    {
+	NullCheck.notNull(entry, "entry");
+	if (openBook(entry))
+	    return true;
+	final Opds.Link catalogLink = Utils.getCatalogLink(entry);
+	if (catalogLink == null)
+	    return false;
+	if (!app.history.isEmpty())
+	{
+	    app.history.getLast().selected = entry;
+	    return app.open(url(app.history.getLast().url, catalogLink.url));
+	}
+			return app.open(url(catalogLink.url));
+    }
+
+
     private boolean openBook(Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
@@ -200,19 +201,9 @@ final class MainLayout extends LayoutBase
 	return true;
     }
 
-    private void onEntry(Opds.Entry entry) throws MalformedURLException
-    {
-	NullCheck.notNull(entry, "entry");
-	if (openBook(entry))
-	    return;
-	final Opds.Link catalogLink = Utils.getCatalogLink(entry);
-	if (catalogLink == null)
-	    return;
-	if (!history.isEmpty())
-	    history.getLast().selected = entry;
-	//	openCatalog(app, new URL(getCurrentUrl(), catalogLink.url));
-    }
 
+
+	    
     private Link getSuitableBookLink(Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
@@ -247,15 +238,9 @@ final class MainLayout extends LayoutBase
 
     private URL prepareUrl(String href)
     {
-	final URL currentUrl = getCurrentUrl();
+	final URL currentUrl = app.opened();
 	NullCheck.notNull(currentUrl, "currentUrl");
-	try {
-	    return new URL(currentUrl, href);
-	}
-	catch(MalformedURLException e)
-	{
-	    return null;
-	}
+	    return url(currentUrl, href);
     }
 
     private void launchReader(String url, String contentType)
@@ -265,19 +250,42 @@ final class MainLayout extends LayoutBase
 	getLuwrain().launchApp("reader", new String[]{url, contentType});
     }
 
-    private URL getCurrentUrl()
-    {
-	return !history.isEmpty()?history.getLast().url:null;
-    }
 
     private Opds.Entry returnBack()
     {
-	if (history.size() <= 1)
+	if (app.history.size() <= 1)
 	    return null;
-	history.pollLast();
+	app.history.pollLast();
 	//	model.setItems(history.getLast().entries);
-	return history.getLast().selected;
+	return app.history.getLast().selected;
     }
+
+        static private URL url(String u)
+    {
+	NullCheck.notNull(u, "u");
+	try {
+	    return new URL(u);
+	}
+	catch(MalformedURLException e)
+	{
+	    throw new IllegalArgumentException(e);
+	}
+    }
+
+
+    static private URL url(URL baseUrl, String addr)
+    {
+	NullCheck.notNull(baseUrl, "baseUrl");
+	NullCheck.notNull(addr, "addr");
+	try {
+	    return new URL(baseUrl, addr);
+	}
+	catch(MalformedURLException e)
+	{
+	    throw new IllegalArgumentException(e);
+	}
+    }
+    
 }
 
 	/*

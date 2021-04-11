@@ -39,6 +39,7 @@ public final class App extends AppBase<Strings>
     private final Gson gson = new Gson();
     final List<RemoteLibrary> libraries = new ArrayList();
     final List<Entry> entries = new ArrayList<Entry>();
+        final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
     private Settings sett = null;
     private Conversations conv = null;
@@ -74,7 +75,7 @@ public final class App extends AppBase<Strings>
 	{
 	    entries.clear();
 	    entries.addAll(Arrays.asList(res.getEntries()));
-	    //	    history.add(new HistoryItem(url, res.getEntries()));
+	    	    history.add(new HistoryItem(url, res.getEntries()));
 	    mainLayout.listArea.refresh();
 	    mainLayout.listArea.reset(false);
 	    mainLayout.setActiveArea(mainLayout.listArea);
@@ -99,6 +100,10 @@ public final class App extends AppBase<Strings>
 	sett.setLibraries(gson.toJson(libraries));
     }
 
+        URL opened()
+    {
+	return !history.isEmpty()?history.getLast().url:null;
+    }
 
     Conversations getConv()
     {
