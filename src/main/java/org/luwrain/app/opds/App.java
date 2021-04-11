@@ -39,7 +39,7 @@ public final class App extends AppBase<Strings>
     private final Gson gson = new Gson();
     final List<RemoteLibrary> libraries = new ArrayList();
     final List<Entry> entries = new ArrayList<Entry>();
-        final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
+    final LinkedList<HistoryItem> history = new LinkedList<HistoryItem>();
 
     private Settings sett = null;
     private Conversations conv = null;
@@ -66,25 +66,25 @@ public final class App extends AppBase<Strings>
 	return runTask(taskId, ()->{
 		final Opds.Result res = Opds.fetch(url);
 		finishedTask(taskId, ()->{
-	if (res.error == Opds.Result.Errors.FETCHING_PROBLEM)
-	{
-	    message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);//FIXME:
-	    return;
-	}
-	if(res.hasEntries())
-	{
-	    entries.clear();
-	    entries.addAll(Arrays.asList(res.getEntries()));
-	    	    history.add(new HistoryItem(url, res.getEntries()));
-	    mainLayout.listArea.refresh();
-	    mainLayout.listArea.reset(false);
-	    mainLayout.setActiveArea(mainLayout.listArea);
-	}
-	    });
+			if (res.error == Opds.Result.Errors.FETCHING_PROBLEM)
+			{
+			    message("Невозможно подключиться к серверу или данные по указанному адресу не являются правильным OPDS-каталогом", Luwrain.MessageType.ERROR);//FIXME:
+			    return;
+			}
+			if(res.hasEntries())
+			{
+			    entries.clear();
+			    entries.addAll(Arrays.asList(res.getEntries()));
+			    history.add(new HistoryItem(url, res.getEntries()));
+			    mainLayout.listArea.refresh();
+			    mainLayout.listArea.reset(false);
+			    mainLayout.setActiveArea(mainLayout.listArea);
+			}
+		    });
 	    });
     }
 
-        private void loadLibraries()
+    private void loadLibraries()
     {
 	this.libraries.clear();
 	final List<RemoteLibrary> res = gson.fromJson(sett.getLibraries(""), LIBRARY_LIST_TYPE);
@@ -95,12 +95,12 @@ public final class App extends AppBase<Strings>
 	libraries.addAll(Arrays.asList(r));
     }
 
-            void saveLibraries()
+    void saveLibraries()
     {
 	sett.setLibraries(gson.toJson(libraries));
     }
 
-        URL opened()
+    URL opened()
     {
 	return !history.isEmpty()?history.getLast().url:null;
     }

@@ -74,7 +74,7 @@ final class MainLayout extends LayoutBase
 	    params.context = getControlContext();
 	    params.model = new ListUtils.ListModel(app.entries);
 	    params.appearance = new Appearance(getLuwrain(), app.getStrings());
-	    	params.clickHandler = (area, index, obj)->onListClick(obj);
+	    params.clickHandler = (area, index, obj)->onListClick(obj);
 	    params.name = app.getStrings().itemsAreaName();
 	    this.listArea = new ListArea(params);
 	    listActions = actions();
@@ -141,9 +141,9 @@ final class MainLayout extends LayoutBase
 	if (!(obj instanceof Opds.Entry))
 	    return false;
 	final Opds.Entry entry = (Opds.Entry)obj;
-	    onEntry(entry);
-	    listArea.refresh();
-	    return true;
+	onEntry(entry);
+	listArea.refresh();
+	return true;
     }
 
     private boolean onListProperties(ListArea detailsArea, Object obj)
@@ -174,7 +174,7 @@ final class MainLayout extends LayoutBase
 	return true;
     }
 
-        private boolean onEntry(Opds.Entry entry)
+    private boolean onEntry(Opds.Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
 	if (openBook(entry))
@@ -187,9 +187,8 @@ final class MainLayout extends LayoutBase
 	    app.history.getLast().selected = entry;
 	    return app.open(url(app.history.getLast().url, catalogLink.url));
 	}
-			return app.open(url(catalogLink.url));
+	return app.open(url(catalogLink.url));
     }
-
 
     private boolean openBook(Entry entry)
     {
@@ -201,9 +200,6 @@ final class MainLayout extends LayoutBase
 	return true;
     }
 
-
-
-	    
     private Link getSuitableBookLink(Entry entry)
     {
 	NullCheck.notNull(entry, "entry");
@@ -240,7 +236,7 @@ final class MainLayout extends LayoutBase
     {
 	final URL currentUrl = app.opened();
 	NullCheck.notNull(currentUrl, "currentUrl");
-	    return url(currentUrl, href);
+	return url(currentUrl, href);
     }
 
     private void launchReader(String url, String contentType)
@@ -249,7 +245,6 @@ final class MainLayout extends LayoutBase
 	NullCheck.notNull(contentType, "contentType");
 	getLuwrain().launchApp("reader", new String[]{url, contentType});
     }
-
 
     private Opds.Entry returnBack()
     {
@@ -260,7 +255,7 @@ final class MainLayout extends LayoutBase
 	return app.history.getLast().selected;
     }
 
-        static private URL url(String u)
+    static private URL url(String u)
     {
 	NullCheck.notNull(u, "u");
 	try {
@@ -271,7 +266,6 @@ final class MainLayout extends LayoutBase
 	    throw new IllegalArgumentException(e);
 	}
     }
-
 
     static private URL url(URL baseUrl, String addr)
     {
@@ -285,7 +279,6 @@ final class MainLayout extends LayoutBase
 	    throw new IllegalArgumentException(e);
 	}
     }
-    
 }
 
 	/*
