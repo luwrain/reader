@@ -61,7 +61,7 @@ final class Conversations
 
     File fileToOpen()
     {
-	return Popups.existingFile(luwrain, strings.openPathPopupName(), strings.openPathPopupPrefix());
+	return Popups.existingFile(luwrain, strings.openPathPopupPrefix());
     }
 
     String newNote()
