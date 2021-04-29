@@ -66,7 +66,7 @@ public final class App extends AppBase<Strings>
 	this.books = new org.luwrain.io.api.books.v1.Factory().newInstance();
     }
 
-    @Override protected boolean onAppInit()
+    @Override protected AreaLayout onAppInit()
     {
 	final Standalone standalone = new Standalone("lwr-books", "LWRBooks");
 	if (standalone.isStandalone())
@@ -96,7 +96,7 @@ public final class App extends AppBase<Strings>
 	{
 	    showErrorLayout(e);
 	}
-	return true;
+	return startingLayout.getAreaLayout();
     }
 
     void open(URI uri)
@@ -181,11 +181,6 @@ public final class App extends AppBase<Strings>
     {
 	closeApp();
 	return true;
-    }
-
-    @Override public AreaLayout getDefaultAreaLayout()
-    {
-	return this.startingLayout.getLayout();
     }
 
     @Override public void closeApp()

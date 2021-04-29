@@ -50,14 +50,14 @@ public final class App extends AppBase<Strings>
 	super(Strings.NAME, Strings.class);
     }
 
-    @Override public boolean onAppInit()
+    @Override protected AreaLayout onAppInit()
     {
 	this.sett = Settings.create(getLuwrain());
 	this.conv = new Conversations(this);
 	loadLibraries();
 	this.mainLayout = new MainLayout(this);
 	setAppName(getStrings().appName());
-	return true;
+	return mainLayout.getAreaLayout();
     }
 
     boolean open(URL url)
@@ -115,10 +115,5 @@ public final class App extends AppBase<Strings>
 	NullCheck.notNull(event, "event");
 	closeApp();
 	return true;
-    }
-
-    @Override public AreaLayout getDefaultAreaLayout()
-    {
-	return mainLayout.getAreaLayout();
     }
 }
