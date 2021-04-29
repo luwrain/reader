@@ -96,7 +96,7 @@ public final class App extends AppBase<Strings>
 	{
 	    showErrorLayout(e);
 	}
-	return startingLayout.getAreaLayout();
+	return startingLayout.getLayout();
     }
 
     void open(URI uri)
