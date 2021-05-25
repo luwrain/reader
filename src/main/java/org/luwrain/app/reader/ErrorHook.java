@@ -44,7 +44,7 @@ final class ErrorHook
 	final PropertiesHookObject propsHookObj = new PropertiesHookObject(props);//FIXME:read only
 	final Object[] args = new Object[]{propsHookObj, throwable};
 	final AtomicReference res = new AtomicReference();
-	luwrain.xRunHooks(HOOK_NAME, (hook)->{
+	luwrain.runHooks(HOOK_NAME, (hook)->{
 		try {
 		    final Object obj = hook.run(args);
 		    if (obj == null)

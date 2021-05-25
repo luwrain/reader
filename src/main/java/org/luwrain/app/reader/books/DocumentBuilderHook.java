@@ -43,7 +43,7 @@ final class DocumentBuilderHook
 	NullCheck.notNull(props, "props");
 	NullCheck.notNull(file, "file");
 	final AtomicReference res = new AtomicReference();
-	luwrain.xRunHooks(HOOK_NAME, (hook)->{
+	luwrain.runHooks(HOOK_NAME, (hook)->{
 		try {
 		    final Object obj = hook.run(new Object[]{contentType, null, file.getAbsolutePath()});
 		    if (obj == null)
