@@ -75,7 +75,7 @@ final URL audioFileUrl;
 		this.book = book;
 		this.doc = doc;
 		this.area = area;
-		this.currentPlaylist = new Playlist(audioFileUrl.toString());
+		this.currentPlaylist = new FixedPlaylist(audioFileUrl.toString());
 		//luwrain.playSound(Sounds.PLAYING);
 		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS, null);
 		luwrain.silence();
@@ -104,7 +104,7 @@ final URL audioFileUrl;
 	    return;
 	if (trackNum >= playlist.getTrackCount())
 	    return;
-	final String track = playlist.getTrack(trackNum);
+	final String track = playlist.getTrackUrl(trackNum);
 	final String link = book.findTextForAudio(track, msec);
 	if (link == null)
 	    return;
