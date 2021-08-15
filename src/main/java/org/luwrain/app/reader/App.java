@@ -177,7 +177,7 @@ public final class App extends AppBase<Strings>
 	this.cancelled = true;
     }
 
-    @Override public boolean onEscape(InputEvent event)
+    @Override public boolean onEscape()
     {
 	closeApp();
 	return true;

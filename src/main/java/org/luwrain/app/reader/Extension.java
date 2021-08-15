@@ -20,12 +20,11 @@ package org.luwrain.app.reader;
 import java.net.*;
 import java.util.*;
 
-import org.luwrain.base.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
 
-public final class Extension extends org.luwrain.core.extensions.EmptyExtension
+public final class Extension extends EmptyExtension
 {
     private final Set<String> queries = new TreeSet();
 
