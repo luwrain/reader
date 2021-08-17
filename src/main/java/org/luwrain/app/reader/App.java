@@ -116,7 +116,7 @@ public final class App extends AppBase<Strings>
 		finishedTask(taskId, ()->{
 			this.bookContainer = new BookContainer(this, book, org.luwrain.util.Sha1.getSha1(uri.toString(), "UTF-8"));
 			this.mainLayout = new MainLayout(this);
-			getLayout().setBasicLayout(mainLayout.getLayout());
+			setAreaLayout(mainLayout);
 			mainLayout.updateInitial();
 		    });
 	    });
@@ -164,7 +164,7 @@ public final class App extends AppBase<Strings>
 	final ErrorLayout errorLayout;
 	if (mainLayout != null)
 	    errorLayout = new ErrorLayout(this, e, ()->{
-		    layout(mainLayout.getLayout());
+		    setAreaLayout(mainLayout);
 		    getLuwrain().announceActiveArea();
 		}); else
 	    errorLayout = new ErrorLayout(this, e, null);

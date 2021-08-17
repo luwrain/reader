@@ -34,17 +34,18 @@ import org.luwrain.io.api.books.v1.Note;
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
     private final App app;
-    private final BookContainer bookContainer;
-    private final TreeArea treeArea;
-    private final ReaderArea readerArea;
-    private final EditableListArea notesArea;
 
-    private boolean sectionsTreeShown = true;
-        private boolean notesShown = false;
+    final TreeArea treeArea;
+    final ReaderArea readerArea;
+    private final EditableListArea notesArea;
+    private final Actions treeActions, readerActions, notesActions;
+
+    private final BookContainer bookContainer;
+    private boolean sectionsTreeShown = true, notesShown = false;
 
     MainLayout(App app)
     {
-	NullCheck.notNull(app, "app");
+	super(app);
 	this.app = app;
 	this.bookContainer = app.getBookContainer();
 	this.sectionsTreeShown = bookContainer.getBookFlags().contains(Book.Flags.OPEN_IN_SECTION_TREE);
@@ -54,70 +55,29 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 				final ActionInfo showSectionsTree = action("show-sections-tree", app.getStrings().actionShowSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actShowSectionsTree);
 								final ActionInfo showNotes = action("show-notes", app.getStrings().actionShowNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actShowNotes);
 
-	this.treeArea = new TreeArea(createTreeParams()) {
-		final Actions actions = actions(
-						openFile, openUrl,
-						action("hide-sections-tree", app.getStrings().actionHideSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actHideSectionsTree),
-						showNotes
-								);
-		@Override public boolean onInputEvent(InputEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onInputEvent(this, event))
-			return true;
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(SystemEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event, actions))
-			return true;
-		    return super.onSystemEvent(event);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    if (app.onAreaQuery(this, query))
-			return true;
-		    return super.onAreaQuery(query);
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return actions.getAreaActions();
-		}
-	    };
 
-	this.readerArea = new ReaderArea(createReaderParams()){
-		final Actions actions = actions(
-						openFile, openUrl, showSectionsTree, showNotes
-						);
-		@Override public boolean onInputEvent(InputEvent event)
+								{
+								    final TreeArea.Params params = new TreeArea.Params();
+								    params.context = getControlContext();
+								    params.model = new CachedTreeModel(new BookTreeModelSource());
+								    params.name = app.getStrings().treeAreaName();
+								    params.clickHandler = this;
+								    this.treeArea = new TreeArea(params);
+								}
+								this.treeActions = actions(
+											   openFile, openUrl,
+											   action("hide-sections-tree", app.getStrings().actionHideSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actHideSectionsTree),
+											   showNotes
+											   );
+
+								this.readerArea = new ReaderArea(createReaderParams()){
+									@Override public boolean onInputEvent(InputEvent event)
 		{
 		    NullCheck.notNull(event, "event");
 		    if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
 			app.stopAudio())
 			return true;
-		    if (app.onInputEvent(this, event))
-			return true;
 		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(SystemEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event, actions))
-			return true;
-		    return super.onSystemEvent(event);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    if (app.onAreaQuery(this, query))
-			return true;
-		    return super.onAreaQuery(query);
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return actions.getAreaActions();
 		}
 		@Override public String getAreaName()
 		{
@@ -138,39 +98,17 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		    return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
 		}
 	    };
+this.readerActions = actions(
+						openFile, openUrl, showSectionsTree, showNotes
+						);
 
-	this.notesArea = new EditableListArea(createNotesParams()) {
-		final Actions actions = actions(
-						action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
-						openFile, openUrl, showSectionsTree,
-												action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes)
-												);
-		@Override public boolean onInputEvent(InputEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onInputEvent(this, event))
-			return true;
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(SystemEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event, actions))
-			return true;
-		    return super.onSystemEvent(event);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    if (app.onAreaQuery(this, query))
-			return true;
-		    return super.onAreaQuery(query);
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return actions.getAreaActions();
-		}
-	    };
+this.notesArea = new EditableListArea(createNotesParams()) ;
+this.notesActions = actions(
+			    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
+			    openFile, openUrl, showSectionsTree,
+			    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes)
+			    );
+updateLayout();
     }
 
     void updateInitial()
@@ -190,8 +128,9 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     private boolean actShowSectionsTree()
     {
 	this.sectionsTreeShown = true;
-	app.layout(getLayout());
-	app.getLuwrain().setActiveArea(treeArea);
+	updateLayout();
+	app.setAreaLayout(this);
+	setActiveArea(treeArea);
 	return true;
     }
 
@@ -200,17 +139,19 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	if (!this.sectionsTreeShown)
 	    return false;
 	this.sectionsTreeShown = false;
-	app.layout(getLayout());
-		app.getLuwrain().setActiveArea(readerArea);
+	updateLayout();
+	app.setAreaLayout(this);
+setActiveArea(readerArea);
 	return true;
     }
 
         private boolean actShowNotes()
     {
 	this.notesShown = true;
-	app.layout(getLayout());
-	app.getLuwrain().setActiveArea(notesArea);
-	return true;
+	updateLayout();
+	app.setAreaLayout(this);
+	setActiveArea(notesArea);
+		return true;
     }
 
     private boolean actHideNotes()
@@ -218,11 +159,11 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	if (!this.notesShown)
 	    return false;
 	this.notesShown = false;
-	app.layout(getLayout());
-	app.getLuwrain().setActiveArea(readerArea);
+	updateLayout();
+	app.setAreaLayout(this);
+	setActiveArea(readerArea);
 	return true;
     }
-
 
     @Override public boolean onTreeClick(TreeArea treeArea, Object obj)
     {
@@ -291,16 +232,6 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	return true;
     }
 
-    private TreeArea.Params createTreeParams()
-    {
-	final TreeArea.Params params = new TreeArea.Params();
-	params.context = new DefaultControlContext(app.getLuwrain());
-	params.model = new CachedTreeModel(new BookTreeModelSource());
-	params.name = app.getStrings().treeAreaName();
-	params.clickHandler = this;
-	return params;
-    }
-
     final ReaderArea.Params createReaderParams()
     {
     	final ReaderArea.Params params = new ReaderArea.Params();
@@ -333,15 +264,23 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	return params;
     }
 
-    AreaLayout getLayout()
+    void updateLayout()
     {
 	if (sectionsTreeShown && notesShown)
-	return new AreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, readerArea, notesArea);
+	{
+	    setAreaLayout(AreaLayout.LEFT_TOP_BOTTOM, treeArea, treeActions, readerArea, readerActions, notesArea, notesActions);
+	    return;
+	}
 	if (sectionsTreeShown)
-	    	return new AreaLayout(AreaLayout.LEFT_RIGHT, treeArea, readerArea);
+	{
+	    setAreaLayout(AreaLayout.LEFT_RIGHT, treeArea, treeActions, readerArea, readerActions);
+		return;
+	}
 	if (notesShown)
-		return new AreaLayout(AreaLayout.TOP_BOTTOM, readerArea, notesArea);
-			return new AreaLayout(readerArea);
+	{
+	    setAreaLayout(AreaLayout.TOP_BOTTOM, readerArea, readerActions, notesArea, notesActions);
+	}
+	setAreaLayout(readerArea, readerActions);
     }
 
     private final class BookTreeModelSource implements CachedTreeModelSource
