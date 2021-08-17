@@ -70,53 +70,58 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 											   showNotes
 											   );
 
-								this.readerArea = new ReaderArea(createReaderParams()){
-									@Override public boolean onInputEvent(InputEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
-			app.stopAudio())
-			return true;
-		    return super.onInputEvent(event);
-		}
-		@Override public String getAreaName()
-		{
-		    final Document doc = getDocument();
-		    if (doc == null)
-			return app.getStrings().appName();
-		    return doc.getTitle();
-		}
-		@Override public String getDocUniRef()
-		{
-		    final String addr = getDocUrl();
-		    if (addr.isEmpty())
-			return "";
-		    return UniRefUtils.makeUniRef("reader", addr);
-		}
-		@Override protected String noContentStr()
-		{
-		    return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
-		}
-	    };
-this.readerActions = actions(
-						openFile, openUrl, showSectionsTree, showNotes
-						);
+								{
+								    final ReaderArea.Params params = new ReaderArea.Params();
+								    params.context = getControlContext();
+								    params.clickHandler = this;
+								    this.readerArea = new ReaderArea(params){
+									    @Override public boolean onInputEvent(InputEvent event)
+									    {
+										NullCheck.notNull(event, "event");
+										if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
+										    app.stopAudio())
+										    return true;
+										return super.onInputEvent(event);
+									    }
+									    @Override public String getAreaName()
+									    {
+										final Document doc = getDocument();
+										if (doc == null)
+										    return app.getStrings().appName();
+										return doc.getTitle();
+									    }
+									    @Override public String getDocUniRef()
+									    {
+										final String addr = getDocUrl();
+										if (addr.isEmpty())
+										    return "";
+										return UniRefUtils.makeUniRef("reader", addr);
+									    }
+									    @Override protected String noContentStr()
+									    {
+										return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
+									    }
+									};
+								}
+								this.readerActions = actions(
+											     openFile, openUrl, showSectionsTree, showNotes
+											     );
 
-this.notesArea = new EditableListArea(createNotesParams()) ;
-this.notesActions = actions(
-			    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
-			    openFile, openUrl, showSectionsTree,
-			    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes)
-			    );
-updateLayout();
+								this.notesArea = new EditableListArea(createNotesParams()) ;
+								this.notesActions = actions(
+											    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
+											    openFile, openUrl, showSectionsTree,
+											    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes)
+											    );
+								updateLayout();
     }
 
     void updateInitial()
     {
 	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
 	if (sectionsTreeShown)
-	    	app.getLuwrain().setActiveArea(this.treeArea); else
-	app.getLuwrain().setActiveArea(this.readerArea);
+	    app.getLuwrain().setActiveArea(this.treeArea); else
+	    app.getLuwrain().setActiveArea(this.readerArea);
     }
 
     void updateAfterJump()
@@ -141,17 +146,17 @@ updateLayout();
 	this.sectionsTreeShown = false;
 	updateLayout();
 	app.setAreaLayout(this);
-setActiveArea(readerArea);
+	setActiveArea(readerArea);
 	return true;
     }
 
-        private boolean actShowNotes()
+    private boolean actShowNotes()
     {
 	this.notesShown = true;
 	updateLayout();
 	app.setAreaLayout(this);
 	setActiveArea(notesArea);
-		return true;
+	return true;
     }
 
     private boolean actHideNotes()
@@ -232,18 +237,10 @@ setActiveArea(readerArea);
 	return true;
     }
 
-    final ReaderArea.Params createReaderParams()
-    {
-    	final ReaderArea.Params params = new ReaderArea.Params();
-	params.context = new DefaultControlContext(app.getLuwrain());
-	params.clickHandler = this;
-	return params;
-    }
-
     private EditableListArea.Params createNotesParams()
     {
 	final EditableListArea.Params params = new EditableListArea.Params();
-	params.context = new DefaultControlContext(app.getLuwrain());
+	params.context = getControlContext();
 	params.model = app.getBookContainer().getAttr();
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
 	params.name = app.getStrings().notesAreaName();
@@ -274,11 +271,12 @@ setActiveArea(readerArea);
 	if (sectionsTreeShown)
 	{
 	    setAreaLayout(AreaLayout.LEFT_RIGHT, treeArea, treeActions, readerArea, readerActions);
-		return;
+	    return;
 	}
 	if (notesShown)
 	{
 	    setAreaLayout(AreaLayout.TOP_BOTTOM, readerArea, readerActions, notesArea, notesActions);
+	    return;
 	}
 	setAreaLayout(readerArea, readerActions);
     }
