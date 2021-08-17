@@ -65,10 +65,9 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 								    this.treeArea = new TreeArea(params);
 								}
 								this.treeActions = actions(
-											   openFile, openUrl,
 											   action("hide-sections-tree", app.getStrings().actionHideSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actHideSectionsTree),
-											   showNotes
-											   );
+											   showNotes,
+											   											   openFile, openUrl);
 
 								{
 								    final ReaderArea.Params params = new ReaderArea.Params();
@@ -117,15 +116,17 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 									};
 								}
 								this.readerActions = actions(
-											     openFile, openUrl, showSectionsTree, showNotes
+											     new ActionInfo("back", "Вернуться", new InputEvent(InputEvent.Special.BACKSPACE), this::actBack),//FIXME:
+											     showSectionsTree, showNotes,
+											     openFile, openUrl
 											     );
 
 								this.notesArea = new EditableListArea(createNotesParams()) ;
 								this.notesActions = actions(
 											    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
-											    openFile, openUrl, showSectionsTree,
-											    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes)
-											    );
+showSectionsTree,
+											    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes),
+											    											    openFile, openUrl);
 								updateLayout();
     }
 
@@ -133,14 +134,19 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
 	if (sectionsTreeShown)
-	    app.getLuwrain().setActiveArea(this.treeArea); else
-	    app.getLuwrain().setActiveArea(this.readerArea);
+	    setActiveArea(this.treeArea); else
+	    setActiveArea(this.readerArea);
     }
 
-    void updateAfterJump()
+    private void updateAfterJump()
     {
 	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
 	app.getLuwrain().setActiveArea(this.readerArea);
+    }
+
+    private boolean actBack()
+    {
+	return this.bookContainer.onPrevDoc(()->updateAfterJump());
     }
 
     private boolean actShowSectionsTree()

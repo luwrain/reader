@@ -22,6 +22,7 @@ import java.io.*;
 import java.net.*;
 
 import org.luwrain.core.*;
+import org.luwrain.controls.reader.*;
 import org.luwrain.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
@@ -55,7 +56,7 @@ final class BookContainer
 	app.setAppName(doc.getTitle());
     }
 
-    boolean jump(String href, org.luwrain.controls.reader.ReaderArea readerArea, int newRowNum, Runnable onSuccess)
+    boolean jump(String href, ReaderArea readerArea, int newRowNum, Runnable onSuccess)
     {
 	NullCheck.notEmpty(href, "href");
 	NullCheck.notNull(readerArea, "readerArea");
@@ -77,10 +78,10 @@ final class BookContainer
 	    return;
 	if (doc != this.doc)
 	{
+	    	    history.add(new HistoryItem(this.doc));
 	    final int currentRowNum = readerArea.getCurrentRowIndex();
-	    if (currentRowNum >= 0 && !history.isEmpty())
+	    if (currentRowNum >= 0)
 		history.getLast().lastRowIndex = currentRowNum;
-	    history.add(new HistoryItem(doc));
 	}
 	if (newRowNum >= 0)
 	    doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, String.valueOf(newRowNum));
@@ -91,6 +92,17 @@ final class BookContainer
 	    });
 	    });
 	    }
+
+        boolean onPrevDoc(Runnable onSuccess)
+    {
+	if (history.isEmpty())
+	    return false;
+	final HistoryItem item = history.pollLast();
+	    this.doc = item.doc;
+	    			this.app.setAppName(doc.getTitle());
+			onSuccess.run();
+	return true;
+    }
 
         boolean changeCharset(String newCharset)
     {
@@ -118,18 +130,6 @@ final class BookContainer
 	return true;
     }
 
-    boolean onPrevDoc()
-    {
-	if (history.isEmpty())
-	    return false;
-	final HistoryItem item = history.pollLast();
-	/*
-	    res.doc = item.doc;
-successNotification.run();
-	return true;
-	*/
-	return true;
-    }
 
     /*
     boolean fillDocProperties(MutableLines lines)
@@ -192,11 +192,30 @@ successNotification.run();
 	return this.attr;
     }
 
-    
-
     Book.Section[] getSections()
     {
 	final Book.Section[] res = this.book.getBookSections();
 	return res != null?res:new Book.Section[0];
     }
+
+    static final class HistoryItem
+{
+    final Document doc;
+    final String url;
+    final String contentType;
+    final String format;
+    final String charset;
+    int startingRowIndex;
+    int lastRowIndex;
+    HistoryItem(Document doc)
+    {
+	NullCheck.notNull(doc, "doc");
+	this.doc = doc;
+	url = doc.getProperty("url");
+	contentType = doc.getProperty("contenttype");
+	charset = doc.getProperty("charset");
+	format = doc.getProperty("format");
+    }
+}
+
 }
