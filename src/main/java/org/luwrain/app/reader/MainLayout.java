@@ -83,6 +83,19 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 										    return true;
 										return super.onInputEvent(event);
 									    }
+									    @Override public boolean onSystemEvent(SystemEvent event)
+									    {
+										NullCheck.notNull(event, "events");
+										if (event.getType() != SystemEvent.Type.REGULAR)
+										    return super.onSystemEvent(event);
+										switch(event.getCode())
+										{
+										case PROPERTIES:
+										    return onProps();
+										default:
+										    return super.onSystemEvent(event);
+										}
+									    }
 									    @Override public String getAreaName()
 									    {
 										final Document doc = getDocument();
@@ -234,6 +247,18 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	    app.getBookContainer().getAttr().addNote(selected, text); else
 	    app.getBookContainer().getAttr().addNote(0, text);
 	notesArea.refresh();
+	return true;
+    }
+
+    private boolean onProps()
+    {
+	final PropertiesLayout props = new PropertiesLayout(app, ()->{
+		app.setAreaLayout(this);
+		setActiveArea(readerArea);
+		return true;
+	    });
+	app.setAreaLayout(props);
+	app.getLuwrain().announceActiveArea();
 	return true;
     }
 
