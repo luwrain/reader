@@ -99,6 +99,7 @@ final class BookContainer
 	    return false;
 	final HistoryItem item = history.pollLast();
 	    this.doc = item.doc;
+	    this.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, String.valueOf(item.lastRowIndex));
 	    			this.app.setAppName(doc.getTitle());
 			onSuccess.run();
 	return true;
