@@ -21,12 +21,14 @@ import java.util.*;
 import java.io.*;
 
 import org.luwrain.core.*;
-import org.luwrain.util.*;
+import static org.luwrain.util.FileUtils.*;
 
 final class StandaloneSettings  implements Settings
 {
-    static private final String LOG_COMPONENT = App.LOG_COMPONENT;
-    static private final String REPO_FILE = "repo.json";
+    static private final String
+	LOG_COMPONENT = App.LOG_COMPONENT,
+	REPO_FILE = "repo.json",
+	NOTES_FILE = "notes.json";
 
     private final File dir;
 
@@ -40,14 +42,14 @@ final class StandaloneSettings  implements Settings
     {
 	final File repoFile = new File(dir, REPO_FILE);
 	try {
-	    FileUtils.createSubdirs(dir);
-	    return FileUtils.readTextFileSingleString(repoFile, "UTF-8");
+	    createSubdirs(dir);
+	    return readTextFileSingleString(repoFile, "UTF-8");
 	}
 	catch(IOException e)
 	{
 	    Log.error(LOG_COMPONENT, "unable to read the local repo file " + repoFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
 	    e.printStackTrace();
-	    return "";
+	    return defValue;
 	}
     }
 
@@ -56,12 +58,42 @@ final class StandaloneSettings  implements Settings
 	NullCheck.notNull(value, "value");
 	final File repoFile = new File(dir, REPO_FILE);
 	try {
-	    FileUtils.createSubdirs(dir);
-	    FileUtils.writeTextFileSingleString(repoFile, value, "UTF-8");
+	    createSubdirs(dir);
+	    writeTextFileSingleString(repoFile, value, "UTF-8");
 	}
 	catch(IOException e)
 	{
 	    Log.error(LOG_COMPONENT, "unable to write the local repo file  " + repoFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
+    @Override public String getNotes(String defValue)
+    {
+	final File notesFile = new File(dir, NOTES_FILE);
+	try {
+	    createSubdirs(dir);
+	    return readTextFileSingleString(notesFile, "UTF-8");
+	}
+	catch(IOException e)
+	{
+	    Log.error(LOG_COMPONENT, "unable to read the local notes file " + notesFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
+	    e.printStackTrace();
+	    return defValue;
+	}
+    }
+
+    @Override public void setNotes(String value)
+    {
+	NullCheck.notNull(value, "value");
+	final File notesFile = new File(dir, NOTES_FILE);
+	try {
+	    createSubdirs(dir);
+	    writeTextFileSingleString(notesFile, value, "UTF-8");
+	}
+	catch(IOException e)
+	{
+	    Log.error(LOG_COMPONENT, "unable to write the local notes file  " + notesFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
 	    e.printStackTrace();
 	}
     }

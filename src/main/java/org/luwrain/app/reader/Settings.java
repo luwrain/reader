@@ -30,6 +30,8 @@ interface Settings
 
     String getLocalRepoMetadata(String defValue);
     void setLocalRepoMetadata(String value);
+        String getNotes(String defValue);
+    void setNotes(String value);
 
     static Settings create(Luwrain luwrain)
     {
