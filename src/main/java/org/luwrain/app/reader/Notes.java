@@ -27,7 +27,7 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.io.api.books.v1.*;
 
-final class Notes extends ArrayList<Note> implements EditableListArea.Model
+final class Notes implements EditableListArea.Model
 {
         private final App app;
     private final Attributes attrs;
@@ -51,7 +51,7 @@ final class Notes extends ArrayList<Note> implements EditableListArea.Model
 	final Note note = new Note();
 	note.setPos(String.valueOf(pos));
 	note.setText(text);
-	this.notes.add(note);
+	this.notes.add(0, note);
 	this.attrs.save();
 	return true;
     }
@@ -70,12 +70,12 @@ final class Notes extends ArrayList<Note> implements EditableListArea.Model
 	return true;
     }
 
-    int ggetNoteCount()
+    @Override public int getItemCount()
     {
 	return this.notes.size();
     }
 
-    Note getNote(int index)
+    @Override public Note getItem(int index)
     {
 	return this.notes.get(index);
     }
@@ -83,8 +83,8 @@ final class Notes extends ArrayList<Note> implements EditableListArea.Model
     @Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
     {
 	NullCheck.notNull(supplier, "supplier");
-	if (pos < 0 || pos > size())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(size()));
+	if (pos < 0 || pos > getItemCount())
+	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(getItemCount()));
 	final Object supplied = supplier.get();
 	if (supplied == null)
 	    return false;
@@ -100,21 +100,11 @@ final class Notes extends ArrayList<Note> implements EditableListArea.Model
 
     @Override public boolean removeFromModel(int posFrom, int posTo)
     {
-	if (posFrom < 0 || posFrom>= size())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(posFrom) + ") must be non-negative and less than " + String.valueOf(size()));
-		if (posTo < 0 || posTo >= size())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(posTo) + ") must be non-negative and less or equal than " + String.valueOf(size()));
+	if (posFrom < 0 || posFrom>= getItemCount())
+	    throw new IllegalArgumentException("pos (" + String.valueOf(posFrom) + ") must be non-negative and less than " + String.valueOf(getItemCount()));
+		if (posTo < 0 || posTo >= getItemCount())
+	    throw new IllegalArgumentException("pos (" + String.valueOf(posTo) + ") must be non-negative and less or equal than " + String.valueOf(getItemCount()));
 	return removeNotes(posFrom, posTo);
-    }
-
-    @Override public Object getItem(int index)
-    {
-	return get(index);
-    }
-
-    @Override public int getItemCount()
-    {
-	return size();
     }
 
     @Override public void refresh()
