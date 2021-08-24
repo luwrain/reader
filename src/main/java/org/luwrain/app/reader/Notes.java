@@ -43,12 +43,40 @@ final class Notes implements EditableListArea.Model
 	this.notes = this.attrs.getBookNotes(bookId);
     }
 
+        boolean setBookmark(int pos)
+    {
+	if (pos < 0)
+	    throw new IllegalArgumentException("pos can't be negative");
+	final Note note = new Note();
+	note.setType(Note.BOOKMARK);
+	note.setPos(String.valueOf(pos));
+	for(int i = 0;i < this.notes.size();i++)
+	    if (this.notes.get(i).getType() != null && this.notes.get(i).getType().equals(Note.BOOKMARK))
+	    {
+		this.notes.set(i, note);
+			this.attrs.save();
+			return true;
+	    }
+	this.notes.add(note);
+	this.attrs.save();
+	return true;
+    }
+
+    Note getBookmark()
+    {
+	for(Note n: notes)
+	    if (n.getType() != null && n.getType().equals(Note.BOOKMARK))
+		return n;
+	return null;
+    }
+
     boolean addNote(int pos, String text)
     {
 	NullCheck.notNull(text, "text");
 	if (pos < 0)
 	    throw new IllegalArgumentException("pos can't be negative");
 	final Note note = new Note();
+	note.setType(Note.NOTE);
 	note.setPos(String.valueOf(pos));
 	note.setText(text);
 	this.notes.add(0, note);

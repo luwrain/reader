@@ -27,11 +27,7 @@ import org.luwrain.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 import org.luwrain.app.base.*;
-
-/*
-	if (savedPosition > 0)
-	    res.doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, "" + savedPosition);
-*/
+import org.luwrain.io.api.books.v1.Note;
 
 final class BookContainer
 {
@@ -53,6 +49,9 @@ final class BookContainer
 	this.bookId = bookId;
 	this.doc = this.book.getDefaultDocument();
 	this.notes = new Notes(app, bookId);
+	final Note bookmark = notes.getBookmark();
+	if (bookmark != null  && bookmark.getPos() != null && !bookmark.getPos().isEmpty())
+	    doc.setProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY, bookmark.getPos());
 	app.setAppName(doc.getTitle());
     }
 

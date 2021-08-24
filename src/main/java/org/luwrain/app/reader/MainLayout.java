@@ -31,6 +31,8 @@ import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
 import org.luwrain.io.api.books.v1.Note;
 
+import static org.luwrain.core.DefaultEventResponse.*;
+
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
     private final App app;
@@ -89,6 +91,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 										    return super.onSystemEvent(event);
 										switch(event.getCode())
 										{
+										case SAVE:
+										    return actSaveBookmark();
 										case PROPERTIES:
 										    return onProps();
 										default:
@@ -117,6 +121,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 								}
 								this.readerActions = actions(
 											     new ActionInfo("back", "Вернуться", new InputEvent(InputEvent.Special.BACKSPACE), this::actBack),//FIXME:
+											     											     new ActionInfo("save-bookmark", "Поставить закладку", new InputEvent(InputEvent.Special.F2), this::actSaveBookmark),//FIXME:
 											     showSectionsTree, showNotes,
 											     openFile, openUrl
 											     );
@@ -148,6 +153,15 @@ showSectionsTree,
     {
 	return this.bookContainer.onPrevDoc(()->updateAfterJump());
     }
+
+        private boolean actSaveBookmark()
+    {
+	if (!this.bookContainer.notes.setBookmark(readerArea.getCurrentRowIndex()))
+	    return false;
+	app.setEventResponse(text(Sounds.OK, "Закладка установлена"));//FIXME:
+	return true;
+    }
+
 
     private boolean actShowSectionsTree()
     {
