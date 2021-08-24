@@ -42,6 +42,7 @@ public final class App extends AppBase<Strings>
     private Settings sett = null;
     private LocalRepoMetadata localRepoMetadata = null;
     private LocalRepo localRepo = null;
+    private Attributes attributes = null;
     private AudioPlaying audioPlaying = null;
     private final org.luwrain.io.api.books.v1.Books books;
     private org.luwrain.io.api.books.v1.Book[] remoteBooks = new org.luwrain.io.api.books.v1.Book[0];
@@ -54,11 +55,7 @@ public final class App extends AppBase<Strings>
     private RemoteBooksLayout remoteBooksLayout = null;
     private LocalRepoLayout localRepoLayout = null;
 
-    public App()
-    {
-	this(null);
-    }
-
+    public App() { this(null); }
     public App(String arg)
     {
 	super(Strings.NAME, Strings.class, "luwrain.reader");
@@ -76,10 +73,11 @@ public final class App extends AppBase<Strings>
 	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(standalone.getDataDir(), "repo"));
 	} else
 	{
-	    this.sett = Settings.create(getLuwrain());
+	    this.sett = Settings.create(getLuwrain());	    
 	    this.localRepoMetadata = new LocalRepoMetadata(sett);
 	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
-	}
+}
+    	    	    this.attributes = new Attributes(sett);
 	this.conv = new Conversations(getLuwrain(), getStrings());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
@@ -195,25 +193,12 @@ public final class App extends AppBase<Strings>
 	NullCheck.notNull(name, "name");
 	super.setAppName(!name.isEmpty()?name:getStrings().appName());
     }
-    Conversations getConv()
-    {
-	return this.conv;
-    }
 
-    AudioPlaying getAudioPlaying()
-    {
-	return this.audioPlaying;
-    }
-
-    org.luwrain.io.api.books.v1.Books getBooks()
-    {
-	return this.books;
-    }
-
-    org.luwrain.io.api.books.v1.Book[] getRemoteBooks()
-    {
-	return this.remoteBooks;
-    }
+    Attributes getAttributes() { return this.attributes; }
+    Conversations getConv() { return this.conv; }
+    AudioPlaying getAudioPlaying() { return this.audioPlaying; }
+    org.luwrain.io.api.books.v1.Books getBooks() { return this.books; }
+    org.luwrain.io.api.books.v1.Book[] getRemoteBooks() { return this.remoteBooks; }
 
     org.luwrain.io.api.books.v1.Download.Listener getBooksDownloadListener()
     {

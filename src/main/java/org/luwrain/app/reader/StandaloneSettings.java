@@ -28,7 +28,7 @@ final class StandaloneSettings  implements Settings
     static private final String
 	LOG_COMPONENT = App.LOG_COMPONENT,
 	REPO_FILE = "repo.json",
-	NOTES_FILE = "notes.json";
+	ATTRS_FILE = "attrs.json";
 
     private final File dir;
 
@@ -68,32 +68,32 @@ final class StandaloneSettings  implements Settings
 	}
     }
 
-    @Override public String getNotes(String defValue)
+    @Override public String getAttributes(String defValue)
     {
-	final File notesFile = new File(dir, NOTES_FILE);
+	final File attrsFile = new File(dir, ATTRS_FILE);
 	try {
 	    createSubdirs(dir);
-	    return readTextFileSingleString(notesFile, "UTF-8");
+	    return readTextFileSingleString(attrsFile, "UTF-8");
 	}
 	catch(IOException e)
 	{
-	    Log.error(LOG_COMPONENT, "unable to read the local notes file " + notesFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
+	    Log.error(LOG_COMPONENT, "unable to read the local attributes file " + attrsFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
 	    e.printStackTrace();
 	    return defValue;
 	}
     }
 
-    @Override public void setNotes(String value)
+    @Override public void setAttributes(String value)
     {
 	NullCheck.notNull(value, "value");
-	final File notesFile = new File(dir, NOTES_FILE);
+	final File attrsFile = new File(dir, ATTRS_FILE);
 	try {
 	    createSubdirs(dir);
-	    writeTextFileSingleString(notesFile, value, "UTF-8");
+	    writeTextFileSingleString(attrsFile, value, "UTF-8");
 	}
 	catch(IOException e)
 	{
-	    Log.error(LOG_COMPONENT, "unable to write the local notes file  " + notesFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
+	    Log.error(LOG_COMPONENT, "unable to write the local attributes file  " + attrsFile.getAbsolutePath() + ": " + e.getClass().getName() + ": " + e.getMessage());
 	    e.printStackTrace();
 	}
     }

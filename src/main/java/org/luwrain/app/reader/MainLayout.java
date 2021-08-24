@@ -250,8 +250,8 @@ showSectionsTree,
 	    return false;
 	final int selected = notesArea.selectedIndex();
 	if (selected >= 0)
-	    app.getBookContainer().getAttr().addNote(selected, text); else
-	    app.getBookContainer().getAttr().addNote(0, text);
+	    app.getBookContainer().notes.addNote(selected, text); else
+	    app.getBookContainer().notes.addNote(0, text);
 	notesArea.refresh();
 	return true;
     }
@@ -272,7 +272,7 @@ showSectionsTree,
     {
 	final EditableListArea.Params params = new EditableListArea.Params();
 	params.context = getControlContext();
-	params.model = app.getBookContainer().getAttr();
+	params.model = app.getBookContainer().notes;
 	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
 	params.name = app.getStrings().notesAreaName();
 	params.clipboardSaver = (area, model, appearance, fromIndex, toIndex, clipboard)->{

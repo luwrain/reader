@@ -18,116 +18,64 @@
 package org.luwrain.app.reader;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 import com.google.gson.*;
 import com.google.gson.annotations.*;
 
 import org.luwrain.core.*;
-import org.luwrain.controls.*;
 import org.luwrain.io.api.books.v1.*;
 
-final class Attributes extends ArrayList<Note> implements EditableListArea.Model
+final class Attributes
 {
-        private final App app;
-    private FutureTask task = null;
+    private final Gson gson = new Gson();
+    private final Settings sett;
+    private final Books books;
 
-    Attributes(App app)
+    Attributes(Settings sett)
     {
-	NullCheck.notNull(app, "app");
-	this.app = app;
-	/*
-	try {
-	    app.getBooks().
-	}catch(IOException e)
+	NullCheck.notNull(sett, "sett");
+	this.sett = sett;
+	Books b = gson.fromJson(sett.getAttributes(""), Books.class);
+	if (b == null)
+	    b = new Books();
+	this.books = b;
+	if (books.attrs == null)
+	    books.attrs = new HashMap();
+    }
+
+    List<Note> getBookNotes(String bookId)
+    {
+	NullCheck.notEmpty(bookId, "bookId");
+	if (!books.attrs.containsKey(bookId))
 	{
-	    app.getLuwrain().crash(e);
+	    final Attrs attrs = new Attrs();
+	    attrs.notes = new ArrayList();
+	    books.attrs.put(bookId, attrs);
+	    save();
+	    return attrs.notes;
 	}
-	*/
+	final Attrs a = books.attrs.get(bookId);
+	final List<Note> n = a.notes;
+	a.notes = new ArrayList();
+	if (n != null)
+	    a.notes.addAll(n);
+	return a.notes;
     }
 
-    boolean addNote(int pos, String text)
+    void save()
     {
-	if (isBusy())
-	    return false;
-	return true;
+	sett.setAttributes(gson.toJson(this.books));
     }
 
-    boolean addNotes(int pos, List<Note> notes)
+    static private final class Attrs
     {
-	if (isBusy())
-	    return false;
-	return true;
+	@SerializedName("notes")
+	List<Note> notes;
     }
 
-    boolean removeNotes(int posFrom, int posTo)
+    static private final class Books
     {
-	if (isBusy())
-	return false;
-	return true;
-    }
-
-    int ggetNoteCount()
-    {
-	return 0;
-    }
-
-    Note getNote(int index)
-    {
-	return null;
-    }
-
-    @Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
-    {
-	NullCheck.notNull(supplier, "supplier");
-	if (pos < 0 || pos > size())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(size()));
-	final Object supplied = supplier.get();
-	if (supplied == null)
-	    return false;
-	final Object[] newNotes;
-	if (supplied instanceof Object[])
-	    newNotes = (Object[])supplied; else
-	    newNotes = new Object[]{supplied};
-	for(Object o: newNotes)
-	    if (!(o instanceof Note))
-		return false;
-	return addNotes(pos, Arrays.asList(Arrays.copyOf(newNotes, newNotes.length, Note[].class)));
-    }
-
-    @Override public boolean removeFromModel(int posFrom, int posTo)
-    {
-	if (posFrom < 0 || posFrom>= size())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(posFrom) + ") must be non-negative and less than " + String.valueOf(size()));
-		if (posTo < 0 || posTo >= size())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(posTo) + ") must be non-negative and less or equal than " + String.valueOf(size()));
-	return removeNotes(posFrom, posTo);
-    }
-
-    @Override public Object getItem(int index)
-    {
-	return get(index);
-    }
-
-    @Override public int getItemCount()
-    {
-	return size();
-    }
-
-    @Override public void refresh()
-    {
-    }
-
-    private boolean isBusy()
-    {
-	return task != null && !task.isDone();
-    }
-
-    static final class BookAttr
-    {
-	@SerializedName("charset")
-	private String charset = null;
-	@SerializedName("paragraphType")
-	private String paragraphType = null;
+	@SerializedName("attrs")
+	Map<String, Attrs> attrs = null;
     }
 }
