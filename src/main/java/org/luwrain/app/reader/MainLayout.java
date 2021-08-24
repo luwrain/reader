@@ -287,7 +287,7 @@ showSectionsTree,
 	final EditableListArea.Params params = new EditableListArea.Params();
 	params.context = getControlContext();
 	params.model = app.getBookContainer().notes;
-	params.appearance = new ListUtils.DefaultAppearance(params.context, Suggestions.LIST_ITEM);
+	params.appearance = new NotesAppearance();
 	params.name = app.getStrings().notesAreaName();
 	params.clipboardSaver = (area, model, appearance, fromIndex, toIndex, clipboard)->{
 	    /*
@@ -362,6 +362,46 @@ showSectionsTree,
 		}
 	    }
 	    return res.toArray(new Object[res.size()]);
+	}
+    }
+
+    private final class NotesAppearance implements ListArea.Appearance
+    {
+	@Override public void announceItem(Object item, Set<Flags> flags)
+	{
+	    NullCheck.notNull(item, "item");
+	    NullCheck.notNull(flags, "flags");
+	    final String text = getScreenAppearance(item, flags);
+	    if (!(item instanceof Note))
+	    {
+		app.setEventResponse(listItem(text, Suggestions.LIST_ITEM));
+		return;
+	    }
+	    final Note note = (Note)item;
+	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
+		app.setEventResponse(listItem(Sounds.SELECTED, text, Suggestions.LIST_ITEM)); else
+				app.setEventResponse(listItem(text, Suggestions.LIST_ITEM));
+	}
+	@Override public String getScreenAppearance(Object item, Set<Flags> flags)
+	{
+	    NullCheck.notNull(item, "item");
+	    NullCheck.notNull(flags, "flags");
+	    if (!(item instanceof Note))
+		return item.toString();
+	    final Note note = (Note)item;
+	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
+		return "Закладка по умолчанию";//FIXME:
+	    return note.getText() != null&& !note.getText().trim().isEmpty()?note.getText().trim():"Закладка без комментария";
+	}
+	@Override public int getObservableLeftBound(Object item)
+	{
+	    NullCheck.notNull(item, "item");
+	    return 0;
+	}
+	@Override public int getObservableRightBound(Object item)
+	{
+	    NullCheck.notNull(item, "item");
+	    return getScreenAppearance(item, EnumSet.noneOf(Flags.class)).length();
 	}
     }
 }

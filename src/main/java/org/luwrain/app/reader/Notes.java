@@ -29,7 +29,7 @@ import org.luwrain.io.api.books.v1.*;
 
 final class Notes implements EditableListArea.Model
 {
-        private final App app;
+    private final App app;
     private final Attributes attrs;
     private final List<Note> notes;
     private FutureTask task = null;
