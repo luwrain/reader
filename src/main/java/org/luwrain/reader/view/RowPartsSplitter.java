@@ -26,7 +26,7 @@ final class RowPartsSplitter
 {
     static private final String LOG_COMPONENT = "doctree";
 
-    final List<RowPart> res = new LinkedList();
+    final List<RowPart> res = new ArrayList();
 
     /** The index of the next row to be added to the current paragraph*/
     private int index = 0;

@@ -231,7 +231,7 @@ public class View
 	for(RowPart r: parts)
 	    r.absRowNum = r.relRowNum;
 	final Row[] rows = buildRows(parts);
-	final List<String> lines = new LinkedList<String>();
+	final List<String> lines = new ArrayList();
 	for(Row r: rows)
 	    lines.add(r.getText());
 	return lines.toArray(new String[lines.size()]);

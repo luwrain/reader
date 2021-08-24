@@ -83,7 +83,7 @@ int x = 0;
     {
 	//	if (isEmpty())
 	//	    return new Run[0];
-	final Vector<Run> res = new Vector<Run>();
+	final List<Run> res = new ArrayList();
 	for(int i = partsFrom;i < partsTo;++i)
 	{
 	    final Run run = parts[i].run;

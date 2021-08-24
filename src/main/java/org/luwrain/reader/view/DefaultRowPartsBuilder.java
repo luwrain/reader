@@ -26,8 +26,8 @@ final class DefaultRowPartsBuilder
 {
     static private final String LOG_COMPONENT = "doctree";
 
-    private final List<RowPart> parts = new LinkedList();
-    private final List<Paragraph> paragraphs = new LinkedList<Paragraph>();
+    private final List<RowPart> parts = new ArrayList();
+    private final List<Paragraph> paragraphs = new ArrayList();
 
 void onNode(Node node)
     {
