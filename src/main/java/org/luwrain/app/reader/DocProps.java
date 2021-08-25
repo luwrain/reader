@@ -42,13 +42,13 @@ final class DocProps
     boolean fillProperties(MutableLines lines)
     {
 	NullCheck.notNull(lines, "lines");
-	lines.beginLinesTrans();
-	lines.addLine("");
-	lines.addLine(strings.propertiesAreaUrl(doc.getProperty("url")));
-	lines.addLine(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
+	lines.update((text)->{
+	text.addLine("");
+	text.addLine(strings.propertiesAreaUrl(doc.getProperty("url")));
+	text.addLine(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
 	//	lines.addLine(strings.propertiesAreaCharset(item.charset));
-	lines.addLine("");
-	lines.endLinesTrans();
+	text.addLine("");
+	    });
 	return true;
     }
 }
