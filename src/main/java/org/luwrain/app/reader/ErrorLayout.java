@@ -76,11 +76,10 @@ final class ErrorLayout extends LayoutBase
 	sw.flush();
 	final String[] trace = sw.toString().split(System.lineSeparator(), -1);
 	errorArea.update((lines)->{
-	lines.addLine("");
-	for(String s: trace)
-	    lines.addLine(s);
-	lines.addLine("");
-	lines.endLinesTrans();
+		lines.addLine("");
+		for(String s: trace)
+		    lines.addLine(s);
+		lines.addLine("");
 	    });
     }
 
