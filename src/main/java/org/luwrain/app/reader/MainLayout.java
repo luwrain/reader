@@ -146,7 +146,7 @@ showSectionsTree,
     private void updateAfterJump()
     {
 	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
-	app.getLuwrain().setActiveArea(this.readerArea);
+	setActiveArea(this.readerArea);
     }
 
     private boolean actBack()
