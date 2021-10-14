@@ -102,15 +102,7 @@ public final class App extends AppBase<Strings>
 	NullCheck.notNull(uri, "uri");
 	final TaskId taskId = newTaskId();
 	runTask(taskId, ()->{
-		final Book book;
-		try {
-		    book = new BookFactory().newBook(getLuwrain(), uri.toString());
-		}
-		catch(IOException e)
-		{
-		    finishedTask(taskId, ()->showErrorLayout(e));
-		    return;
-		}
+		final Book book = new BookFactory().newBook(getLuwrain(), uri.toString());
 		finishedTask(taskId, ()->{
 			this.bookContainer = new BookContainer(this, book, org.luwrain.util.Sha1.getSha1(uri.toString(), "UTF-8"));
 			this.mainLayout = new MainLayout(this);
@@ -132,28 +124,10 @@ public final class App extends AppBase<Strings>
 	return true;
     }
 
-    void layout(AreaLayout layout)
-    {
-	NullCheck.notNull(layout, "layout");
-	getLayout().setBasicLayout(layout);
-    }
 
-    Layouts layouts()
+    @Override public void onException(Throwable e)
     {
-	return new Layouts(){
-	    @Override public void remoteBooks()
-	    {
-		getLayout().setBasicLayout(remoteBooksLayout.getLayout());
-		remoteBooksLayout.listArea.refresh();
-		getLuwrain().announceActiveArea();
-	    }
-	    	    @Override public void localRepo()
-	    {
-		getLayout().setBasicLayout(localRepoLayout.getLayout());
-		localRepoLayout.listArea.refresh();
-		getLuwrain().announceActiveArea();
-	    }
-	};
+	showErrorLayout(e);
     }
 
     void showErrorLayout(Throwable e)
@@ -164,9 +138,10 @@ public final class App extends AppBase<Strings>
 	    errorLayout = new ErrorLayout(this, e, ()->{
 		    setAreaLayout(mainLayout);
 		    getLuwrain().announceActiveArea();
+		    return true;
 		}); else
 	    errorLayout = new ErrorLayout(this, e, null);
-	layout(errorLayout.getLayout());
+	setAreaLayout(errorLayout);
 	getLuwrain().playSound(Sounds.ERROR);
     }
 
@@ -238,6 +213,24 @@ public final class App extends AppBase<Strings>
     LocalRepo getLocalRepo()
     {
 	return localRepo;
+    }
+
+    Layouts layouts()
+    {
+	return new Layouts(){
+	    @Override public void remoteBooks()
+	    {
+		getLayout().setBasicLayout(remoteBooksLayout.getLayout());
+		remoteBooksLayout.listArea.refresh();
+		getLuwrain().announceActiveArea();
+	    }
+	    @Override public void localRepo()
+	    {
+		getLayout().setBasicLayout(localRepoLayout.getLayout());
+		localRepoLayout.listArea.refresh();
+		getLuwrain().announceActiveArea();
+	    }
+	};
     }
 
     interface Layouts

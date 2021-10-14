@@ -18,10 +18,12 @@
 package org.luwrain.app.reader;
 
 import java.io.*;
+import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
+import org.luwrain.util.Connections.*;
 import org.luwrain.app.base.*;
 
 final class ErrorLayout extends LayoutBase
@@ -30,45 +32,45 @@ final class ErrorLayout extends LayoutBase
     private final Throwable ex;
     private final SimpleArea errorArea;
 
-    ErrorLayout(App app, Throwable ex, Runnable closing)
+    ErrorLayout(App app, Throwable ex, ActionHandler closing)
     {
-	NullCheck.notNull(app, "app");
+	super(app);
 	NullCheck.notNull(ex, "ex");
 	this.app = app;
 	this.ex = ex;
-	this.errorArea = new SimpleArea(new DefaultControlContext(app.getLuwrain()), "FIXME") {
-		@Override public boolean onInputEvent(InputEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (closing != null)
-		    {
-		    if (app.onInputEvent(this, event, closing))
-			return true;
-		    } else
-					    if (app.onInputEvent(this, event))
-			return true;
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(SystemEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
-			return true;
-		    return super.onSystemEvent(event);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    if (app.onAreaQuery(this, query))
-			return true;
-		    return super.onAreaQuery(query);
-		}
-	    };
+	this.errorArea = new SimpleArea(getControlContext(), "Ошибка");
 	fillContent();
+	if (closing != null)
+	    setCloseHandler(closing);
+	setAreaLayout(errorArea, actions());
     }
 
     private void fillContent()
     {
+ 	if (ex instanceof InvalidHttpResponseCodeException)
+	{
+	    final InvalidHttpResponseCodeException e = (InvalidHttpResponseCodeException)ex;
+	    errorArea.update((lines)->{
+		    lines.addLine("");
+		    lines.addLine("Ошибка " + String.valueOf(e.getHttpCode()));
+		    lines.addLine("");
+		});
+	    return;
+	}
+
+	 	if (ex instanceof UnknownHostException)
+	{
+	    final UnknownHostException e = (UnknownHostException)ex;
+	    errorArea.update((lines)->{
+		    lines.addLine("");
+		    lines.addLine("Неизвестный хост: " + e.getMessage());
+		    lines.addLine("");
+		});
+	    return;
+	}
+
+		
+	
 	final StringWriter sw = new StringWriter();
 	final PrintWriter pw = new PrintWriter(sw);
 	ex.printStackTrace(pw);
@@ -81,10 +83,5 @@ final class ErrorLayout extends LayoutBase
 		    lines.addLine(s);
 		lines.addLine("");
 	    });
-    }
-
-    AreaLayout getLayout()
-    {
-	return new AreaLayout(errorArea);
     }
 }
