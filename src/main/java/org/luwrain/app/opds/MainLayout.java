@@ -40,58 +40,46 @@ final class MainLayout extends LayoutBase
 	super(app);
 	this.app = app;
 
-	final Actions librariesActions;
-	{
-	    final ListArea.Params params = new ListArea.Params();
-	    params.context = getControlContext();
-	    params.model = new ListUtils.ListModel(app.libraries);
-	    params.appearance = new ListUtils.DefaultAppearance(getControlContext());
-	    params.clickHandler = (area, index, obj)->onLibraryClick(obj);
-	    params.name = app.getStrings().librariesAreaName();
-	    this.librariesArea = new ListArea(params){
-		    @Override public boolean onSystemEvent(SystemEvent event)
+	this.librariesArea = new ListArea(listParams((params)->{
+		    params.model = new ListUtils.ListModel(app.libraries);
+		    params.appearance = new ListUtils.DefaultAppearance(getControlContext());
+		    params.clickHandler = (area, index, obj)->onLibraryClick(obj);
+		    params.name = app.getStrings().librariesAreaName();
+		})){
+		@Override public boolean onSystemEvent(SystemEvent event)
+		{
+		    NullCheck.notNull(event, "event");
+		    if (event.getType() != SystemEvent.Type.REGULAR)
+			return super.onSystemEvent(event);
+		    switch(event.getCode())
 		    {
-			NullCheck.notNull(event, "event");
-			if (event.getType() != SystemEvent.Type.REGULAR)
-			    return super.onSystemEvent(event);
-			switch(event.getCode())
-			{
-			case PROPERTIES:
-			    return editLibraryProps();
-			default:
-			    return super.onSystemEvent(event);
-			}
+		    case PROPERTIES:
+			return editLibraryProps();
+		    default:
+			return super.onSystemEvent(event);
 		    }
-		};
-	    librariesActions = actions(
-				       action("new-library", "Подключить новую библиотеку", new InputEvent(InputEvent.Special.INSERT), this::actNewLibrary)
-				       );
-	}
+		}
+	    };
+	final Actions librariesActions = actions(
+						 action("new-library", "Подключить новую библиотеку", new InputEvent(InputEvent.Special.INSERT), this::actNewLibrary)
+						 );
 
-	final Actions listActions;
-	{
-	    final ListArea.Params params = new ListArea.Params();
-	    params.context = getControlContext();
-	    params.model = new ListUtils.ListModel(app.entries);
-	    params.appearance = new Appearance(getLuwrain(), app.getStrings());
-	    params.clickHandler = (area, index, obj)->onListClick(obj);
-	    params.name = app.getStrings().itemsAreaName();
-	    this.listArea = new ListArea(params);
-	    listActions = actions();
-	}
+	this.listArea = new ListArea(listParams((params)->{
+		    params.model = new ListUtils.ListModel(app.entries);
+		    params.appearance = new Appearance(getLuwrain(), app.getStrings());
+		    params.clickHandler = (area, index, obj)->onListClick(obj);
+		    params.name = app.getStrings().itemsAreaName();
+		}));
+	final Actions listActions = actions();
 
-	final Actions detailsActions;
-	{
-	    final ListArea.Params params = new ListArea.Params();
-	    params.context = getControlContext();
-	    params.model = new ListUtils.FixedModel();
-	    params.appearance = new ListUtils.DefaultAppearance(getControlContext(), Suggestions.CLICKABLE_LIST_ITEM);
-	    //	params.clickHandler = (area, index, obj)->onClick(obj);
-	    params.name = app.getStrings().detailsAreaName();
-	    this.detailsArea = new ListArea(params);
-	    detailsActions = actions();
-	    //detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(obj));
-	}
+	this.detailsArea = new ListArea(listParams((params)->{
+		    params.model = new ListUtils.FixedModel();
+		    params.appearance = new ListUtils.DefaultAppearance(getControlContext(), Suggestions.CLICKABLE_LIST_ITEM);
+		    //	params.clickHandler = (area, index, obj)->onClick(obj);
+		    params.name = app.getStrings().detailsAreaName();
+		}));
+	final Actions  detailsActions = actions();
+	//detailsArea.setListClickHandler((area, index, obj)->actions.onLinkClick(obj));
 
 	setAreaLayout(AreaLayout.LEFT_TOP_BOTTOM, librariesArea, librariesActions, listArea, listActions, detailsArea, detailsActions);
     }
