@@ -38,7 +38,7 @@ final class ErrorLayout extends LayoutBase
 	NullCheck.notNull(ex, "ex");
 	this.app = app;
 	this.ex = ex;
-	this.errorArea = new SimpleArea(getControlContext(), "Ошибка");
+	this.errorArea = new SimpleArea(getControlContext(), app.getStrings().errorAreaName());
 	fillContent();
 	if (closing != null)
 	    setCloseHandler(closing);

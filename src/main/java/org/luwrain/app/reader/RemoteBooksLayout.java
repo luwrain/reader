@@ -31,37 +31,21 @@ import org.luwrain.io.api.books.v1.collection.*;
 final class RemoteBooksLayout extends LayoutBase implements ListArea.ClickHandler
 {
     static private final String LOG_COMPONENT = App.LOG_COMPONENT;
-    
+
     private App app;
     final ListArea listArea;
 
     RemoteBooksLayout(App app)
     {
-	NullCheck.notNull(app, "app");
+	super(app);
 	this.app = app;
-	this.listArea = new ListArea(createListParams()) {
-		@Override public boolean onInputEvent(InputEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onInputEvent(this, event))
-			return true;
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(SystemEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
-			return true;
-		    return super.onSystemEvent(event);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    if (app.onAreaQuery(this, query))
-			return true;
-		    return super.onAreaQuery(query);
-		}
-	    };
+	this.listArea = new ListArea(listParams((params)->{
+		    params.name = "Ваша коллекция";
+		    params.model = new ListUtils.ArrayModel(()->app.getRemoteBooks());
+		    params.appearance = new ListUtils.DefaultAppearance(params.context);
+		    params.clickHandler = this;
+		}));
+	setAreaLayout(listArea, actions());
     }
 
     @Override public boolean onListClick(ListArea listArea, int index, Object obj)
@@ -125,21 +109,5 @@ app.open(mainFile.toURI());
 app.open(mainFile.toURI());
 		    });
 	    });
-    }
-
-    private ListArea.Params createListParams()
-    {
-	final ListArea.Params params = new ListArea.Params();
-	params.context = new DefaultControlContext(app.getLuwrain());
-	params.name = "Ваша коллекция";
-	params.model = new ListUtils.ArrayModel(()->app.getRemoteBooks());
-	params.appearance = new ListUtils.DefaultAppearance(params.context);
-	params.clickHandler = this;
-	return params;
-    }
-
-    AreaLayout getLayout()
-    {
-	return new AreaLayout(listArea);
     }
 }

@@ -94,7 +94,7 @@ public final class App extends AppBase<Strings>
 	{
 	    showErrorLayout(e);
 	}
-	return startingLayout.getLayout();
+	return startingLayout.getAreaLayout();
     }
 
     void open(URI uri)
@@ -220,7 +220,7 @@ public final class App extends AppBase<Strings>
 	return new Layouts(){
 	    @Override public void remoteBooks()
 	    {
-		getLayout().setBasicLayout(remoteBooksLayout.getLayout());
+		setAreaLayout(remoteBooksLayout);
 		remoteBooksLayout.listArea.refresh();
 		getLuwrain().announceActiveArea();
 	    }

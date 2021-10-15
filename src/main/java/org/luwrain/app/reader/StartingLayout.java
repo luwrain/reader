@@ -39,35 +39,9 @@ final class StartingLayout extends LayoutBase
 
     StartingLayout(App app)
     {
-	NullCheck.notNull(app, "app");
+	super(app);
 	this.app = app;
-	this.wizardArea = new WizardArea(new DefaultControlContext(app.getLuwrain())) {
-		@Override public boolean onInputEvent(InputEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onInputEvent(this, event))
-			return true;
-		    return super.onInputEvent(event);
-		}
-		@Override public boolean onSystemEvent(SystemEvent event)
-		{
-		    NullCheck.notNull(event, "event");
-		    if (app.onSystemEvent(this, event))
-			return true;
-		    return super.onSystemEvent(event);
-		}
-		@Override public boolean onAreaQuery(AreaQuery query)
-		{
-		    NullCheck.notNull(query, "query");
-		    if (app.onAreaQuery(this, query))
-			return true;
-		    return super.onAreaQuery(query);
-		}
-		@Override public Action[] getAreaActions()
-		{
-		    return new Action[0];
-		}
-	    };
+	this.wizardArea = new WizardArea(getControlContext()) ;
 	this.introFrame = wizardArea.newFrame()
 	.addText(app.getStrings().wizardGreetingIntro())
 	.addClickable(app.getStrings().wizardGreetingRemote(), (values)->connectFrame())
@@ -82,6 +56,7 @@ final class StartingLayout extends LayoutBase
 	.addInput(app.getStrings().wizardConfirmationCode(), "")
 	.addClickable(app.getStrings().wizardConfirmationConfirm(), (values)->confirm(values));
 	wizardArea.show(introFrame);
+	setAreaLayout(wizardArea, actions());
     }
 
     private boolean connectFrame()
@@ -265,10 +240,5 @@ final class StartingLayout extends LayoutBase
 		    return;
 		}
 	    });
-    }
-
-    AreaLayout getLayout()
-    {
-	return new AreaLayout(wizardArea);
     }
 }
