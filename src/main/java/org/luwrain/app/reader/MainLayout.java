@@ -39,7 +39,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     final TreeArea treeArea;
     final ReaderArea readerArea;
-    private final EditableListArea notesArea;
+    private final EditableListArea<Note> notesArea;
     private final Actions treeActions, readerActions, notesActions;
 
     private final BookContainer bookContainer;
@@ -126,7 +126,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 											     openFile, openUrl
 											     );
 
-								this.notesArea = new EditableListArea(createNotesParams()) ;
+								this.notesArea = new EditableListArea<>(createNotesParams()) ;
 								this.notesActions = actions(
 											    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
 showSectionsTree,
@@ -282,9 +282,9 @@ showSectionsTree,
 	return true;
     }
 
-    private EditableListArea.Params createNotesParams()
+    private EditableListArea.Params<Note> createNotesParams()
     {
-	final EditableListArea.Params params = new EditableListArea.Params();
+	final EditableListArea.Params<Note> params = new EditableListArea.Params();
 	params.context = getControlContext();
 	params.model = app.getBookContainer().notes;
 	params.appearance = new NotesAppearance();
@@ -365,43 +365,24 @@ showSectionsTree,
 	}
     }
 
-    private final class NotesAppearance implements ListArea.Appearance
+    private final class NotesAppearance extends ListUtils.AbstractAppearance<Note>
     {
-	@Override public void announceItem(Object item, Set<Flags> flags)
+	@Override public void announceItem(Note note, Set<Flags> flags)
 	{
-	    NullCheck.notNull(item, "item");
+	    NullCheck.notNull(note, "note");
 	    NullCheck.notNull(flags, "flags");
-	    final String text = getScreenAppearance(item, flags);
-	    if (!(item instanceof Note))
-	    {
-		app.setEventResponse(listItem(text, Suggestions.LIST_ITEM));
-		return;
-	    }
-	    final Note note = (Note)item;
+	    final String text = getScreenAppearance(note, flags);
 	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
 		app.setEventResponse(listItem(Sounds.SELECTED, text, Suggestions.LIST_ITEM)); else
-				app.setEventResponse(listItem(text, Suggestions.LIST_ITEM));
+		app.setEventResponse(listItem(text, Suggestions.LIST_ITEM));
 	}
-	@Override public String getScreenAppearance(Object item, Set<Flags> flags)
+	@Override public String getScreenAppearance(Note note, Set<Flags> flags)
 	{
-	    NullCheck.notNull(item, "item");
+	    NullCheck.notNull(note, "note");
 	    NullCheck.notNull(flags, "flags");
-	    if (!(item instanceof Note))
-		return item.toString();
-	    final Note note = (Note)item;
 	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
 		return "Закладка по умолчанию";//FIXME:
 	    return note.getText() != null&& !note.getText().trim().isEmpty()?note.getText().trim():"Закладка без комментария";
-	}
-	@Override public int getObservableLeftBound(Object item)
-	{
-	    NullCheck.notNull(item, "item");
-	    return 0;
-	}
-	@Override public int getObservableRightBound(Object item)
-	{
-	    NullCheck.notNull(item, "item");
-	    return getScreenAppearance(item, EnumSet.noneOf(Flags.class)).length();
 	}
     }
 }

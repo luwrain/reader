@@ -32,7 +32,7 @@ final class MainLayout extends LayoutBase
 {
     private final App app;
     final ListArea librariesArea;
-    final ListArea listArea;
+    final ListArea<Opds.Entry> listArea;
     final ListArea detailsArea;
 
     MainLayout(App app)
@@ -64,10 +64,10 @@ final class MainLayout extends LayoutBase
 						 action("new-library", "Подключить новую библиотеку", new InputEvent(InputEvent.Special.INSERT), this::actNewLibrary)
 						 );
 
-	this.listArea = new ListArea(listParams((params)->{
-		    params.model = new ListUtils.ListModel(app.entries);
+	this.listArea = new ListArea<Opds.Entry>(listParams((params)->{
+		    params.model = new ListUtils.ListModel<>(app.entries);
 		    params.appearance = new Appearance(getLuwrain(), app.getStrings());
-		    params.clickHandler = (area, index, obj)->onListClick(obj);
+		    params.clickHandler = (area, index, entry)->onListClick(entry);
 		    params.name = app.getStrings().itemsAreaName();
 		}));
 	final Actions listActions = actions();
@@ -123,12 +123,9 @@ final class MainLayout extends LayoutBase
 	return app.open(url(library.url));
     }
 
-    private boolean onListClick(Object obj)
+    private boolean onListClick(Opds.Entry entry)
     {
-	NullCheck.notNull(obj, "obj");
-	if (!(obj instanceof Opds.Entry))
-	    return false;
-	final Opds.Entry entry = (Opds.Entry)obj;
+	NullCheck.notNull(entry, "entry");
 	onEntry(entry);
 	listArea.refresh();
 	return true;

@@ -22,7 +22,9 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.app.opds.Opds.Entry;
 
-final class Appearance implements ListArea.Appearance
+import static org.luwrain.core.DefaultEventResponse.*;
+
+final class Appearance implements ListArea.Appearance<Opds.Entry>
 {
     private final Luwrain luwrain;
     private final Strings strings;
@@ -35,46 +37,33 @@ final class Appearance implements ListArea.Appearance
 	this.strings = strings;
     }
 
-    @Override public void announceItem(Object item, Set<Flags> flags)
+    @Override public void announceItem(Opds.Entry entry, Set<Flags> flags)
     {
-	NullCheck.notNull(item, "item");
+	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(flags, "flags");
-	if (item instanceof Opds.Entry)
-	{
-	    final Opds.Entry entry = (Opds.Entry)item;
-	    luwrain.setEventResponse(DefaultEventResponse.listItem(getString(entry), Suggestions.CLICKABLE_LIST_ITEM));
-	    return;
-	}
-	luwrain.setEventResponse(DefaultEventResponse.listItem(item.toString(), Suggestions.CLICKABLE_LIST_ITEM));
+	luwrain.setEventResponse(listItem(getString(entry), Suggestions.CLICKABLE_LIST_ITEM));
     }
 
-    @Override public String getScreenAppearance(Object item, Set<Flags> flags)
+    @Override public String getScreenAppearance(Opds.Entry entry, Set<Flags> flags)
     {
-	NullCheck.notNull(item, "item");
+	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(flags, "flags");
-	if (item instanceof Opds.Entry)
-	{
-	    final Opds.Entry entry = (Opds.Entry)item;
-	    if (Utils.isCatalogOnly(entry))
-		return "[" + getString(entry) + "]";
-	    return " " + getString(entry) + " ";
-	}
-	return " " + item.toString() + " ";
+	if (Utils.isCatalogOnly(entry))
+	    return "[" + getString(entry) + "]";
+	return " " + getString(entry) + " ";
     }
 
-    @Override public int getObservableLeftBound(Object item)
+    @Override public int getObservableLeftBound(Opds.Entry entry)
     {
-	return item != null?1:0;
+	return entry != null?1:0;
     }
 
-    @Override public int getObservableRightBound(Object item)
+    @Override public int getObservableRightBound(Opds.Entry entry)
     {
-	if (item == null)
+	if (entry == null)
 	    return 0;
-	if (item instanceof Entry)
-	    return getString((Entry)item).length() + 1;
-	return item.toString().length() + 1;    
-}
+	return getString(entry).length() + 1;
+    }
 
     static private String getString(Entry entry)
     {
