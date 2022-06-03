@@ -4,10 +4,10 @@
   <parent>
     <groupId>org.luwrain</groupId>
     <artifactId>luwrain-parent</artifactId>
-    <version>1.9.02</version>
+    <version>1.9.3</version>
   </parent>
   <artifactId>luwrain-reader</artifactId>
-  <name>A personal information manager for LUWRAIN</name>
+  <name>LUWRAIN Reader</name>
   <url>https://github.com/luwrain/reader/</url>
   <packaging>jar</packaging>
   <dependencies>
@@ -20,32 +20,6 @@
       <groupId>org.luwrain</groupId>
       <artifactId>luwrain</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.luwrain</groupId>
-      <artifactId>luwrain-books-api</artifactId>
-      <version>0.2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.pdfbox</groupId>
-      <artifactId>pdfbox</artifactId>
-      <version>2.0.20</version>
-	    </dependency>
-
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>javax.mail-api</artifactId>
-      <version>1.6.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dizitart</groupId>
-      <artifactId>nitrite</artifactId>
-      <version>3.4.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.rometools</groupId>
-      <artifactId>rome</artifactId>
-      <version>1.14.1</version>
     </dependency>
   </dependencies>
   <build>
