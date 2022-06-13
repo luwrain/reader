@@ -109,17 +109,7 @@ public final class UrlLoader
 		this.selectedCharset = this.requestedCharset;
 	    if (this.selectedCharset.isEmpty())
 		this.selectedCharset = DEFAULT_CHARSET;
-	    Log.debug(LOG_COMPONENT, "trying to use extensible document builders, contentType=" + selectedContentType + ", charset=" + selectedCharset);
-	    final DocumentBuilderHook builderHook = new DocumentBuilderHook(luwrain);
-	    final Document hookDoc = builderHook.build(Utils.extractBaseContentType(selectedContentType), new Properties(), tmpFile.toFile());
-	    if (hookDoc != null)
 	    {
-		Log.debug(LOG_COMPONENT, "the builder hook  has constructed the document");
-		res = new Result();
-		res.doc = hookDoc;
-	    } else
-	    {
-		Log.debug(LOG_COMPONENT, "the builder hook failed");
 		final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, Utils.extractBaseContentType(selectedContentType));
 		if (builder == null)
 		    throw new IOException("No suitable handler for the content type: " + selectedContentType);

@@ -77,7 +77,7 @@ final URL audioFileUrl;
 		this.area = area;
 		this.currentPlaylist = new FixedPlaylist(audioFileUrl.toString());
 		//luwrain.playSound(Sounds.PLAYING);
-		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS, null);
+		player.play(currentPlaylist, 0, audioInfo.beginPosMsec(), Player.DEFAULT_FLAGS);
 		luwrain.silence();
 		return true;
 	    }
