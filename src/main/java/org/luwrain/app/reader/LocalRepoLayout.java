@@ -30,12 +30,12 @@ import org.luwrain.io.api.books.v1.collection.*;
 
 final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 {
-    private App app;
+    final App app;
     final ListArea listArea;
 
     LocalRepoLayout(App app)
     {
-	NullCheck.notNull(app, "app");
+	super(app);
 	this.app = app;
 	this.listArea = new ListArea(createListParams()) {
 		final Actions actions = actions(
@@ -43,14 +43,12 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 						);
 		@Override public boolean onInputEvent(InputEvent event)
 		{
-		    NullCheck.notNull(event, "event");
 		    if (app.onInputEvent(this, event))
 			return true;
 		    return super.onInputEvent(event);
 		}
 		@Override public boolean onSystemEvent(SystemEvent event)
 		{
-		    NullCheck.notNull(event, "event");
 		    if (app.onSystemEvent(this, event, actions))
 			return true;
 		    return super.onSystemEvent(event);
@@ -67,11 +65,11 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 		    return actions.getAreaActions();
 		}
 	    };
+	setAreaLayout(listArea, null);
     }
 
     @Override public boolean onListClick(ListArea listArea, int index, Object obj)
     {
-	NullCheck.notNull(obj, "obj");
 	if (!(obj instanceof Book))
 	    return false;
 	final Book book = (Book)obj;
@@ -112,10 +110,5 @@ final class LocalRepoLayout extends LayoutBase implements ListArea.ClickHandler
 	params.appearance = new ListUtils.DefaultAppearance(params.context);
 	params.clickHandler = this;
 	return params;
-    }
-
-    AreaLayout getLayout()
-    {
-	return new AreaLayout(listArea);
     }
 }

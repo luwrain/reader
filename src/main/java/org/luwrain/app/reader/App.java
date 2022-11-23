@@ -44,15 +44,10 @@ public final class App extends AppBase<Strings>
     private LocalRepo localRepo = null;
     private Attributes attributes = null;
     private AudioPlaying audioPlaying = null;
-    private final org.luwrain.io.api.books.v1.Books books;
-    private org.luwrain.io.api.books.v1.Book[] remoteBooks = new org.luwrain.io.api.books.v1.Book[0];
-    private String accessToken = "";
 
     private BookContainer bookContainer = null;
 
     private MainLayout mainLayout = null;
-    private StartingLayout startingLayout = null;
-    private RemoteBooksLayout remoteBooksLayout = null;
     private LocalRepoLayout localRepoLayout = null;
 
     public App() { this(null); }
@@ -60,7 +55,6 @@ public final class App extends AppBase<Strings>
     {
 	super(Strings.NAME, Strings.class, "luwrain.reader");
 	this.arg = arg;
-	this.books = new org.luwrain.io.api.books.v1.Factory().newInstance();
     }
 
     @Override protected AreaLayout onAppInit()
@@ -82,8 +76,6 @@ public final class App extends AppBase<Strings>
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
 	    this.audioPlaying = null;
-	this.startingLayout = new StartingLayout(this);
-	this.remoteBooksLayout = new RemoteBooksLayout(this);
 	this.localRepoLayout = new LocalRepoLayout(this);
 	setAppName(getStrings().appName());
 	try {
@@ -94,7 +86,7 @@ public final class App extends AppBase<Strings>
 	{
 	    showErrorLayout(e);
 	}
-	return startingLayout.getAreaLayout();
+	return localRepoLayout.getAreaLayout();
     }
 
     void open(URI uri)
@@ -172,38 +164,6 @@ public final class App extends AppBase<Strings>
     Attributes getAttributes() { return this.attributes; }
     Conversations getConv() { return this.conv; }
     AudioPlaying getAudioPlaying() { return this.audioPlaying; }
-    org.luwrain.io.api.books.v1.Books getBooks() { return this.books; }
-    org.luwrain.io.api.books.v1.Book[] getRemoteBooks() { return this.remoteBooks; }
-
-    org.luwrain.io.api.books.v1.Download.Listener getBooksDownloadListener()
-    {
-	return new org.luwrain.io.api.books.v1.Download.Listener(){
-	    @Override public boolean interrupting()
-	    {
-		return cancelled;
-	    }
-	    @Override public void processed(int chunkBytes, long totalBytes)
-	    {
-	    }
-	};
-    }
-
-    void setRemoteBooks(org.luwrain.io.api.books.v1.Book[] remoteBooks)
-    {
-	NullCheck.notNullItems(remoteBooks, "remoteBooks");
-	this.remoteBooks = remoteBooks;
-    }
-
-    String getAccessToken()
-    {
-	return accessToken;
-    }
-
-    void setAccessToken(String accessToken)
-    {
-	NullCheck.notEmpty(accessToken, "accessToken");
-	this.accessToken = accessToken;
-    }
 
     BookContainer getBookContainer()
     {
@@ -218,15 +178,9 @@ public final class App extends AppBase<Strings>
     Layouts layouts()
     {
 	return new Layouts(){
-	    @Override public void remoteBooks()
-	    {
-		setAreaLayout(remoteBooksLayout);
-		remoteBooksLayout.listArea.refresh();
-		getLuwrain().announceActiveArea();
-	    }
 	    @Override public void localRepo()
 	    {
-		getLayout().setBasicLayout(localRepoLayout.getLayout());
+		setAreaLayout(localRepoLayout);
 		localRepoLayout.listArea.refresh();
 		getLuwrain().announceActiveArea();
 	    }
@@ -235,7 +189,6 @@ public final class App extends AppBase<Strings>
 
     interface Layouts
     {
-	void remoteBooks();
 	void localRepo();
     }
 }
