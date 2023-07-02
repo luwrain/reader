@@ -78,7 +78,7 @@ final class Notes implements EditableListArea.Model
 	final Note note = new Note();
 	note.setType(Note.NOTE);
 	note.setPos(String.valueOf(pos));
-	note.setText(text);
+	//	note.setText(text);
 	this.notes.add(0, note);
 	this.attrs.save();
 	return true;

@@ -382,7 +382,7 @@ showSectionsTree,
 	    NullCheck.notNull(flags, "flags");
 	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
 		return "Закладка по умолчанию";//FIXME:
-	    return note.getText() != null&& !note.getText().trim().isEmpty()?note.getText().trim():"Закладка без комментария";
+	    return " без комментария";
 	}
     }
 }
