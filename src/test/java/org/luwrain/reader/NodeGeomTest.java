@@ -1,15 +1,31 @@
+/*
+   Copyright 2012-2024 Michael Pozhidaev <msp@luwrain.org>
+
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.reader;
 
-import org.junit.*;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.luwrain.reader.view.*;
 
-public class NodeGeomTest extends Assert
+public class NodeGeomTest
 {
     private Node testRoot;
 
-    @Before public void createTestRoot()
+    @BeforeEach public void createTestRoot()
     {
 	testRoot = new Node(Node.Type.ROOT);
 	Paragraph para = new Paragraph();
@@ -31,7 +47,7 @@ public class NodeGeomTest extends Assert
 	testRoot.subnodes = new Node[]{para, table1};
     }
 
-    @Ignore @Test public void normalWidth()
+    @Disabled @Test public void normalWidth()
     {
 	final int WIDTH = 20;
 	//FIXME:testRoot.calcWidth(WIDTH);
@@ -42,7 +58,7 @@ public class NodeGeomTest extends Assert
 	assertTrue(testRoot.subnodes[1].width == WIDTH);
     }
 
-    @Ignore @Test public void insufficientWidth()
+    @Disabled @Test public void insufficientWidth()
     {
 	final int WIDTH = 10;
 	//FIXME:testRoot.calcWidth(WIDTH);
@@ -59,7 +75,7 @@ public class NodeGeomTest extends Assert
 	assertTrue(testRoot.subnodes[1].subnodes[1].subnodes[1].width == 8);
     }
 
-    @Ignore @Test public void height()
+    @Disabled @Test public void height()
     {
 	/*
 	final int WIDTH = 20;
@@ -80,7 +96,7 @@ assertTrue(testRoot.subnodes[1].subnodes[1].height == 2);
 */
     }
 
-    @Ignore @Test public void position()
+    @Disabled @Test public void position()
     {
 	/*
 	final int WIDTH = 20;

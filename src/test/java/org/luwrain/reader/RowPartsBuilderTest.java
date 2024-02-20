@@ -1,13 +1,29 @@
+/*
+   Copyright 2012-2024 Michael Pozhidaev <msp@luwrain.org>
+
+   This file is part of LUWRAIN.
+
+   LUWRAIN is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
+
+   LUWRAIN is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+*/
 
 package org.luwrain.reader;
 
-import org.junit.*;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class RowPartsBuilderTest extends Assert
+public class RowPartsBuilderTest
 {
     private Node testRoot;
 
-    @Before public void createTestRoot()
+    @BeforeEach public void createTestRoot()
     {
 	/*
 	testRoot = new Node(Node.ROOT);
@@ -31,7 +47,7 @@ public class RowPartsBuilderTest extends Assert
 	*/
     }
 
-    @Ignore @Test public void runsSingle()
+    @Disabled @Test public void runsSingle()
     {
 	/*
 	RowPartsBuilder builder = new RowPartsBuilder();
@@ -45,7 +61,7 @@ public class RowPartsBuilderTest extends Assert
 	*/
     }
 
-    @Ignore @Test public void runsDouble()
+    @Disabled @Test public void runsDouble()
     {
 	/*
 	RowPartsBuilder builder = new RowPartsBuilder();
@@ -76,7 +92,7 @@ public class RowPartsBuilderTest extends Assert
 	*/
     }
 
-    @Ignore @Test public void runsNonSpacesBreak()
+    @Disabled @Test public void runsNonSpacesBreak()
     {
 	/*
 	RowPartsBuilder builder = new RowPartsBuilder();
@@ -101,7 +117,7 @@ public class RowPartsBuilderTest extends Assert
 	*/
     }
 
-    @Ignore @Test public void runsInsufficientForFirstWord()
+    @Disabled @Test public void runsInsufficientForFirstWord()
     {
 	/*
 	RowPartsBuilder builder = new RowPartsBuilder();
@@ -119,7 +135,7 @@ public class RowPartsBuilderTest extends Assert
 	*/
     }
 
-    @Ignore @Test public void nodes()
+    @Disabled @Test public void nodes()
     {
 	/*
 	final int WIDTH = 24;
