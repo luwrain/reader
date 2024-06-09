@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
+   Copyright 2012-2024 Michael Pozhidaev <msp@luwrain.org>
    Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
@@ -30,7 +30,7 @@ public final class Extension extends EmptyExtension
 
     @Override public Command[] getCommands(Luwrain luwrain)
     {
-	return new Command[]{ new SimpleShortcutCommand("reader"), 	    new SimpleShortcutCommand("opds") };
+	return new Command[]{ new SimpleShortcutCommand("reader") };
     }
 
     /*	    new Command(){
@@ -121,7 +121,7 @@ public final class Extension extends EmptyExtension
 
     @Override public ExtensionObject[] getExtObjects(Luwrain luwrain)
     {
-	return new ExtensionObject[]{ new SimpleShortcut("opds", org.luwrain.app.opds.App.class),
+	return new ExtensionObject[]{
 
 	    new Shortcut() {
 		@Override public String getExtObjName()
