@@ -1,1 +1,5 @@
+build
+.gradle
+gradle
+gradlew*
 target
