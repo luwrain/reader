@@ -36,6 +36,7 @@ interface Settings
     static Settings create(Luwrain luwrain)
     {
 	NullCheck.notNull(luwrain, "luwrain");
-	return RegistryProxy.create(luwrain.getRegistry(), PATH, Settings.class);
-    }
+	//FIXME:newreg return RegistryProxy.create(luwrain.getRegistry(), PATH, Settings.class);
+	return null;
+}
 }
