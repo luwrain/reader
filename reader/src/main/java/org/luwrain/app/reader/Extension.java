@@ -1,5 +1,5 @@
 /*
-   Copyright 2012-2024 Michael Pozhidaev <msp@luwrain.org>
+   Copyright 2012-2025 Michael Pozhidaev <msp@luwrain.org>
    Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
 
    This file is part of LUWRAIN.
@@ -123,14 +123,9 @@ public final class Extension extends EmptyExtension
     {
 	return new ExtensionObject[]{
 
-	    new Shortcut() {
-		@Override public String getExtObjName()
-		{
-		    return "reader";
-		}
+	    new DefaultShortcut("reader", App.class) {
 		@Override public Application[] prepareApp(String[] args)
 		{
-		    NullCheck.notNull(args, "args");
 		    if (args.length < 1)
 			return new Application[]{new App()};
 		    if (args.length == 1)
