@@ -43,11 +43,11 @@ final class DocProps
     {
 	NullCheck.notNull(lines, "lines");
 	lines.update((text)->{
-	text.addLine("");
-	text.addLine(strings.propertiesAreaUrl(doc.getProperty("url")));
-	text.addLine(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
-	//	lines.addLine(strings.propertiesAreaCharset(item.charset));
-	text.addLine("");
+	text.add("");
+	text.add(strings.propertiesAreaUrl(doc.getProperty("url")));
+	text.add(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
+	//	lines.add(strings.propertiesAreaCharset(item.charset));
+	text.add("");
 	    });
 	return true;
     }

@@ -51,9 +51,9 @@ final class ErrorLayout extends LayoutBase
 	{
 	    final InvalidHttpResponseCodeException e = (InvalidHttpResponseCodeException)ex;
 	    errorArea.update((lines)->{
-		    lines.addLine("");
-		    lines.addLine("Ошибка " + String.valueOf(e.getHttpCode()));
-		    lines.addLine("");
+		    lines.add("");
+		    lines.add("Ошибка " + String.valueOf(e.getHttpCode()));
+		    lines.add("");
 		});
 	    return;
 	}
@@ -62,9 +62,9 @@ final class ErrorLayout extends LayoutBase
 	{
 	    final UnknownHostException e = (UnknownHostException)ex;
 	    errorArea.update((lines)->{
-		    lines.addLine("");
-		    lines.addLine("Неизвестный хост: " + e.getMessage());
-		    lines.addLine("");
+		    lines.add("");
+		    lines.add("Неизвестный хост: " + e.getMessage());
+		    lines.add("");
 		});
 	    return;
 	}
@@ -78,10 +78,10 @@ final class ErrorLayout extends LayoutBase
 	sw.flush();
 	final String[] trace = sw.toString().split(System.lineSeparator(), -1);
 	errorArea.update((lines)->{
-		lines.addLine("");
+		lines.add("");
 		for(String s: trace)
-		    lines.addLine(s);
-		lines.addLine("");
+		    lines.add(s);
+		lines.add("");
 	    });
     }
 }

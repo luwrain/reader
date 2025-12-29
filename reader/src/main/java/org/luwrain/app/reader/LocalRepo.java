@@ -1,19 +1,3 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
 
 package org.luwrain.app.reader;
 
@@ -21,10 +5,13 @@ import java.util.*;
 import java.util.zip.*;
 import java.io.*;
 import java.net.*;
+import org.apache.commons.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;
 import org.luwrain.io.api.books.v1.*;
+
+import static java.nio.file.Files.*;
 
 final class LocalRepo
 {
@@ -47,7 +34,7 @@ final class LocalRepo
 	if (id == null || id.isEmpty())
 	    throw new IllegalArgumentException("The book diesn't have an ID");
 	final File bookDir = new File(repoDir, id);
-	FileUtils.createSubdirs(bookDir);
+	createDirectories(bookDir.toPath());
         try (final BufferedInputStream is = new BufferedInputStream(new FileInputStream(zipFile))) {
 	    final ZipInputStream stream = new ZipInputStream(is);
 	    {
@@ -56,9 +43,9 @@ final class LocalRepo
 		    if (entry.isDirectory())
 			continue;
 		    final File destFile = new File(bookDir, entry.getName());
-		    FileUtils.createSubdirs(destFile.getParentFile());
+		    createDirectories(destFile.getParentFile().toPath());
 		    try (final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(destFile))){
-			StreamUtils.copyAllBytes(stream, os);
+			IOUtils.copy(stream, os);
 			os.flush();
 		    }
 		    stream.closeEntry();
