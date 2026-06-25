@@ -88,7 +88,7 @@ throw new IOException("no \'url\' property");
 	this.jsoupDoc = Jsoup.parse(is, charset, docUrl.toString());
 	final org.luwrain.reader.Document doc = constructDoc();
 doc.setProperty("url", docUrl.toString());
-doc.setProperty("contenttype", ContentTypes.TEXT_HTML_DEFAULT);
+doc.setProperty("contenttype", "text/html");
 doc.setProperty("charset", charset);
 	return doc;
     }

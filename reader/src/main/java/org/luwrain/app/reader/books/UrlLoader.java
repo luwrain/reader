@@ -98,8 +98,8 @@ public final class UrlLoader
 	    Log.debug(LOG_COMPONENT, "fetching " + requestedUrl.toString());
 	    fetch();
 	    this.selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
-	    if (selectedContentType.isEmpty() || ContentTypes.isUnknown(selectedContentType))
-		this.selectedContentType = luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
+	    if (selectedContentType.isEmpty() || selectedContentType.equalsIgnoreCase("content/unknown"))
+		this.selectedContentType = null;//luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
 	    if (selectedContentType.isEmpty())
 		throw new IOException("Unable to understand the content type");
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
