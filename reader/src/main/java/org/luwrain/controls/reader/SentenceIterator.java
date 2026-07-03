@@ -1,11 +1,8 @@
-
-//LWR_API 1.0
-
 package org.luwrain.controls.reader;
 
 import org.luwrain.core.*;
-import org.luwrain.reader.*;
-import org.luwrain.reader.view.Iterator;
+import org.luwrain.io.bookdoc.*;
+import org.luwrain.io.bookdoc.view.*;
 
 public class SentenceIterator
 {
@@ -23,15 +20,15 @@ public class SentenceIterator
     {
 	NullCheck.notNull(b, "b");
 	NullCheck.notNull(delim, "delim");
-		boolean afterSentenceEnd;
+	boolean afterSentenceEnd;
 	if (atRowEnd())
 	{
-	if (!skipInitialForward(b, delim))
-	    return false;
-	afterSentenceEnd = true;
+	    if (!skipInitialForward(b, delim))
+		return false;
+	    afterSentenceEnd = true;
 	} else
-afterSentenceEnd = false;
-	if (this.pos >=  this.it.getText().length())
+	    afterSentenceEnd = false;
+	if (this.pos >= this.it.getText().length())
 	    throw new RuntimeException("pos (" + pos + ") == row.length (" + it.getText().length() + ")");
 	do {
 	    final String text = it.getText();
@@ -46,7 +43,7 @@ afterSentenceEnd = false;
 		}
 		if (nextPos >= 0)//There is the sentence end, but there is no next sentence begin
 		    afterSentenceEnd = true;
-				b.append(text.substring(pos));
+		b.append(text.substring(pos));
 		this.pos = text.length();
 		continue;
 	    }
@@ -123,7 +120,7 @@ afterSentenceEnd = false;
 	return pos;
     }
 
-    public org.luwrain.reader.view.Iterator getIterator()
+    public Iterator getIterator()
     {
 	return it.clone();
     }

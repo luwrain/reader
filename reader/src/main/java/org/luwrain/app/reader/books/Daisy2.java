@@ -1,20 +1,3 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -23,18 +6,18 @@ import java.io.*;
 import java.nio.file.*;
 
 import org.luwrain.core.*;
-import org.luwrain.reader.*;
+import org.luwrain.io.bookdoc.*;
 import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
 
 final class Daisy2 implements Book
 {
     static private final String LOG_COMPONENT = "daisy";
-    
+
     protected final Luwrain luwrain;
-    protected final Map<URL, Document> docs = new HashMap();
+    protected final Map<URL, Doc> docs = new HashMap();
     protected final Map<URL, Smil.Entry> smils = new HashMap();
-    protected Document nccDoc = null;
+    protected Doc nccDoc = null;
     protected URL nccDocUrl = null;
     protected Book.Section[] bookSections = new Book.Section[0];
 
@@ -49,17 +32,17 @@ final class Daisy2 implements Book
 	return "FIXME";
     }
 
-    public Set<Flags> getBookFlags()
+    @Override public Set<Flags> getBookFlags()
     {
 	return EnumSet.of(Flags.OPEN_IN_SECTION_TREE);
     }
 
-    @Override public Document getDefaultDocument()
+    @Override public Doc getDefaultDocument()
     {
 	return nccDoc;
     }
 
-    @Override public Document getDocument(String href)
+    @Override public Doc getDocument(String href)
     {
 	NullCheck.notNull(href, "href");
 	final URL url;
@@ -104,18 +87,23 @@ final class Daisy2 implements Book
 	} //smils;
 	if (docs.containsKey(noRefUrl))
 	{
-	    final Document res = docs.get(noRefUrl);
+	    final Doc res = docs.get(noRefUrl);
 	    if (res != null && url.getRef() != null)
 		res.setProperty("startingref", url.getRef()); else
 		res.setProperty("startingref", "");
 	    return res;
 	}
-	if (nccDoc.getUrl().equals(url))
+	try {
+	    if (new URL(nccDoc.getProperty(Doc.PROP_URL)).equals(url))
+	    {
+		if (url.getRef() != null)
+		    nccDoc.setProperty("startingref", url.getRef()); else
+		    nccDoc.setProperty("startingref", "");
+		return nccDoc;
+	    }
+	}
+	catch(MalformedURLException e)
 	{
-	    if (url.getRef() != null)
-		nccDoc.setProperty("startingref", url.getRef()); else
-		nccDoc.setProperty("startingref", "");
-	    return nccDoc;
 	}
 	Log.warning("doctree", "unable to find a document in Daisy2 book for URL:" + url.toString());
 	return null;
@@ -139,7 +127,7 @@ final class Daisy2 implements Book
 	return null;
     }
 
-    @Override public     String findTextForAudio(String audioFileUrl, long msec)
+    @Override public String findTextForAudio(String audioFileUrl, long msec)
     {
 	NullCheck.notNull(audioFileUrl, "audioFileUrl");
 	Log.debug("doctree-daisy", "text for " + audioFileUrl + " at " + msec);
@@ -157,15 +145,25 @@ final class Daisy2 implements Book
 	return null;
     }
 
-    void init(Document nccDoc)
+    void init(Doc nccDoc)
     {
 	NullCheck.notNull(nccDoc, "nccDoc");
-	nccDoc.setProperty("daisy.localpath", nccDoc.getUrl().getFile());//FIXME:Leave only base file name
+	final String nccUrlStr = nccDoc.getProperty(Doc.PROP_URL);
+	URL nccDocBaseUrl = null;
+	try {
+	    nccDocBaseUrl = new URL(nccUrlStr);
+	    nccDoc.setProperty("daisy.localpath", nccDocBaseUrl.getFile());
+	}
+	catch(MalformedURLException e)
+	{
+	    e.printStackTrace();
+	    return;
+	}
 	final String[] allHrefs = nccDoc.getHrefs();
 	final LinkedList<String> textSrcs = new LinkedList<String>();
 	for(String h: allHrefs)
 	    try {
-		URL url = new URL(nccDoc.getUrl(), h);
+		URL url = new URL(nccDocBaseUrl, h);
 		url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile());
 		if (url.getFile().toLowerCase().endsWith(".smil"))
 		    loadSmil(url, textSrcs); else
@@ -178,7 +176,7 @@ final class Daisy2 implements Book
 	Log.debug(LOG_COMPONENT, "" + smils.size() + " SMIL(s) loaded");
 	for(String s: textSrcs)
 	    try {
-		URL url = new URL(nccDoc.getUrl(), s);
+		URL url = new URL(nccDocBaseUrl, s);
 		url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile());
 		loadDoc(s, url);
 	    }
@@ -188,7 +186,7 @@ final class Daisy2 implements Book
 	    }
 	Log.debug(LOG_COMPONENT, "" + docs.size() + " documents loaded");
 	this.nccDoc = nccDoc;
-	this.nccDocUrl = this.nccDoc.getUrl();
+	this.nccDocUrl = nccDocBaseUrl;
 	final SectionsVisitor visitor = new SectionsVisitor();
 	Visitor.walk(nccDoc.getRoot(), visitor);
 	final Book.Section[] sections = visitor.getBookSections();
@@ -210,19 +208,6 @@ final class Daisy2 implements Book
 	    }
 	}
 	this.bookSections = sections;
-	/*
-	try {
-	    this.bookPath = Paths.get(nccDoc.getUrl().toURI()).getParent().resolve("luwrain.book");
-	}
-	catch(URISyntaxException e)
-	{
-	    e.printStackTrace();
-	    bookPath = null;
-	}
-	if (bookPath != null)
-	    Log.debug("doctree-daisy", "book path set to " + bookPath.toString()); else
-	    Log.debug("doctree-daisy", "book path isn\'t set");
-	*/
     }
 
     @Override public Book.Section[] getBookSections()
@@ -241,7 +226,7 @@ final class Daisy2 implements Book
 	smils.put(url, smil);
 	smil.saveTextSrc(textSrcs);
 	try {
-	    smil.allSrcToUrls(url); 
+	    smil.allSrcToUrls(url);
 	}
 	catch(MalformedURLException e)
 	{
@@ -255,7 +240,7 @@ final class Daisy2 implements Book
 	    return;
 	UrlLoader.Result res;
 	try {
-res = loadDoc(url);
+	    res = loadDoc(url);
 	}
 	catch(Exception e)
 	{
@@ -276,7 +261,7 @@ res = loadDoc(url);
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(src, "src");
-	switch(entry.type )
+	switch(entry.type)
 	{
 	case TEXT:
 	    return (entry.src() != null && entry.src().equals(src))?entry:null;
@@ -310,11 +295,11 @@ res = loadDoc(url);
 	}
     }
 
-private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl, long msec)
+    private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl, long msec)
     {
 	NullCheck.notNull(entry, "entry");
 	NullCheck.notNull(audioFileUrl, "audioFileUrl");
-	switch(entry.type )
+	switch(entry.type)
 	{
 	case AUDIO:
 	    return entry.getAudioFragment().covers(audioFileUrl, msec, nccDocUrl)?entry:null;
@@ -360,8 +345,8 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	case TEXT:
 	    return;
 	case PAR:
-		for(Smil.Entry e: entry.entries)
-		    collectAudioStartingAtEntry(e, audioInfos);
+	    for(Smil.Entry e: entry.entries)
+		collectAudioStartingAtEntry(e, audioInfos);
 	    return;
 	case FILE:
 	case SEQ:
@@ -385,8 +370,8 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 	    links.add(entry.src());
 	    return;
 	case PAR:
-		for(Smil.Entry e: entry.entries)
-		    collectTextStartingAtEntry(e, links);
+	    for(Smil.Entry e: entry.entries)
+		collectTextStartingAtEntry(e, links);
 	    return;
 	case FILE:
 	case SEQ:
@@ -400,19 +385,19 @@ private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl,
 
     private String smilEntryToText(URL url, String id)
     {
-		    if (!smils.containsKey(url))
-			return null;
-			final Smil.Entry entry = smils.get(url).findById(id);
-			if (entry == null)
-			    return null;
-			final LinkedList<String> links = new LinkedList<String>();
-			collectTextStartingAtEntry(entry, links);
-			return !links.isEmpty()?links.getFirst():null;
-		    }
+	if (!smils.containsKey(url))
+	    return null;
+	final Smil.Entry entry = smils.get(url).findById(id);
+	if (entry == null)
+	    return null;
+	final LinkedList<String> links = new LinkedList<String>();
+	collectTextStartingAtEntry(entry, links);
+	return !links.isEmpty()?links.getFirst():null;
+    }
 
     private UrlLoader.Result loadDoc(URL url) throws MalformedURLException, IOException
     {
 	final UrlLoader loader = new UrlLoader(luwrain, url);
-return loader.load();
+	return loader.load();
     }
 }

@@ -1,22 +1,3 @@
-/*
-   Copyright 2012-2019 Michael Pozhidaev <michael.pozhidaev@gmail.com>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
-//LWR_API 1.0
-
 package org.luwrain.controls.reader;
 
 import java.util.*;
@@ -27,13 +8,9 @@ import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
 import org.luwrain.util.WordIterator;
-import org.luwrain.reader.*;
-import org.luwrain.reader.view.*;
-import org.luwrain.reader.view.Iterator;
+import org.luwrain.io.bookdoc.*;
+import org.luwrain.io.bookdoc.view.*;
 
-
-// Transition tries to iteratate over inner objects
-// while announcing tries to announce greater objects
 public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Provider
 {
     public enum State {LOADING, READY};
@@ -50,7 +27,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     public interface Transition
     {
-	public enum Type{
+	enum Type{
 	    NEXT, PREV,
 	    STRICT_NEXT, STRICT_PREV,
 	    NEXT_SECTION, PREV_SECTION,
@@ -68,7 +45,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	public ClickHandler clickHandler = null;
 	public Announcement announcement = null;
 	public Transition transition = new DefaultTransition();
-	public Document doc = null;
+	public Doc doc = null;
 	public int width = 100;
     }
 
@@ -80,10 +57,10 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     protected final Transition transition;
     protected ClickHandler clickHandler = null;
 
-    protected Document document = null;
+    protected Doc document = null;
     protected View view = null;
     protected Layout layout = null;
-    protected org.luwrain.reader.view.Iterator iterator = null;
+    protected Iterator iterator = null;
     protected int hotPointX = 0;
 
     public ReaderArea(Params params)
@@ -107,7 +84,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	this.name = params.name;
     }
 
-    public ReaderArea(ControlContext context, Announcement announcement, Document document, int width)
+    public ReaderArea(ControlContext context, Announcement announcement, Doc document, int width)
     {
 	NullCheck.notNull(context, "context");
 	NullCheck.notNull(announcement, "announcement");
@@ -128,7 +105,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	this(context, announcement, null, 0);
     }
 
-    public void setDocument(Document document, int width)
+    public void setDocument(Doc document, int width)
     {
 	NullCheck.notNull(document, "document");
 	if (width < 0)
@@ -137,9 +114,10 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	this.view = new View(document, width);
 	this.layout = view.createLayout();
 	int defaultIndex = -1;
-	if (!document.getProperty(Document.DEFAULT_ITERATOR_INDEX_PROPERTY).isEmpty())
+	final String defaultIndexStr = document.getProperty(View.DEFAULT_ITERATOR_INDEX_PROPERTY);
+	if (defaultIndexStr != null && !defaultIndexStr.isEmpty())
 	    try {
-		defaultIndex = Integer.parseInt(document.getProperty("defaultiteratorindex"));
+		defaultIndex = Integer.parseInt(defaultIndexStr);
 	    }
 	    catch (NumberFormatException e)
 	    {
@@ -170,7 +148,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return !hasDocument() || iterator.noContent();
     }
 
-    public Document getDocument()
+    public Doc getDocument()
     {
 	return document;
     }
@@ -179,7 +157,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     {
 	if (!hasDocument())
 	    return "";
-	final String res = getDocument().getTitle();
+	final String res = document.getProperty(Doc.PROP_TITLE);
 	return res != null?res:"";
     }
 
@@ -187,8 +165,8 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     {
 	if (!hasDocument())
 	    return "";
-	final URL url = document.getUrl();
-	return url != null?url.toString():"";
+	final String urlStr = document.getProperty(Doc.PROP_URL);
+	return urlStr != null?urlStr:"";
     }
 
     public String getDocUniRef()
@@ -250,22 +228,26 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     public String[] getHtmlIds()
     {
-	if (isEmpty()/* || iterator.isEmptyRow()*/)
+	if (isEmpty())
 	    return new String[0];
 	final LinkedList<String> res = new LinkedList<String>();
 	final Run run = iterator.getRunUnderPos(hotPointX);
 	if (run == null)
 	    return new String[0];
-	ExtraInfo info = run.extraInfo();
-	while (info != null)
+	Attributes attrs = run.getAttrs();
+	while (attrs != null)
 	{
-	    if (info.attrs.containsKey("id"))
+	    if (attrs.attrMap.containsKey("id"))
 	    {
-		final String value = info.attrs.get("id");
-		if (!value.isEmpty())
-		    res.add(value);
+		final Object value = attrs.attrMap.get("id");
+		if (value != null)
+		{
+		    final String valueStr = value.toString();
+		    if (!valueStr.isEmpty())
+			res.add(valueStr);
+		}
 	    }
-	    info = info.parent;
+	    attrs = (attrs.parentAttr != null && !attrs.parentAttr.isEmpty()) ? attrs.parentAttr.get(0) : null;
 	}
 	return res.toArray(new String[res.size()]);
     }
@@ -299,7 +281,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return index < layout.getLineCount()?layout.getLine(index):"";
     }
 
-    @Override public boolean onInputEvent(InputEvent event) 
+    @Override public boolean onInputEvent(InputEvent event)
     {
 	NullCheck.notNull(event, "event");
 	if (!event.isSpecial() && !event.isModified())
@@ -405,7 +387,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 		final Run run = getCurrentRun();
 		if (isEmpty() || run == null)
 		    return false;
-		final String res = getCurrentRun().href();
+		final String res = getCurrentRun().getHref();
 		if (res == null || res.isEmpty())
 		    return false;
 		((UniRefHotPointQuery)query).answer("url:" + res);
@@ -453,7 +435,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	    return false;
 	Run run1 = null;
 	Run run2 = null;
-	final Iterator it = new org.luwrain.reader.view.Iterator(view);
+	final Iterator it = new Iterator(view);
 	if (it.noContent())
 	    return false;
 	do {
@@ -469,12 +451,12 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 		if (run1 == null)
 		    throw new RuntimeException("The iterator is unable to provide a run under the covered point");
 	    }
-    	} while(it.moveNext());
+	} while(it.moveNext());
 	if (run1 == null || run2 == null)
 	    return false;
 	context.getClipboard().set(new String[]{
-		run1.text(),
-		run2.text(),
+		run1.getText(),
+		run2.getText(),
 	    });
 	return true;
     }
@@ -517,7 +499,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	while (it2.canMoveNext() && !it2.coversPos(x, y))
 	{
 	    if (it2.getY() == y)
-		nearest = (Iterator)it2.clone();
+		nearest = it2.clone();
 	    it2.moveNext();
 	}
 	if (it2.coversPos(x, y) &&
@@ -557,7 +539,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	if (noContentCheck())
 	    return true;
 	if (transition.transition(type, iterator))
-	    onNewRow( briefAnnouncement); else
+	    onNewRow(briefAnnouncement); else
 	    context.setEventResponse(DefaultEventResponse.hint(hintFailed));
 	return true;
     }
@@ -567,7 +549,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	if (noContentCheck())
 	    return true;
 	iterator.moveEnd();
-	onNewRow( false);
+	onNewRow(false);
 	return true;
     }
 
@@ -576,7 +558,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	if (noContentCheck())
 	    return true;
 	iterator.moveBeginning();
-	onNewRow( false);
+	onNewRow(false);
 	return true;
     }
 
@@ -591,17 +573,14 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	    return true;
 	}
-	//If we are at the row end
 	if (sentIt.atRowEnd() && !sentIt.forward(b, " "))
 	{
 	    context.setEventResponse(DefaultEventResponse.hint(Hint.NO_LINES_BELOW));
 	    return true;
 	}
 
-		
 	this.iterator = sentIt.getIterator();
 	this.hotPointX = sentIt.getPos();
-	//Making one more iteration to get the next of the next sentence
 	b = new StringBuilder();
 	sentIt.forward(b, " ");
 	final String text = new String(b).trim();
@@ -733,7 +712,6 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	final Run currentRun = iterator.getRunUnderPos(hotPointX);
 	if (currentRun != null)
 	{
-	    //Trying to find the run with href on the current row
 	    final Run[] runs = iterator.getRuns();
 	    boolean skipping = true;
 	    for(Run r: runs)
@@ -745,12 +723,12 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 		}
 		if (skipping)
 		    continue;
-		if (r.href() != null && !r.href().trim().isEmpty())
+		if (r.getHref() != null && !r.getHref().trim().isEmpty())
 		{
 		    hotPointX = iterator.runBeginsAt(r);
-		    context.say(r.text());
+		    context.say(r.getText());
 		    context.onAreaNewHotPoint(this);
-		    return true;    
+		    return true;
 		}
 	    }
 	}
@@ -759,21 +737,21 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	if (!iterator.searchForward((node,para,row)->{
 		    final Run[] runs = row.getRuns();
 		    for(Run r: runs)
-			if (r.href() != null && !r.href().trim().isEmpty())
+			if (r.getHref() != null && !r.getHref().trim().isEmpty())
 			    return true;
 		    return false;
 		}, iterator.getIndex() + 1))
 	    return false;
 	final Run[] runs = iterator.getRuns();
 	int k = 0;
-	while (k < runs.length && (runs[k].href() == null || runs[k].href().trim().isEmpty()))
+	while (k < runs.length && (runs[k].getHref() == null || runs[k].getHref().trim().isEmpty()))
 	    ++k;
-	if (k >= runs.length)//Should never happen
+	if (k >= runs.length)
 	    return false;
 	hotPointX = iterator.runBeginsAt(runs[k]);
-	context.say(runs[k].text());
+	context.say(runs[k].getText());
 	context.onAreaNewHotPoint(this);
-	return true;    
+	return true;
     }
 
     protected void onNewRow(boolean briefAnnouncement)
@@ -833,11 +811,10 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	}
     }
 
-    //Method does not check if current position is prior to the required position
     protected String textUntil(Iterator itTo, int posTo)
     {
 	NullCheck.notNull(itTo, "itTo");
-	final Iterator tmpIt = (Iterator)iterator.clone();
+	final Iterator tmpIt = iterator.clone();
 	if (tmpIt.equals(itTo))
 	    return tmpIt.getText().substring(hotPointX, posTo);
 	final StringBuilder b = new StringBuilder();

@@ -1,27 +1,10 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
 package org.luwrain.app.reader;
 
 import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.player.*;
-import org.luwrain.reader.*;
+import org.luwrain.io.bookdoc.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 
@@ -33,7 +16,7 @@ class AudioPlaying  implements Listener
     private ReaderArea area = null;
     private Run prevRun = null;
     private Book book = null;
-    private Document doc = null;
+    private Doc doc = null;
     private Playlist currentPlaylist = null;
 
     AudioPlaying(Luwrain luwrain)
@@ -50,21 +33,29 @@ class AudioPlaying  implements Listener
 	return player != null;
     }
 
-    boolean playAudio(Book book, Document doc, ReaderArea area, String[] ids)
+    boolean playAudio(Book book, Doc doc, ReaderArea area, String[] ids)
     {
 	NullCheck.notNull(book, "book");
 	NullCheck.notNull(doc, "doc");
 	NullCheck.notNull(area, "area");
 	NullCheck.notNullItems(ids, "ids");
-	final URL url = doc.getUrl();
-	if (url == null)
+	final String urlStr = doc.getProperty(Doc.PROP_URL);
+	if (urlStr == null || urlStr.isEmpty())
 	    return false;
+	URL url = null;
+	try {
+	    url = new URL(urlStr);
+	}
+	catch(MalformedURLException e)
+	{
+	    return false;
+	}
 	for(String id: ids)
 	{
 	    final AudioFragment audioInfo = book.findAudioForId(url.toString() + "#" + id);
 	    if (audioInfo != null)
 	    {
-final URL audioFileUrl;
+		final URL audioFileUrl;
 		try {
 		    audioFileUrl = new URL(url, audioInfo.src);
 		}
@@ -98,7 +89,8 @@ final URL audioFileUrl;
 	NullCheck.notNull(playlist, "playlist");
 	if (doc == null || book == null || area == null)
 	    return;
-	if (doc.getUrl() == null)
+	final String urlStr = doc.getProperty(Doc.PROP_URL);
+	if (urlStr == null || urlStr.isEmpty())
 	    return;
 	if (playlist != currentPlaylist)
 	    return;
@@ -118,8 +110,14 @@ final URL audioFileUrl;
 	{
 	    return;
 	}
-	if (!doc.getUrl().equals(docUrl))
+	try {
+	    if (!docUrl.equals(new URL(urlStr)))
+		return;
+	}
+	catch(MalformedURLException e)
+	{
 	    return;
+	}
 	if (url.getRef().isEmpty())
 	    return;
 	final AudioFollowingVisitor visitor = new AudioFollowingVisitor(url.getRef());
@@ -163,7 +161,7 @@ final URL audioFileUrl;
 	prevRun = null;
     }
 
-    static private final class  AudioFollowingVisitor implements Visitor
+    static private final class AudioFollowingVisitor extends Visitor
     {
 	private String desiredId;
 	private Run resultingRun = null;
@@ -178,40 +176,18 @@ final URL audioFileUrl;
 	    if (resultingRun != null)
 		return;
 	    for(Run r: para.getRuns())
-		    checkRun(r);
+		checkRun(r);
 	}
-	@Override public void visitNode(Node node)
-	{
-	}
-	@Override public void visit(ListItem node)
-	{
-	}
-	@Override public void visit(Section node)
-	{
-	}
-	@Override public void visit(TableCell node)
-	{
-	}
-	@Override public void visit(Table node)
-	{
-	}
-	@Override public void visit(TableRow node)
+	@Override public void visit(Heading h)
 	{
 	}
 	private void checkRun(Run run)
 	{
 	    if (resultingRun != null)
 		return;
-	    ExtraInfo info = run.extraInfo();
-	    while (info != null)
-	    {
-		if (info.attrs.containsKey("id") && info.attrs.get("id").equals(desiredId))
-		{
-		    this.resultingRun = run;
-		    return;
-		}
-		info = info.parent;
-	    }
+	    final Attributes attrs = run.getAttrs();
+	    if (attrs != null && attrs.hasIdWithParents(desiredId))
+		this.resultingRun = run;
 	}
 	Run result()
 	{

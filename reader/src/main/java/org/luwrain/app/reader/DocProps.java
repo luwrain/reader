@@ -1,35 +1,18 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
 package org.luwrain.app.reader;
 
 import java.util.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.reader.*;
+import org.luwrain.io.bookdoc.*;
 
 final class DocProps
 {
     private final Luwrain luwrain;
     private final Strings strings;
-    private final Document doc;
+    private final Doc doc;
 
-    DocProps(Luwrain luwrain, Strings strings, Document doc)
+    DocProps(Luwrain luwrain, Strings strings, Doc doc)
     {
 	NullCheck.notNull(luwrain, "luwrain");
 	NullCheck.notNull(strings, "strings");
@@ -43,11 +26,10 @@ final class DocProps
     {
 	NullCheck.notNull(lines, "lines");
 	lines.update((text)->{
-	text.add("");
-	text.add(strings.propertiesAreaUrl(doc.getProperty("url")));
-	text.add(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
-	//	lines.add(strings.propertiesAreaCharset(item.charset));
-	text.add("");
+		text.add("");
+		text.add(strings.propertiesAreaUrl(doc.getProperty(Doc.PROP_URL)));
+		text.add(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
+		text.add("");
 	    });
 	return true;
     }

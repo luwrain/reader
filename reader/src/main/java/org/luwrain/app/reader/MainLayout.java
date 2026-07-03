@@ -25,7 +25,7 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.core.queries.*;
 import org.luwrain.controls.*;
-import org.luwrain.reader.*;
+import org.luwrain.io.bookdoc.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
@@ -53,86 +53,86 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	this.sectionsTreeShown = bookContainer.getBookFlags().contains(Book.Flags.OPEN_IN_SECTION_TREE);
 
 	final ActionInfo openFile = action("open-file", app.getStrings().actionOpenFile(), new InputEvent(InputEvent.Special.F3, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenFile);
-		final ActionInfo openUrl = action("open-url", app.getStrings().actionOpenUrl(), new InputEvent(InputEvent.Special.F4, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenUrl);
-				final ActionInfo showSectionsTree = action("show-sections-tree", app.getStrings().actionShowSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actShowSectionsTree);
-								final ActionInfo showNotes = action("show-notes", app.getStrings().actionShowNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actShowNotes);
+	final ActionInfo openUrl = action("open-url", app.getStrings().actionOpenUrl(), new InputEvent(InputEvent.Special.F4, EnumSet.of(InputEvent.Modifiers.SHIFT)), MainLayout.this::actOpenUrl);
+	final ActionInfo showSectionsTree = action("show-sections-tree", app.getStrings().actionShowSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actShowSectionsTree);
+	final ActionInfo showNotes = action("show-notes", app.getStrings().actionShowNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actShowNotes);
 
+	{
+	    final TreeArea.Params params = new TreeArea.Params();
+	    params.context = getControlContext();
+	    params.model = new CachedTreeModel(new BookTreeModelSource());
+	    params.name = app.getStrings().treeAreaName();
+	    params.clickHandler = this;
+	    this.treeArea = new TreeArea(params);
+	}
+	this.treeActions = actions(
+				   action("hide-sections-tree", app.getStrings().actionHideSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actHideSectionsTree),
+				   showNotes,
+				   openFile, openUrl);
 
-								{
-								    final TreeArea.Params params = new TreeArea.Params();
-								    params.context = getControlContext();
-								    params.model = new CachedTreeModel(new BookTreeModelSource());
-								    params.name = app.getStrings().treeAreaName();
-								    params.clickHandler = this;
-								    this.treeArea = new TreeArea(params);
-								}
-								this.treeActions = actions(
-											   action("hide-sections-tree", app.getStrings().actionHideSectionsTree(), new InputEvent(InputEvent.Special.F5), MainLayout.this::actHideSectionsTree),
-											   showNotes,
-											   											   openFile, openUrl);
+	{
+	    final ReaderArea.Params params = new ReaderArea.Params();
+	    params.context = getControlContext();
+	    params.clickHandler = this;
+	    this.readerArea = new ReaderArea(params){
+		    @Override public boolean onInputEvent(InputEvent event)
+		    {
+			NullCheck.notNull(event, "event");
+			if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
+			    app.stopAudio())
+			    return true;
+			return super.onInputEvent(event);
+		    }
+		    @Override public boolean onSystemEvent(SystemEvent event)
+		    {
+			NullCheck.notNull(event, "events");
+			if (event.getType() != SystemEvent.Type.REGULAR)
+			    return super.onSystemEvent(event);
+			switch(event.getCode())
+			{
+			case SAVE:
+			    return actSaveBookmark();
+			case PROPERTIES:
+			    return onProps();
+			default:
+			    return super.onSystemEvent(event);
+			}
+		    }
+		    @Override public String getAreaName()
+		    {
+			final Doc doc = getDocument();
+			if (doc == null)
+			    return app.getStrings().appName();
+			final String title = doc.getProperty(Doc.PROP_TITLE);
+			return title != null?title:app.getStrings().appName();
+		    }
+		    @Override public String getDocUniRef()
+		    {
+			final String addr = getDocUrl();
+			if (addr.isEmpty())
+			    return "";
+			return UniRefUtils.makeUniRef("reader", addr);
+		    }
+		    @Override protected String noContentStr()
+		    {
+			return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
+		    }
+		};
+	}
+	this.readerActions = actions(
+				     new ActionInfo("back", "Вернуться", new InputEvent(InputEvent.Special.BACKSPACE), this::actBack),//FIXME:
+				     new ActionInfo("save-bookmark", "Поставить закладку", new InputEvent(InputEvent.Special.F2), this::actSaveBookmark),//FIXME:
+				     showSectionsTree, showNotes,
+				     openFile, openUrl
+				     );
 
-								{
-								    final ReaderArea.Params params = new ReaderArea.Params();
-								    params.context = getControlContext();
-								    params.clickHandler = this;
-								    this.readerArea = new ReaderArea(params){
-									    @Override public boolean onInputEvent(InputEvent event)
-									    {
-										NullCheck.notNull(event, "event");
-										if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
-										    app.stopAudio())
-										    return true;
-										return super.onInputEvent(event);
-									    }
-									    @Override public boolean onSystemEvent(SystemEvent event)
-									    {
-										NullCheck.notNull(event, "events");
-										if (event.getType() != SystemEvent.Type.REGULAR)
-										    return super.onSystemEvent(event);
-										switch(event.getCode())
-										{
-										case SAVE:
-										    return actSaveBookmark();
-										case PROPERTIES:
-										    return onProps();
-										default:
-										    return super.onSystemEvent(event);
-										}
-									    }
-									    @Override public String getAreaName()
-									    {
-										final Document doc = getDocument();
-										if (doc == null)
-										    return app.getStrings().appName();
-										return doc.getTitle();
-									    }
-									    @Override public String getDocUniRef()
-									    {
-										final String addr = getDocUrl();
-										if (addr.isEmpty())
-										    return "";
-										return UniRefUtils.makeUniRef("reader", addr);
-									    }
-									    @Override protected String noContentStr()
-									    {
-										return app.isBusy()?app.getStrings().noContentFetching():app.getStrings().noContent();
-									    }
-									};
-								}
-								this.readerActions = actions(
-											     new ActionInfo("back", "Вернуться", new InputEvent(InputEvent.Special.BACKSPACE), this::actBack),//FIXME:
-											     											     new ActionInfo("save-bookmark", "Поставить закладку", new InputEvent(InputEvent.Special.F2), this::actSaveBookmark),//FIXME:
-											     showSectionsTree, showNotes,
-											     openFile, openUrl
-											     );
-
-								this.notesArea = new EditableListArea<>(createNotesParams()) ;
-								this.notesActions = actions(
-											    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
-showSectionsTree,
-											    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes),
-											    											    openFile, openUrl);
-								updateLayout();
+	this.notesArea = new EditableListArea<>(createNotesParams()) ;
+	this.notesActions = actions(
+				    action("add-note", app.getStrings().actionAddNote(), new InputEvent(InputEvent.Special.INSERT), MainLayout.this::actAddNote),
+				    showSectionsTree,
+				    action("hide-notes", app.getStrings().actionHideNotes(), new InputEvent(InputEvent.Special.F6), MainLayout.this::actHideNotes),
+				    openFile, openUrl);
+	updateLayout();
     }
 
     void updateInitial()
@@ -154,14 +154,13 @@ showSectionsTree,
 	return this.bookContainer.onPrevDoc(()->updateAfterJump());
     }
 
-        private boolean actSaveBookmark()
+    private boolean actSaveBookmark()
     {
 	if (!this.bookContainer.notes.setBookmark(readerArea.getCurrentRowIndex()))
 	    return false;
 	app.setEventResponse(text(Sounds.OK, "Закладка установлена"));//FIXME:
 	return true;
     }
-
 
     private boolean actShowSectionsTree()
     {
@@ -217,8 +216,8 @@ showSectionsTree,
     {
 	NullCheck.notNull(area, "area");
 	NullCheck.notNull(run, "run");
-	final String href = run.href();
-	if (!href.isEmpty())
+	final String href = run.getHref();
+	if (href != null && !href.isEmpty())
 	    return bookContainer.jump(href, readerArea, 0, ()->updateAfterJump());
 	final String[] ids = readerArea.getHtmlIds();
 	if (ids == null || ids.length == 0)
@@ -244,16 +243,6 @@ showSectionsTree,
 
     private int getSuitableWidth()
     {
-	/*
-	  final int areaWidth = luwrain.getAreaVisibleWidth(readerArea);
-	  final int screenWidth = luwrain.getScreenWidth();
-	  int width = areaWidth;
-	  if (width < 80)
-	  width = screenWidth;
-	  if (width < 80)
-	  width = 80;
-	  return width;
-	*/
 	return -1;
     }
 
@@ -290,17 +279,6 @@ showSectionsTree,
 	params.appearance = new NotesAppearance();
 	params.name = app.getStrings().notesAreaName();
 	params.clipboardSaver = (area, model, appearance, fromIndex, toIndex, clipboard)->{
-	    /*
-	    final List<Attributes.Note> n = new LinkedList();
-	    final List<String> s = new LinkedList();
-	    for(int i = fromIndex;i < toIndex;i++)
-	    {
-		final Attributes.Note note = (Attributes.Note)model.getItem(i);
-		n.add(note);
-		s.add(note.toString());
-	    }
-	    clipboard.set(n.toArray(new Attributes.Note[n.size()]), s.toArray(new String[s.size()]));
-	    */
 	    return true;
 	};
 	return params;

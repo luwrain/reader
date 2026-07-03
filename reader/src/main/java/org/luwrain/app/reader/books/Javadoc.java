@@ -1,20 +1,3 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -23,7 +6,7 @@ import java.io.*;
 import java.nio.file.*;
 
 import org.luwrain.core.*;
-import org.luwrain.reader.*;
+import org.luwrain.io.bookdoc.*;
 import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
 
@@ -50,12 +33,12 @@ final class Javadoc implements Book
 	return EnumSet.of(Flags.OPEN_IN_SECTION_TREE);
     }
 
-    @Override public Document getDefaultDocument()
+    @Override public Doc getDefaultDocument()
     {
 	return null;
     }
 
-    @Override public Document getDocument(String href)
+    @Override public Doc getDocument(String href)
     {
 	NullCheck.notNull(href, "href");
 	return null;

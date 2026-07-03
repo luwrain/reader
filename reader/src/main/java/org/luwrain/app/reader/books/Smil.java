@@ -1,20 +1,3 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
 package org.luwrain.app.reader.books;
 
 import java.util.*;
@@ -170,7 +153,7 @@ final class Smil
 		doc = con.get();
 	    } else
 		doc = Jsoup.parse(url.openStream(), "utf-8", "", Parser.xmlParser());
-	}	
+	}
 	catch(Exception e)
 	{
 	    Log.error(LOG_COMPONENT, "unable to fetch SMIL from URL " + url.toString() + ":" + e.getClass().getName() + ":" + e.getMessage());
@@ -198,7 +181,6 @@ final class Smil
     {
 	NullCheck.notNull(node, "node");
 	final LinkedList<Entry> res = new LinkedList<Entry>();
-	final LinkedList<org.luwrain.reader.Run> runs = new LinkedList<org.luwrain.reader.Run>();
 	final List<Node> childNodes = node.childNodes();
 	for(Node n: childNodes)
 	{
@@ -264,7 +246,7 @@ final class Smil
     static private long parseTime(String value)
     {
 	final Matcher m = TIME_PATTERN.matcher(value);
-	if(m.matches()) 
+	if(m.matches())
 	{
 	    try {
 		float f = Float.parseFloat(m.group("sec"));

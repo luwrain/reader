@@ -1,20 +1,3 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
-
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -25,9 +8,7 @@ import java.util.zip.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;
-import org.luwrain.reader.*;
-import org.luwrain.app.reader.books.*;
-import org.luwrain.app.reader.*;
+import org.luwrain.io.bookdoc.*;
 
 public final class UrlLoader
 {
@@ -39,7 +20,6 @@ public final class UrlLoader
     private String requestedContentType = "";
     private String requestedTagRef = "";
     private String requestedCharset = "";
-    private ParagraphStyle requestedTxtParaStyle = ParagraphStyle.EMPTY_LINES;
 
     private URL responseUrl = null;
     private String responseContentType = "";
@@ -86,12 +66,6 @@ public final class UrlLoader
 	return requestedCharset != null?requestedCharset:"";
     }
 
-    void setTxtParaStyle(ParagraphStyle paraStyle)
-    {
-	NullCheck.notNull(paraStyle, "paraStyle");
-	this.requestedTxtParaStyle = paraStyle;
-    }
-
     public Result load() throws IOException
     {
 	try {
@@ -99,8 +73,8 @@ public final class UrlLoader
 	    fetch();
 	    this.selectedContentType = requestedContentType.isEmpty()?responseContentType:requestedContentType;
 	    if (selectedContentType.isEmpty() || selectedContentType.equalsIgnoreCase("content/unknown"))
-		this.selectedContentType = null;//luwrain.suggestContentType(requestedUrl, ContentTypes.ExpectedType.TEXT);
-	    if (selectedContentType.isEmpty())
+		this.selectedContentType = null;
+	    if (selectedContentType == null || selectedContentType.isEmpty())
 		throw new IOException("Unable to understand the content type");
 	    Log.debug(LOG_COMPONENT, "selected content type is " + selectedContentType);
 	    final Result res;
@@ -110,23 +84,23 @@ public final class UrlLoader
 	    if (this.selectedCharset.isEmpty())
 		this.selectedCharset = DEFAULT_CHARSET;
 	    {
-		final DocumentBuilder builder = new DocumentBuilderLoader().newDocumentBuilder(luwrain, Utils.extractBaseContentType(selectedContentType));
-		if (builder == null)
+		final Result result = new Result();
+		final Loader loader = Loader.newDefaultLoader(responseUrl.toURI(), selectedContentType);
+		if (loader == null)
+		    throw new IOException("No suitable loader for the content type: " + selectedContentType);
+		result.doc = loader.load();
+		if (result.doc == null)
 		    throw new IOException("No suitable handler for the content type: " + selectedContentType);
-		res = new Result();
-		final Properties props = new Properties();
-		props.setProperty("url", responseUrl.toString());
-		props.setProperty("charset", selectedCharset);
-		res.doc = builder.buildDoc(tmpFile.toFile(), props);
+		result.doc.setProperty("url", responseUrl.toString());
+		result.doc.setProperty("contenttype", selectedContentType);
+		if (requestedTagRef != null)
+		    result.doc.setProperty("startingref", requestedTagRef);
+		return result;
 	    }
-	    if (res.doc == null)
-		throw new IOException("No suitable handler for the content type: " + selectedContentType);
-	    res.doc.setProperty("hash", getTmpFileHash());
-	    res.doc.setProperty("url", responseUrl.toString());
-	    res.doc.setProperty("contenttype", selectedContentType);
-	    if (requestedTagRef != null)
-		res.doc.setProperty("startingref", requestedTagRef);
-	    return res;
+	}
+	catch(URISyntaxException e)
+	{
+	    throw new IOException(e);
 	}
 	finally {
 	    if (tmpFile != null)
@@ -176,43 +150,9 @@ public final class UrlLoader
 	Files.copy(s, tmpFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private String getTmpFileHash()
-    {
-	try {
-	    final InputStream is = new FileInputStream(tmpFile.toFile());
-	    try {
-		return org.luwrain.util.Sha1.getSha1(is);
-	    }
-	    finally {
-		is.close();
-	    }
-	}
-	catch(Exception e)
-	{
-	    Log.error(LOG_COMPONENT, "unable to get the hash of the temporary file:" + e.getClass().getName() + ":" + e.getMessage());
-	    return "";
-	}
-    }
-
-    private String makeTitleFromUrl()
-    {
-	final String path = responseUrl.getPath();
-	if (path == null || path.isEmpty())
-	    return responseUrl.toString();
-	final int lastSlashPos = path.lastIndexOf("/");
-	final String fileName = (lastSlashPos >= 0 && lastSlashPos + 1 < path.length())?path.substring(lastSlashPos + 1):path;
-	try {
-	    return URLDecoder.decode(fileName, "UTF-8");
-	}
-	catch(IOException e)
-	{
-	    return fileName;
-	}
-    }
-
     static public final class Result
     {
 	public Book book = null;
-	public Document doc = null;
+	public Doc doc = null;
     }
 }
