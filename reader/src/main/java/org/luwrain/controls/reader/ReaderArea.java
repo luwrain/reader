@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.controls.reader;
 
 import java.util.*;
@@ -10,6 +13,10 @@ import org.luwrain.controls.*;
 import org.luwrain.util.WordIterator;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.io.bookdoc.view.*;
+
+import org.luwrain.io.bookdoc.view.Iterator;
+
+import static java.util.Objects.*;
 
 public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Provider
 {
@@ -65,7 +72,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     public ReaderArea(Params params)
     {
-	NullCheck.notNull(params, "params");
+	requireNonNull(params, "params can't be null");
 	NullCheck.notNull(params.context, "params.context");
 	NullCheck.notNull(params.transition, "params.transition");
 	NullCheck.notNull(params.name, "params.name");
@@ -86,8 +93,8 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     public ReaderArea(ControlContext context, Announcement announcement, Doc document, int width)
     {
-	NullCheck.notNull(context, "context");
-	NullCheck.notNull(announcement, "announcement");
+	requireNonNull(context, "context can't be null");
+	requireNonNull(announcement, "announcement can't be null");
 	this.context = context;
 	this.announcement = announcement;
 	if (document != null)
@@ -107,7 +114,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     public void setDocument(Doc document, int width)
     {
-	NullCheck.notNull(document, "document");
+	requireNonNull(document, "document can't be null");
 	if (width < 0)
 	    throw new IllegalArgumentException("width (" + width + ") may not be negative");
 	this.document = document;
@@ -186,7 +193,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     public boolean findRun(Run run)
     {
-	NullCheck.notNull(run, "run");
+	requireNonNull(run, "run can't be null");
 	if (isEmpty())
 	    return false;
 	final Iterator newIt = view.getIterator();
@@ -283,7 +290,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     @Override public boolean onInputEvent(InputEvent event)
     {
-	NullCheck.notNull(event, "event");
+	requireNonNull(event, "event can't be null");
 	if (!event.isSpecial() && !event.isModified())
 	    switch(InputEvent.getKeyboardLayout().getAsciiOfButton(event.getChar()))
 	    {
@@ -339,7 +346,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     @Override public boolean onSystemEvent(SystemEvent event)
     {
-	NullCheck.notNull(event, "event");
+	requireNonNull(event, "event can't be null");
 	if (event.getType() != SystemEvent.Type.REGULAR)
 	    return false;
 	switch(event.getCode())
@@ -360,7 +367,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     @Override public boolean onAreaQuery(AreaQuery query)
     {
-	NullCheck.notNull(query, "query");
+	requireNonNull(query, "query can't be null");
 	switch(query.getQueryCode())
 	{
 	case AreaQuery.UNIREF_AREA:
@@ -476,7 +483,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     @Override public void onListeningFinish(ListenableArea.ListeningInfo listeningInfo)
     {
-	NullCheck.notNull(listeningInfo, "listeningInfo");
+	requireNonNull(listeningInfo, "listeningInfo can't be null");
 	if (!(listeningInfo instanceof ReaderArea.ListeningInfo))
 	    return;
 	final ReaderArea.ListeningInfo info = (ReaderArea.ListeningInfo)listeningInfo;
@@ -487,7 +494,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     protected boolean onMoveHotPoint(MoveHotPointEvent event)
     {
-	NullCheck.notNull(event, "event");
+	requireNonNull(event, "event can't be null");
 	if (isEmpty())
 	    return false;
 	final Iterator it2 = view.getIterator();
@@ -533,9 +540,9 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     protected boolean onTransition(InputEvent event, Transition.Type type, boolean briefAnnouncement, Hint hintFailed)
     {
-	NullCheck.notNull(event, "event");
-	NullCheck.notNull(type, "type");
-	NullCheck.notNull(hintFailed, "hintFailed");
+	requireNonNull(event, "event can't be null");
+	requireNonNull(type, "type can't be null");
+	requireNonNull(hintFailed, "hintFailed can't be null");
 	if (noContentCheck())
 	    return true;
 	if (transition.transition(type, iterator))
@@ -778,7 +785,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     static protected int findEndOfSentence(String text, int startFrom)
     {
-	NullCheck.notNull(text, "text");
+	requireNonNull(text, "text can't be null");
 	for(int i = startFrom;i < text.length();++i)
 	    if (charOfSentenceEnd(text.charAt(i)))
 		return i;
@@ -805,7 +812,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	ListeningInfo(String text, Iterator it, int pos)
 	{
 	    super(text);
-	    NullCheck.notNull(it, "it");
+	    requireNonNull(it, "it can't be null");
 	    this.it = it;
 	    this.pos = pos;
 	}
@@ -813,7 +820,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 
     protected String textUntil(Iterator itTo, int posTo)
     {
-	NullCheck.notNull(itTo, "itTo");
+	requireNonNull(itTo, "itTo can't be null");
 	final Iterator tmpIt = iterator.clone();
 	if (tmpIt.equals(itTo))
 	    return tmpIt.getText().substring(hotPointX, posTo);

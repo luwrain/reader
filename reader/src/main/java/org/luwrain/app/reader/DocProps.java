@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader;
 
 import java.util.*;
@@ -5,6 +8,8 @@ import java.util.*;
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.io.bookdoc.*;
+
+import static java.util.Objects.*;
 
 final class DocProps
 {
@@ -14,9 +19,9 @@ final class DocProps
 
     DocProps(Luwrain luwrain, Strings strings, Doc doc)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
-	NullCheck.notNull(doc, "doc");
+	requireNonNull(luwrain, "luwrain can't be null");
+	requireNonNull(strings, "strings can't be null");
+	requireNonNull(doc, "doc can't be null");
 	this.luwrain = luwrain;
 	this.strings = strings;
 	this.doc = doc;
@@ -24,7 +29,7 @@ final class DocProps
 
     boolean fillProperties(MutableLines lines)
     {
-	NullCheck.notNull(lines, "lines");
+	requireNonNull(lines, "lines can't be null");
 	lines.update((text)->{
 		text.add("");
 		text.add(strings.propertiesAreaUrl(doc.getProperty(Doc.PROP_URL)));

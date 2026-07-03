@@ -5,18 +5,17 @@ plugins {
   id 'io.freefair.lombok' version '8.6'
 }
 
-
 dependencies {
   implementation libraries.base
-    implementation libraries.apacheBase
-  implementation libraries.graalvm
-  implementation (project(':luwrain-base'))
-    implementation (project(':luwrain'))
-  implementation (project(':luwrain-bookdoc'))
-implementation 'org.luwrain:luwrain-books-api:0.2.0'
-    	implementation 'org.apache.pdfbox:pdfbox:2.0.29'
-	implementation 'javax.activation:activation:1.1.1'
-		implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+  implementation libraries.apacheBase
+  annotationProcessor libraries.autoService
+  implementation project(':luwrain-base')
+  annotationProcessor project(':luwrain-base')
+  implementation project(':luwrain')
+  implementation project(':luwrain-bookdoc')
+  implementation 'org.luwrain:luwrain-books-api:0.2.0'
+  implementation 'org.apache.pdfbox:pdfbox:2.0.29'
+  implementation 'javax.activation:activation:1.1.1'
   testImplementation libraries.junit
 }
 
@@ -24,13 +23,11 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-
-
 publishing {
   publications {
     mavenJava(MavenPublication) {
       groupId = 'org.luwrain'
-      artifactId = 'luwrain-studio'
+      artifactId = 'luwrain-reader'
       version = ver.lwr
       from components.java
     }

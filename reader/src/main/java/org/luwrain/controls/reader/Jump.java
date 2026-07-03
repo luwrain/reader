@@ -1,8 +1,13 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.controls.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.io.bookdoc.view.*;
+
+import static java.util.Objects.*;
 
 class Jump
 {
@@ -22,8 +27,8 @@ class Jump
     Jump(Iterator it, int pos,
 	 String text, Sounds sound)
     {
-	NullCheck.notNull(it, "it");
-	NullCheck.notNull(text, "text");
+	requireNonNull(it, "it can't be null");
+	requireNonNull(text, "text can't be null");
 	this.it = it;
 	this.pos = pos;
 	this.text = text;
@@ -37,7 +42,7 @@ class Jump
 
     void announce(ControlContext environment)
     {
-	NullCheck.notNull(environment, "environment");
+	requireNonNull(environment, "environment can't be null");
 	if (isEmpty())
 	{
 	    environment.playSound(Sounds.BLOCKED);
@@ -50,7 +55,7 @@ class Jump
 
     static Jump nextSentence(Iterator fromIt, int fromPos)
     {
-	NullCheck.notNull(fromIt, "fromIt");
+	requireNonNull(fromIt, "fromIt can't be null");
 	Iterator it = fromIt.clone();
 	final int pos = findNextSentenceBeginning(it.getText(), fromPos);
 	//Do we have new sentence at the current iterator position
@@ -85,7 +90,7 @@ class Jump
     //Returns any new position with any text or the same position as given, if there is no text below
     static private Iterator findTextBelow(Iterator fromIt)
     {
-	NullCheck.notNull(fromIt, "fromIt");
+	requireNonNull(fromIt, "fromIt can't be null");
 	final Iterator it = fromIt.clone();
 	if (!it.moveNext())
 	    return fromIt;
@@ -102,7 +107,7 @@ class Jump
     // the length of the text, if there is end of the current sentence, but there is no beginning of the next sentence
     static private int findNextSentenceBeginning(String text, int posFrom)
     {
-	NullCheck.notNull(text, "text");
+	requireNonNull(text, "text can't be null");
 	int pos = posFrom;
 	//Looking for any character of the end of the sentence 
 	while (pos < text.length() && (
@@ -124,7 +129,7 @@ class Jump
 
     static private String getSentenceText(Iterator fromIt, int fromPos)
     {
-	NullCheck.notNull(fromIt, "fromIt");
+	requireNonNull(fromIt, "fromIt can't be null");
 	{
 	    final int pos = findNextSentenceBeginning(fromIt.getText(), fromPos);
 	    if (pos >= 0)
@@ -151,7 +156,7 @@ class Jump
 
     static private Sounds chooseSound(Iterator it, int pos)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	if (!it.isParagraphBeginning() || pos > 0)
 	    return null;
 	return Sounds.PARAGRAPH;

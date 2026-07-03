@@ -1,19 +1,5 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -30,8 +16,10 @@ import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
 import org.luwrain.io.api.books.v1.Note;
+import org.luwrain.app.reader.books.Book;
 
 import static org.luwrain.core.DefaultEventResponse.*;
+import static java.util.Objects.*;
 
 final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, ReaderArea.ClickHandler
 {
@@ -77,7 +65,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	    this.readerArea = new ReaderArea(params){
 		    @Override public boolean onInputEvent(InputEvent event)
 		    {
-			NullCheck.notNull(event, "event");
+			requireNonNull(event, "event can't be null");
 			if (event.isSpecial() && event.getSpecial() == InputEvent.Special.ESCAPE && !event.isModified() &&
 			    app.stopAudio())
 			    return true;
@@ -85,7 +73,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		    }
 		    @Override public boolean onSystemEvent(SystemEvent event)
 		    {
-			NullCheck.notNull(event, "events");
+			requireNonNull(event, "event can't be null");
 			if (event.getType() != SystemEvent.Type.REGULAR)
 			    return super.onSystemEvent(event);
 			switch(event.getCode())
@@ -204,8 +192,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     @Override public boolean onTreeClick(TreeArea treeArea, Object obj)
     {
-	NullCheck.notNull(treeArea, "treeArea");
-	NullCheck.notNull(obj, "obj");
+	requireNonNull(treeArea, "treeArea can't be null");
+	requireNonNull(obj, "obj can't be null");
 	if (!(obj instanceof Book.Section))
 	    return false;
 	final Book.Section sect = (Book.Section)obj;
@@ -214,8 +202,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     @Override public boolean onReaderClick(ReaderArea area, Run run)
     {
-	NullCheck.notNull(area, "area");
-	NullCheck.notNull(run, "run");
+	requireNonNull(area, "area can't be null");
+	requireNonNull(run, "run can't be null");
 	final String href = run.getHref();
 	if (href != null && !href.isEmpty())
 	    return bookContainer.jump(href, readerArea, 0, ()->updateAfterJump());
@@ -313,7 +301,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	}
 	@Override public Object[] getChildObjs(Object obj)
 	{
-	    NullCheck.notNull(obj, "obj");
+	    requireNonNull(obj, "obj can't be null");
 	    final List res = new LinkedList();
 	    if (obj == root)
 	    {
@@ -347,8 +335,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	@Override public void announceItem(Note note, Set<Flags> flags)
 	{
-	    NullCheck.notNull(note, "note");
-	    NullCheck.notNull(flags, "flags");
+	    requireNonNull(note, "note can't be null");
+	    requireNonNull(flags, "flags can't be null");
 	    final String text = getScreenAppearance(note, flags);
 	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
 		app.setEventResponse(listItem(Sounds.SELECTED, text, Suggestions.LIST_ITEM)); else
@@ -356,8 +344,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	}
 	@Override public String getScreenAppearance(Note note, Set<Flags> flags)
 	{
-	    NullCheck.notNull(note, "note");
-	    NullCheck.notNull(flags, "flags");
+	    requireNonNull(note, "note can't be null");
+	    requireNonNull(flags, "flags can't be null");
 	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
 		return "Закладка по умолчанию";//FIXME:
 	    return " без комментария";

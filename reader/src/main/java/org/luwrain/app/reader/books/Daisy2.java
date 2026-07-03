@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -9,6 +12,8 @@ import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
+
+import static java.util.Objects.*;
 
 final class Daisy2 implements Book
 {
@@ -23,7 +28,7 @@ final class Daisy2 implements Book
 
     Daisy2(Luwrain luwrain)
     {
-	NullCheck.notNull(luwrain, "luwrain");
+	requireNonNull(luwrain, "luwrain can't be null");
 	this.luwrain = luwrain;
     }
 
@@ -44,7 +49,7 @@ final class Daisy2 implements Book
 
     @Override public Doc getDocument(String href)
     {
-	NullCheck.notNull(href, "href");
+	requireNonNull(href, "href can't be null");
 	final URL url;
 	final URL noRefUrl;
 	try {
@@ -111,7 +116,7 @@ final class Daisy2 implements Book
 
     @Override public AudioFragment findAudioForId(String id)
     {
-	NullCheck.notNull(id, "id");
+	requireNonNull(id, "id can't be null");
 	Log.debug("doctree-daisy", "searching audio for " + id);
 	for(Map.Entry<URL, Smil.Entry> e: smils.entrySet())
 	{
@@ -129,7 +134,7 @@ final class Daisy2 implements Book
 
     @Override public String findTextForAudio(String audioFileUrl, long msec)
     {
-	NullCheck.notNull(audioFileUrl, "audioFileUrl");
+	requireNonNull(audioFileUrl, "audioFileUrl can't be null");
 	Log.debug("doctree-daisy", "text for " + audioFileUrl + " at " + msec);
 	for(Map.Entry<URL, Smil.Entry> e: smils.entrySet())
 	{
@@ -147,7 +152,7 @@ final class Daisy2 implements Book
 
     void init(Doc nccDoc)
     {
-	NullCheck.notNull(nccDoc, "nccDoc");
+	requireNonNull(nccDoc, "nccDoc can't be null");
 	final String nccUrlStr = nccDoc.getProperty(Doc.PROP_URL);
 	URL nccDocBaseUrl = null;
 	try {
@@ -217,7 +222,7 @@ final class Daisy2 implements Book
 
     private void loadSmil(URL url, List<String> textSrcs)
     {
-	NullCheck.notNull(url, "url");
+	requireNonNull(url, "url can't be null");
 	if (smils.containsKey(url))
 	    return;
 	final Smil.Entry smil = Smil.fromUrl(url);
@@ -259,8 +264,8 @@ final class Daisy2 implements Book
 
     static private Smil.Entry findSmilEntryWithText(Smil.Entry entry, String src)
     {
-	NullCheck.notNull(entry, "entry");
-	NullCheck.notNull(src, "src");
+	requireNonNull(entry, "entry can't be null");
+	requireNonNull(src, "src can't be null");
 	switch(entry.type)
 	{
 	case TEXT:
@@ -297,8 +302,8 @@ final class Daisy2 implements Book
 
     private Smil.Entry findSmilEntryWithAudio(Smil.Entry entry, String audioFileUrl, long msec)
     {
-	NullCheck.notNull(entry, "entry");
-	NullCheck.notNull(audioFileUrl, "audioFileUrl");
+	requireNonNull(entry, "entry can't be null");
+	requireNonNull(audioFileUrl, "audioFileUrl can't be null");
 	switch(entry.type)
 	{
 	case AUDIO:
@@ -335,8 +340,8 @@ final class Daisy2 implements Book
 
     static private void collectAudioStartingAtEntry(Smil.Entry entry, LinkedList<AudioFragment> audioInfos)
     {
-	NullCheck.notNull(entry, "entry");
-	NullCheck.notNull(audioInfos, "audioInfos");
+	requireNonNull(entry, "entry can't be null");
+	requireNonNull(audioInfos, "audioInfos can't be null");
 	switch(entry.type)
 	{
 	case AUDIO:
@@ -360,8 +365,8 @@ final class Daisy2 implements Book
 
     static private void collectTextStartingAtEntry(Smil.Entry entry, LinkedList<String> links)
     {
-	NullCheck.notNull(entry, "entry");
-	NullCheck.notNull(links, "links");
+	requireNonNull(entry, "entry can't be null");
+	requireNonNull(links, "links can't be null");
 	switch(entry.type)
 	{
 	case AUDIO:

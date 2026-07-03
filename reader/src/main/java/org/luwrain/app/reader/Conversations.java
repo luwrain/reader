@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -8,6 +10,8 @@ import java.net.*;
 
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
+
+import static java.util.Objects.*;
 
 
 final class Conversations
@@ -20,15 +24,15 @@ final class Conversations
 
     Conversations(Luwrain luwrain, Strings strings)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(strings, "strings");
+	requireNonNull(luwrain, "luwrain can't be null");
+	requireNonNull(strings, "strings can't be null");
 	this.luwrain = luwrain;
 	this.strings = strings;
     }
 
     URL urlToOpen(String currentHref)
     {
-	NullCheck.notNull(currentHref, "currentHref");
+	requireNonNull(currentHref, "currentHref can't be null");
 	final String res = Popups.fixedEditList(luwrain, strings.openUrlPopupName(), strings.openUrlPopupPrefix(), currentHref.isEmpty()?"http://":currentHref, 
 						enteredUrls.toArray(new String[enteredUrls.size()]));
 	if (res == null)
@@ -55,7 +59,7 @@ final class Conversations
 
     boolean confirmLocalBookDeleting(String title)
     {
-	NullCheck.notNull(title, "title");
+	requireNonNull(title, "title can't be null");
 	return Popups.confirmDefaultYes(luwrain, strings.localRepoDeletePopupName(), strings.localRepoDeletePopupText(title));
     }
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -10,6 +13,8 @@ import org.luwrain.io.bookdoc.*;
 import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
 
+import static java.util.Objects.*;
+
 final class Javadoc implements Book
 {
     private final Luwrain luwrain;
@@ -17,8 +22,8 @@ final class Javadoc implements Book
 
     Javadoc(Luwrain luwrain, URL baseUrl)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(baseUrl, "baseUrl");
+	requireNonNull(luwrain, "luwrain can't be null");
+	requireNonNull(baseUrl, "baseUrl can't be null");
 	this.luwrain = luwrain;
 	this.baseUrl = baseUrl;
     }
@@ -40,7 +45,7 @@ final class Javadoc implements Book
 
     @Override public Doc getDocument(String href)
     {
-	NullCheck.notNull(href, "href");
+	requireNonNull(href, "href can't be null");
 	return null;
     }
 

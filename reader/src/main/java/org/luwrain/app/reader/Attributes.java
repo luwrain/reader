@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -9,6 +11,8 @@ import com.google.gson.annotations.*;
 import org.luwrain.core.*;
 import org.luwrain.io.api.books.v1.*;
 
+import static java.util.Objects.*;
+
 final class Attributes
 {
     private final Gson gson = new Gson();
@@ -17,7 +21,7 @@ final class Attributes
 
     Attributes(Settings sett)
     {
-	NullCheck.notNull(sett, "sett");
+	requireNonNull(sett, "sett can't be null");
 	this.sett = sett;
 	Books b = gson.fromJson(sett.getAttributes(""), Books.class);
 	if (b == null)

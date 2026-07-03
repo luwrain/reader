@@ -1,15 +1,20 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.controls.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.io.bookdoc.view.*;
 
+import static java.util.Objects.*;
+
 public class DefaultTransition implements ReaderArea.Transition
 {
     @Override public boolean transition(Type type, Iterator it)
     {
-	NullCheck.notNull(type, "type");
-	NullCheck.notNull(it, "it");
+	requireNonNull(type, "type can't be null");
+	requireNonNull(it, "it can't be null");
 	switch(type)
 	{
 	case NEXT:
@@ -37,7 +42,7 @@ public class DefaultTransition implements ReaderArea.Transition
 
     boolean onNext(Iterator it)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	return it.searchForward((node,para,row)->{
 		return para != null;
 	    }, it.getIndex() + 1);
@@ -47,7 +52,7 @@ public class DefaultTransition implements ReaderArea.Transition
     {
 	if (it.getIndex() == 0)
 	    return false;
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	return it.searchBackward((node,para,row)->{
 		return para != null;
 	    }, it.getIndex() - 1);
@@ -90,7 +95,7 @@ public class DefaultTransition implements ReaderArea.Transition
 
     protected boolean onPrevSection(Iterator it, boolean sameLevel)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	final Node currentNode = it.getNode();
 	if (currentNode == null)
 	    return false;
@@ -126,7 +131,7 @@ public class DefaultTransition implements ReaderArea.Transition
 
     protected boolean onNextParagraph(Iterator it)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	return it.searchForward((node,para,row)->{
 		return row.getRelNum() == 0;
 	    }, it.getIndex() + 1);
@@ -134,7 +139,7 @@ public class DefaultTransition implements ReaderArea.Transition
 
     protected boolean onPrevParagraph(Iterator it)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	if (it.getIndex() == 0)
 	    return false;
 	return it.searchBackward((node,para,row)->{

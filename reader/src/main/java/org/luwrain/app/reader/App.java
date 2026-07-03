@@ -1,19 +1,5 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -25,11 +11,12 @@ import org.luwrain.core.*;
 import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.popups.Popups;
-import org.luwrain.reader.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;
 import org.luwrain.app.base.*;
+
+import static java.util.Objects.*;
 
 public final class App extends AppBase<Strings>
 {
@@ -91,7 +78,7 @@ public final class App extends AppBase<Strings>
 
     void open(URI uri)
     {
-	NullCheck.notNull(uri, "uri");
+	requireNonNull(uri, "uri can't be null");
 	final TaskId taskId = newTaskId();
 	runTask(taskId, ()->{
 		final Book book = new BookFactory().newBook(getLuwrain(), uri.toString());
@@ -124,7 +111,7 @@ public final class App extends AppBase<Strings>
 
     void showErrorLayout(Throwable e)
     {
-	NullCheck.notNull(e, "e");
+	requireNonNull(e, "e can't be null");
 	final ErrorLayout errorLayout;
 	if (mainLayout != null)
 	    errorLayout = new ErrorLayout(this, e, ()->{
@@ -157,7 +144,7 @@ public final class App extends AppBase<Strings>
 
     @Override public void setAppName(String name)
     {
-	NullCheck.notNull(name, "name");
+	requireNonNull(name, "name can't be null");
 	super.setAppName(!name.isEmpty()?name:getStrings().appName());
     }
 

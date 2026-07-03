@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.util.*;
@@ -11,6 +14,8 @@ import org.jsoup.select.*;
 import org.jsoup.parser.*;
 
 import org.luwrain.core.*;
+
+import static java.util.Objects.*;
 
 final class Smil
 {
@@ -33,7 +38,7 @@ final class Smil
 
 	Entry(Type type)
 	{
-	    NullCheck.notNull(type, "type");
+	    requireNonNull(type, "type can't be null");
 	    this.type = type;
 	    this.id = "";
 	    this.audioInfo = null;
@@ -42,7 +47,7 @@ final class Smil
 
 	Entry(Type type, Entry[] entries)
 	{
-	    NullCheck.notNull(type, "type");
+	    requireNonNull(type, "type can't be null");
 	    NullCheck.notNullItems(entries, "entries");
 	    this.type = type;
 	    this.id = "";
@@ -52,8 +57,8 @@ final class Smil
 
 	Entry(Type type, String id, Entry[] entries)
 	{
-	    NullCheck.notNull(type, "type");
-	    NullCheck.notNull(id, "id");
+	    requireNonNull(type, "type can't be null");
+	    requireNonNull(id, "id can't be null");
 	    NullCheck.notNullItems(entries, "entries");
 	    this.type = type;
 	    this.id = id;
@@ -63,9 +68,9 @@ final class Smil
 
 	Entry (Type type, String id, String src)
 	{
-	    NullCheck.notNull(type, "type");
-	    NullCheck.notNull(id, "id");
-	    NullCheck.notNull(src, "src");
+	    requireNonNull(type, "type can't be null");
+	    requireNonNull(id, "id can't be null");
+	    requireNonNull(src, "src can't be null");
 	    this.type = type;
 	    this.id = id;
 	    this.src = src;
@@ -75,9 +80,9 @@ final class Smil
 
 	Entry (String id, String src, AudioFragment audioInfo)
 	{
-	    NullCheck.notNull(id, "id");
-	    NullCheck.notNull(src, "src");
-	    NullCheck.notNull(audioInfo, "audioInfo");
+	    requireNonNull(id, "id can't be null");
+	    requireNonNull(src, "src can't be null");
+	    requireNonNull(audioInfo, "audioInfo can't be null");
 	    this.type = Type.AUDIO;
 	    this.id = id;
 	    this.src = src;
@@ -97,7 +102,7 @@ final class Smil
 
 	void allSrcToUrls(URL base) throws MalformedURLException
 	{
-	    NullCheck.notNull(base, "base");
+	    requireNonNull(base, "base can't be null");
 	    if (src != null && !src.isEmpty())
 		src = new URL(base, src).toString();
 	    if (entries != null)
@@ -107,7 +112,7 @@ final class Smil
 
 	Entry findById(String id)
 	{
-	    NullCheck.notNull(id, "id");
+	    requireNonNull(id, "id can't be null");
 	    if (this.id != null && this.id.equals(id))
 		return this;
 	    if (entries == null)
@@ -142,7 +147,7 @@ final class Smil
 
     static public Entry fromUrl(URL url)
     {
-	NullCheck.notNull(url, "url");
+	requireNonNull(url, "url can't be null");
 	final org.jsoup.nodes.Document doc;
 	try {
 	    if (!url.getProtocol().equals("file"))
@@ -164,7 +169,7 @@ final class Smil
 
     static Entry fromFile(java.io.File file)
     {
-	NullCheck.notNull(file, "file");
+	requireNonNull(file, "file can't be null");
 	final org.jsoup.nodes.Document doc;
 	try {
 	    doc = Jsoup.parse(new FileInputStream(file), "utf-8", "", Parser.xmlParser());
@@ -179,7 +184,7 @@ final class Smil
 
     static private Entry[] onNode(Node node)
     {
-	NullCheck.notNull(node, "node");
+	requireNonNull(node, "node can't be null");
 	final LinkedList<Entry> res = new LinkedList<Entry>();
 	final List<Node> childNodes = node.childNodes();
 	for(Node n: childNodes)
@@ -221,7 +226,7 @@ final class Smil
 
     static private Entry onAudio(Element el)
     {
-	NullCheck.notNull(el, "el");
+	requireNonNull(el, "el can't be null");
 	final String id = el.attr("id");
 	final String src = el.attr("src");
 	final String beginValue = el.attr("clip-begin");
@@ -236,7 +241,7 @@ final class Smil
 
     static private Entry onText(Element el)
     {
-	NullCheck.notNull(el, "el");
+	requireNonNull(el, "el can't be null");
 	final String id = el.attr("id");
 	final String src = el.attr("src");
 	return new Entry(Entry.Type.TEXT, id, src);

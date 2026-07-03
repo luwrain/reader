@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -13,6 +15,8 @@ import org.luwrain.io.api.books.v1.*;
 
 import static java.nio.file.Files.*;
 
+import static java.util.Objects.*;
+
 final class LocalRepo
 {
     private File repoDir;
@@ -20,16 +24,16 @@ final class LocalRepo
 
     LocalRepo(LocalRepoMetadata metadata, File repoDir)
     {
-	NullCheck.notNull(metadata, "metadata");
-	NullCheck.notNull(repoDir, "repoDir");
+	requireNonNull(metadata, "metadata can't be null");
+	requireNonNull(repoDir, "repoDir can't be null");
 	this.metadata = metadata;
 	this.repoDir = repoDir;
     }
 
     void addDaisy(Book book, File zipFile) throws IOException
     {
-	NullCheck.notNull(book, "book");
-	NullCheck.notNull(zipFile, "zipFile");
+	requireNonNull(book, "book can't be null");
+	requireNonNull(zipFile, "zipFile can't be null");
 	final String id = book.getId();
 	if (id == null || id.isEmpty())
 	    throw new IllegalArgumentException("The book diesn't have an ID");
@@ -57,7 +61,7 @@ final class LocalRepo
 
     boolean remove(Book book)
     {
-	NullCheck.notNull(book, "book");
+	requireNonNull(book, "book can't be null");
 	if (!metadata.removeBook(book))
 	    return false;
 	deleteDir(new File(repoDir, book.getId()));
@@ -66,7 +70,7 @@ final class LocalRepo
 
     private void deleteDir(File file)
     {
-	NullCheck.notNull(file, "file");
+	requireNonNull(file, "file can't be null");
 	if (!file.exists())
 	    return;
 	if (!file.isDirectory())
@@ -86,14 +90,14 @@ final class LocalRepo
 
     File findDaisyMainFile(Book book)
     {
-	NullCheck.notNull(book, "book");
+	requireNonNull(book, "book can't be null");
 	NullCheck.notEmpty(book.getId(), "book.getId()");
 	return findNcc(new File(repoDir, book.getId()));
     }
 
     private File findNcc(File file)
     {
-	NullCheck.notNull(file, "file");
+	requireNonNull(file, "file can't be null");
 	if (!file.isDirectory())
 	{
 	    final String name = file.getName().toLowerCase();
@@ -120,7 +124,7 @@ final class LocalRepo
 
     boolean hasBook(Book book)
     {
-	NullCheck.notNull(book, "book");
+	requireNonNull(book, "book can't be null");
 	return metadata.findBook(book.getId()) != null;
     }
 }

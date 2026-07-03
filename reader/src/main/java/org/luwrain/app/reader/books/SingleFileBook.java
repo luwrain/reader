@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.util.*;
@@ -7,6 +10,8 @@ import java.net.*;
 import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
 
+import static java.util.Objects.*;
+
 public final class SingleFileBook implements Book
 {
     private final Luwrain luwrain;
@@ -14,8 +19,8 @@ public final class SingleFileBook implements Book
 
     SingleFileBook(Luwrain luwrain, Doc doc)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(doc, "doc");
+	requireNonNull(luwrain, "luwrain can't be null");
+	requireNonNull(doc, "doc can't be null");
 	this.luwrain = luwrain;
 	this.doc = doc;
     }

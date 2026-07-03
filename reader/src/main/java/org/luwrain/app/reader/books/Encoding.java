@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader.books;
 
@@ -13,6 +15,8 @@ import org.jsoup.select.*;
 
 import org.luwrain.core.*;
 
+import static java.util.Objects.*;
+
 class Encoding
 {
     static private final Pattern pattern1 = Pattern.compile("<?xml.*encoding\\s*=\\s*\"([^\"]*)\".*?>", Pattern.CASE_INSENSITIVE);
@@ -21,7 +25,7 @@ class Encoding
     
     static String getHtmlEncoding(Path path) throws IOException
     {
-	NullCheck.notNull(path, "path");
+	requireNonNull(path, "path can't be null");
 	//  html5 <meta charset="UTF-8">
         //  html4 <meta http-equiv="Content-Type"
 	//content="text/html;charset=ISO-8859-1">
@@ -60,7 +64,7 @@ class Encoding
 
         static String getXmlEncoding(InputStream s) throws IOException
     {
-	NullCheck.notNull(s, "s");
+	requireNonNull(s, "s can't be null");
 	final BufferedReader r = new BufferedReader(new InputStreamReader(s));
 	String line;
 	while ( (line = r.readLine()) != null)
@@ -77,7 +81,7 @@ class Encoding
 
     static String getXmlEncoding(Path path) throws IOException
     {
-	NullCheck.notNull(path, "path");
+	requireNonNull(path, "path can't be null");
 	InputStream is = null;
 	try {
 	    is = Files.newInputStream(path);

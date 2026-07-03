@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -7,6 +9,8 @@ import java.util.*;
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
+
+import static java.util.Objects.*;
 
 public final class Extension extends EmptyExtension
 {
@@ -127,7 +131,7 @@ public final class Extension extends EmptyExtension
     /*
     private String constructGoogleUrl(Registry registry, String query)
     {
-	NullCheck.notNull(registry, "registry");
+	requireNonNull(registry, "registry can't be null");
 	NullCheck.notEmpty(query, "query");
 	final Settings sett = createSettings(registry);
 	return "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=" + sett.getGoogleLang("en") + "&ie=utf-8";
@@ -141,13 +145,13 @@ public final class Extension extends EmptyExtension
 
     static Settings createSettings(Registry registry)
     {
-	NullCheck.notNull(registry, "registry");
+	requireNonNull(registry, "registry can't be null");
 	return RegistryProxy.create(registry, "/org/luwrain/app/reader", Settings.class);
     }
     */
     @Override public UniRefProc[] getUniRefProcs(Luwrain luwrain)
     {
-	NullCheck.notNull(luwrain, "luwrain");
+	requireNonNull(luwrain, "luwrain can't be null");
 	return new UniRefProc[]{
 	    new UniRefProc(){
 		static private final String TYPE = "reader";
@@ -157,7 +161,7 @@ public final class Extension extends EmptyExtension
 		}
 		@Override public UniRefInfo getUniRefInfo(String uniRef)
 		{
-		    NullCheck.notNull(uniRef, "uniRef");
+		    requireNonNull(uniRef, "uniRef can't be null");
 		    if (uniRef.isEmpty() || !uniRef.startsWith(TYPE + ":"))
 			return null;
 		    final String url = uniRef.substring(TYPE.length() + 1);
@@ -167,8 +171,8 @@ public final class Extension extends EmptyExtension
 		}
 		@Override public boolean openUniRef(String uniRef, Luwrain luwrain)
 		{
-		    NullCheck.notNull(uniRef, "uniRef");
-		    NullCheck.notNull(luwrain, "luwrain");
+		    requireNonNull(uniRef, "uniRef can't be null");
+		    requireNonNull(luwrain, "luwrain can't be null");
 		    if (uniRef.isEmpty() || !uniRef.startsWith(TYPE + ":"))
 			return false;
 		    final String url = uniRef.substring(TYPE.length() + 1);

@@ -1,8 +1,13 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.controls.reader;
 
 import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.io.bookdoc.view.*;
+
+import static java.util.Objects.*;
 
 public class SentenceIterator
 {
@@ -11,15 +16,15 @@ public class SentenceIterator
 
     public SentenceIterator(Iterator it, int pos)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	this.it = it.clone();
 	this.pos = pos;
     }
 
     public boolean forward(StringBuilder b, String delim)
     {
-	NullCheck.notNull(b, "b");
-	NullCheck.notNull(delim, "delim");
+	requireNonNull(b, "b can't be null");
+	requireNonNull(delim, "delim can't be null");
 	boolean afterSentenceEnd;
 	if (atRowEnd())
 	{
@@ -61,8 +66,8 @@ public class SentenceIterator
 
     protected boolean skipInitialForward(StringBuilder b, String delim)
     {
-	NullCheck.notNull(b, "b");
-	NullCheck.notNull(delim, "delim");
+	requireNonNull(b, "b can't be null");
+	requireNonNull(delim, "delim can't be null");
 	while(it.canMoveNext())
 	{
 	    it.moveNext();
@@ -79,8 +84,8 @@ public class SentenceIterator
 
     protected boolean moveNextInParagraph(StringBuilder b, String delim)
     {
-	NullCheck.notNull(b, "b");
-	NullCheck.notNull(delim, "dleim");
+	requireNonNull(b, "b can't be null");
+	requireNonNull(delim, "delim can't be null");
 	final Paragraph p = it.getParagraph();
 	final Iterator i = it.clone();
 	if (!i.canMoveNext())
@@ -100,7 +105,7 @@ public class SentenceIterator
     // the length of the text, if there is end of the current sentence, but there is no beginning of the next sentence
     protected int findNextSentenceInString(String text, int posFrom)
     {
-	NullCheck.notNull(text, "text");
+	requireNonNull(text, "text can't be null");
 	int pos = posFrom;
 	//Looking for any character of the end of the sentence 
 	while (pos < text.length() && (

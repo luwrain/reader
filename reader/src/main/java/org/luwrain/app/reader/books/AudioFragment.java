@@ -1,8 +1,13 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.net.*;
 
 import org.luwrain.core.NullCheck;
+
+import static java.util.Objects.*;
 
 public final class AudioFragment
 {
@@ -12,7 +17,7 @@ public final class AudioFragment
 
     public AudioFragment(String src, long beginPos)
     {
-	NullCheck.notNull(src, "src");
+	requireNonNull(src, "src can't be null");
 	this.src = src;
 	this.beginPos = beginPos;
 	this.endPos = -1;
@@ -20,7 +25,7 @@ public final class AudioFragment
 
     public AudioFragment(String src)
     {
-	NullCheck.notNull(src, "src");
+	requireNonNull(src, "src can't be null");
 	this.src = src;
 	this.beginPos = -1;
 	this.endPos = -1;
@@ -28,7 +33,7 @@ public final class AudioFragment
 
     public AudioFragment(String src, long beginPos, long endPos)
     {
-	NullCheck.notNull(src, "src");
+	requireNonNull(src, "src can't be null");
 	this.src = src;
 	this.beginPos = beginPos;
 	this.endPos = endPos;
@@ -48,7 +53,7 @@ public final class AudioFragment
 
     public boolean covers(String audioFileUrl, long msec, URL baseUrl)
     {
-	NullCheck.notNull(baseUrl, "baseUrl");
+	requireNonNull(baseUrl, "baseUrl can't be null");
 	try {
 	    if (!(new URL(baseUrl, src).toString()).equals(new URL(baseUrl,audioFileUrl).toString()))
 		return false;

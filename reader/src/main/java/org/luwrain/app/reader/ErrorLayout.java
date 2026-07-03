@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -10,6 +12,8 @@ import org.luwrain.controls.*;
 import org.luwrain.util.Connections.*;
 import org.luwrain.app.base.*;
 
+import static java.util.Objects.*;
+
 final class ErrorLayout extends LayoutBase
 {
     private final App app;
@@ -19,7 +23,7 @@ final class ErrorLayout extends LayoutBase
     ErrorLayout(App app, Throwable ex, ActionHandler closing)
     {
 	super(app);
-	NullCheck.notNull(ex, "ex");
+	requireNonNull(ex, "ex can't be null");
 	this.app = app;
 	this.ex = ex;
 	this.errorArea = new SimpleArea(getControlContext(), app.getStrings().errorAreaName());

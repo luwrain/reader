@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader;
 
 import java.util.*;
@@ -13,6 +16,10 @@ import org.luwrain.player.*;
 import org.luwrain.app.base.*;
 import org.luwrain.io.api.books.v1.Note;
 
+import org.luwrain.app.reader.books.Book;
+
+import static java.util.Objects.*;
+
 final class BookContainer
 {
     private final App app;
@@ -25,8 +32,8 @@ final class BookContainer
 
     BookContainer(App app, Book book, String bookId)
     {
-	NullCheck.notNull(app, "app");
-	NullCheck.notNull(book, "book");
+	requireNonNull(app, "app can't be null");
+	requireNonNull(book, "book can't be null");
 	NullCheck.notEmpty(bookId, "bookId");
 	this.app = app;
 	this.book = book;
@@ -43,8 +50,8 @@ final class BookContainer
     boolean jump(String href, ReaderArea readerArea, int newRowNum, Runnable onSuccess)
     {
 	NullCheck.notEmpty(href, "href");
-	NullCheck.notNull(readerArea, "readerArea");
-	NullCheck.notNull(onSuccess, "onSuccess");
+	requireNonNull(readerArea, "readerArea can't be null");
+	requireNonNull(onSuccess, "onSuccess can't be null");
 	if (app.isBusy())
 	    return false;
 	final App.TaskId taskId = app.newTaskId();
@@ -93,13 +100,13 @@ final class BookContainer
 
     boolean changeCharset(String newCharset)
     {
-	NullCheck.notNull(newCharset, "newCharset");
+	requireNonNull(newCharset, "newCharset can't be null");
 	return true;
     }
 
     boolean playAudio(org.luwrain.controls.reader.ReaderArea area, String[] ids)
     {
-	NullCheck.notNull(area, "area");
+	requireNonNull(area, "area can't be null");
 	NullCheck.notNullItems(ids, "ids");
 	final AudioPlaying audioPlaying = app.getAudioPlaying();
 	if (audioPlaying == null)
@@ -142,7 +149,7 @@ final class BookContainer
 	int lastRowIndex;
 	HistoryItem(Doc doc)
 	{
-	    NullCheck.notNull(doc, "doc");
+	    requireNonNull(doc, "doc can't be null");
 	    this.doc = doc;
 	    url = doc.getProperty(Doc.PROP_URL);
 	    contentType = doc.getProperty("contenttype");

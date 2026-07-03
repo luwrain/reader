@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader;
 
 import java.net.*;
@@ -7,6 +10,9 @@ import org.luwrain.player.*;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
+import org.luwrain.app.reader.books.Book;
+
+import static java.util.Objects.*;
 
 class AudioPlaying  implements Listener
 {
@@ -21,7 +27,7 @@ class AudioPlaying  implements Listener
 
     AudioPlaying(Luwrain luwrain)
     {
-	NullCheck.notNull(luwrain, "luwrain");
+	requireNonNull(luwrain, "luwrain can't be null");
 	this.luwrain = luwrain;
 	this.player = luwrain.getPlayer();
 	if (player != null)
@@ -35,9 +41,9 @@ class AudioPlaying  implements Listener
 
     boolean playAudio(Book book, Doc doc, ReaderArea area, String[] ids)
     {
-	NullCheck.notNull(book, "book");
-	NullCheck.notNull(doc, "doc");
-	NullCheck.notNull(area, "area");
+	requireNonNull(book, "book can't be null");
+	requireNonNull(doc, "doc can't be null");
+	requireNonNull(area, "area can't be null");
 	NullCheck.notNullItems(ids, "ids");
 	final String urlStr = doc.getProperty(Doc.PROP_URL);
 	if (urlStr == null || urlStr.isEmpty())
@@ -86,7 +92,7 @@ class AudioPlaying  implements Listener
 
     @Override public void onTrackTime(Playlist playlist, int trackNum,  long msec)
     {
-	NullCheck.notNull(playlist, "playlist");
+	requireNonNull(playlist, "playlist can't be null");
 	if (doc == null || book == null || area == null)
 	    return;
 	final String urlStr = doc.getProperty(Doc.PROP_URL);
@@ -141,7 +147,7 @@ class AudioPlaying  implements Listener
 
     @Override public void onNewState(org.luwrain.player.Playlist playlist, org.luwrain.player.Player.State state)
     {
-	NullCheck.notNull(state, "state");
+	requireNonNull(state, "state can't be null");
 	if (playlist != currentPlaylist)
 	    return;
 	if (state == org.luwrain.player.Player.State.STOPPED)
@@ -172,7 +178,7 @@ class AudioPlaying  implements Listener
 	}
 	@Override public void visit(Paragraph para)
 	{
-	    NullCheck.notNull(para, "para");
+	    requireNonNull(para, "para can't be null");
 	    if (resultingRun != null)
 		return;
 	    for(Run r: para.getRuns())
@@ -185,7 +191,7 @@ class AudioPlaying  implements Listener
 	{
 	    if (resultingRun != null)
 		return;
-	    final Attributes attrs = run.getAttrs();
+	    final var attrs = run.getAttrs();
 	    if (attrs != null && attrs.hasIdWithParents(desiredId))
 		this.resultingRun = run;
 	}

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -9,6 +12,8 @@ import java.util.zip.*;
 import org.luwrain.core.*;
 import org.luwrain.util.*;
 import org.luwrain.io.bookdoc.*;
+
+import static java.util.Objects.*;
 
 public final class UrlLoader
 {
@@ -32,8 +37,8 @@ public final class UrlLoader
 
     public UrlLoader(Luwrain luwrain, URL url) throws MalformedURLException
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(url, "url");
+	requireNonNull(luwrain, "luwrain can't be null");
+	requireNonNull(url, "url can't be null");
 	this.luwrain = luwrain;
 	this.requestedTagRef = url.getRef();
 	this.requestedUrl = new URL(url.getProtocol(), IDN.toASCII(url.getHost()),
@@ -144,7 +149,7 @@ public final class UrlLoader
 
     private void downloadToTmpFile(InputStream s) throws IOException
     {
-	NullCheck.notNull(s, "s");
+	requireNonNull(s, "s can't be null");
 	tmpFile = Files.createTempFile("tmplwr-reader-", ".dat");
 	Log.debug(LOG_COMPONENT, "creating temporary file " + tmpFile.toString());
 	Files.copy(s, tmpFile, StandardCopyOption.REPLACE_EXISTING);

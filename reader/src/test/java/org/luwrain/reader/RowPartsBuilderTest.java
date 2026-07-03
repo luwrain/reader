@@ -21,11 +21,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RowPartsBuilderTest
 {
+    /*
     private Node testRoot;
 
     @BeforeEach public void createTestRoot()
     {
-	/*
+
 	testRoot = new Node(Node.ROOT);
 	Paragraph para = new Paragraph();
 	para.runs = new Run[]{
@@ -44,8 +45,10 @@ public class RowPartsBuilderTest
 	table1.subnodes[1].subnodes[1].subnodes = new Node[]{new Paragraph(new Run("4"))};
 
 	testRoot.subnodes = new Node[]{para, table1};
-	*/
+
+    
     }
+    */
 
     @Disabled @Test public void runsSingle()
     {

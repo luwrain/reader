@@ -1,19 +1,5 @@
-/*
-   Copyright 2012-2021 Michael Pozhidaev <msp@luwrain.org>
-   Copyright 2015-2016 Roman Volovodov <gr.rPman@gmail.com>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -27,6 +13,8 @@ import org.luwrain.core.*;
 import org.luwrain.controls.*;
 import org.luwrain.io.api.books.v1.*;
 
+import static java.util.Objects.*;
+
 final class Notes implements EditableListArea.Model
 {
     private final App app;
@@ -36,7 +24,7 @@ final class Notes implements EditableListArea.Model
 
     Notes(App app, String bookId)
     {
-	NullCheck.notNull(app, "app");
+	requireNonNull(app, "app can't be null");
 	NullCheck.notEmpty(bookId, "bookId");
 	this.app = app;
 	this.attrs = app.getAttributes();
@@ -72,7 +60,7 @@ final class Notes implements EditableListArea.Model
 
     boolean addNote(int pos, String text)
     {
-	NullCheck.notNull(text, "text");
+	requireNonNull(text, "text can't be null");
 	if (pos < 0)
 	    throw new IllegalArgumentException("pos can't be negative");
 	final Note note = new Note();
@@ -110,7 +98,7 @@ final class Notes implements EditableListArea.Model
 
     @Override public boolean addToModel(int pos, java.util.function.Supplier supplier)
     {
-	NullCheck.notNull(supplier, "supplier");
+	requireNonNull(supplier, "supplier can't be null");
 	if (pos < 0 || pos > getItemCount())
 	    throw new IllegalArgumentException("pos (" + String.valueOf(pos) + ") must be non-negative and not greater than " + String.valueOf(getItemCount()));
 	final Object supplied = supplier.get();

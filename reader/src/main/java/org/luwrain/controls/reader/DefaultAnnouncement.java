@@ -1,8 +1,14 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.controls.reader;
 
 import org.luwrain.core.*;
+import org.luwrain.controls.*;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.io.bookdoc.view.*;
+
+import static java.util.Objects.*;
 
 public class DefaultAnnouncement implements ReaderArea.Announcement
 {
@@ -11,15 +17,15 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 
     public DefaultAnnouncement(ControlContext context, Strings strings)
     {
-	NullCheck.notNull(context, "context");
-	NullCheck.notNull(strings, "strings");
+	requireNonNull(context, "context can't be null");
+	requireNonNull(strings, "strings can't be null");
 	this.context = context;
 	this.strings = strings;
     }
 
     @Override public void announce(Iterator it, boolean brief)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	if (it.noContent())
 	    return;
 	final Node node = it.getNode();
@@ -32,7 +38,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 
     protected String getAnnouncementText(Iterator it)
     {
-	NullCheck.notNull(it, "it");
+	requireNonNull(it, "it can't be null");
 	final Node node = it.getNode();
 	if (node == null)
 	    return "";

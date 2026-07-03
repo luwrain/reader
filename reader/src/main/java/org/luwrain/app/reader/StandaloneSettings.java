@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
 
 package org.luwrain.app.reader;
 
@@ -7,6 +9,7 @@ import java.io.*;
 import org.luwrain.core.*;
 
 import static java.nio.file.Files.*;
+import static java.util.Objects.*;
 import static org.luwrain.util.LineIterator.*;
 import static org.luwrain.util.FileUtils.*;
 
@@ -22,7 +25,7 @@ final class StandaloneSettings  implements Settings
 
     StandaloneSettings(File dir)
     {
-	NullCheck.notNull(dir, "dir");
+	requireNonNull(dir, "dir can't be null");
 	this.dir = dir;
     }
 
@@ -72,7 +75,7 @@ final class StandaloneSettings  implements Settings
 
     @Override public void setAttributes(String value)
     {
-	NullCheck.notNull(value, "value");
+	requireNonNull(value, "value can't be null");
 	final File attrsFile = new File(dir, ATTRS_FILE);
 	try {
 	    createDirectories(dir.toPath());

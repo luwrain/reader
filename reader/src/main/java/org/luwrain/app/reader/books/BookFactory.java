@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.net.*;
@@ -8,14 +11,16 @@ import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
 import org.luwrain.util.*;
 
+import static java.util.Objects.*;
+
 public final class BookFactory
 {
     static final String LOG_COMPONENT = "reader";
 
     private Book initDaisy2(Luwrain luwrain, Doc nccDoc)
     {
-	NullCheck.notNull(luwrain, "luwrain");
-	NullCheck.notNull(nccDoc, "nccDoc");
+	requireNonNull(luwrain, "luwrain can't be null");
+	requireNonNull(nccDoc, "nccDoc can't be null");
 	final Daisy2 book = new Daisy2(luwrain);
 	book.init(nccDoc);
 	return book;

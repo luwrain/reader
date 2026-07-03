@@ -1,9 +1,13 @@
+// SPDX-License-Identifier: BUSL-1.1
+// Copyright 2012-2026 Michael Pozhidaev <msp@luwrain.org>
+
 package org.luwrain.app.reader.books;
 
 import java.util.*;
 
 import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
+import static java.util.Objects.*;
 
 public interface Book
 {
@@ -24,8 +28,8 @@ public interface Book
 	public final String href;
 	public Section(int level, String title, String href)
 	{
-	    NullCheck.notNull(title, "title");
-	    NullCheck.notNull(href, "href");
+	    requireNonNull(title, "title can't be null");
+	    requireNonNull(href, "href can't be null");
 	    if (level < 0)
 		throw new IllegalArgumentException("level (" + String.valueOf(level) + ") can't be negative");
 	    this.level = level;

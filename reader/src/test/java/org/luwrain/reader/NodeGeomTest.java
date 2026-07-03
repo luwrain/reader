@@ -1,32 +1,18 @@
-/*
-   Copyright 2012-2024 Michael Pozhidaev <msp@luwrain.org>
-
-   This file is part of LUWRAIN.
-
-   LUWRAIN is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
-   License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
-
-   LUWRAIN is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-*/
 
 package org.luwrain.reader;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.luwrain.reader.view.*;
+//import org.luwrain.reader.view.*;
 
 public class NodeGeomTest
 {
-    private Node testRoot;
+    //    private Node testRoot;
 
     @BeforeEach public void createTestRoot()
     {
+	/*
 	testRoot = new Node(Node.Type.ROOT);
 	Paragraph para = new Paragraph();
 	para.runs = new Run[]{
@@ -45,8 +31,10 @@ public class NodeGeomTest
 	//FIXME:table1.subnodes[1].subnodes[1].subnodes = new Node[]{new Paragraph(new Run("4"))};
 
 	testRoot.subnodes = new Node[]{para, table1};
+	*/
     }
 
+    /*
     @Disabled @Test public void normalWidth()
     {
 	final int WIDTH = 20;
@@ -74,6 +62,7 @@ public class NodeGeomTest
 	assertTrue(testRoot.subnodes[1].subnodes[1].subnodes[0].width == 8);
 	assertTrue(testRoot.subnodes[1].subnodes[1].subnodes[1].width == 8);
     }
+    */
 
     @Disabled @Test public void height()
     {
