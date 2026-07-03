@@ -5,13 +5,14 @@ package org.luwrain.app.reader;
 
 import java.net.*;
 import java.util.*;
+import com.google.auto.service.*;
 
 import org.luwrain.core.*;
 import org.luwrain.popups.Popups;
 import org.luwrain.cpanel.Factory;
-
 import static java.util.Objects.*;
 
+@AutoService(org.luwrain.core.Extension.class)
 public final class Extension extends EmptyExtension
 {
     private final Set<String> queries = new TreeSet();
@@ -128,27 +129,6 @@ public final class Extension extends EmptyExtension
 	};
 	    }
 
-    /*
-    private String constructGoogleUrl(Registry registry, String query)
-    {
-	requireNonNull(registry, "registry can't be null");
-	NullCheck.notEmpty(query, "query");
-	final Settings sett = createSettings(registry);
-	return "http://www.google.ru/search?q=" + URLEncoder.encode(query) + "&hl=" + sett.getGoogleLang("en") + "&ie=utf-8";
-    }
-
-    interface Settings
-    {
-	String getGoogleLang(String defValue);
-	void setGoogleLang(String value);
-    }
-
-    static Settings createSettings(Registry registry)
-    {
-	requireNonNull(registry, "registry can't be null");
-	return RegistryProxy.create(registry, "/org/luwrain/app/reader", Settings.class);
-    }
-    */
     @Override public UniRefProc[] getUniRefProcs(Luwrain luwrain)
     {
 	requireNonNull(luwrain, "luwrain can't be null");

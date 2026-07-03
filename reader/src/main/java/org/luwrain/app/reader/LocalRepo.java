@@ -30,6 +30,47 @@ final class LocalRepo
 	this.repoDir = repoDir;
     }
 
+        Book findBook(String id)
+    {
+	NullCheck.notEmpty(id, "id");
+	for(Book b: getBooks())
+	    if (b.getId().equals(id))
+		return b;
+	return null;
+    }
+
+    void addBook(Book book)
+    {
+	requireNonNull(book, "book can't be null");
+	if (book.getId() == null || book.getId().isEmpty())
+	    throw new IllegalArgumentException("The book doesn't have an ID");
+	if (this.books == null)
+	    getBooks();
+	for(Book b: books)
+	    if (b.getId().equals(book.getId()))
+		return;
+	books.add(book);
+	save();
+    }
+
+    boolean removeBook(Book book)
+    {
+	requireNonNull(book, "book can't be null");
+	if (book.getId() == null || book.getId().isEmpty())
+	    throw new IllegalArgumentException("The book doesn't have an ID");
+	if (this.books == null)
+	    getBooks();
+	for(int i = 0;i < books.size();i++)
+	    if (books.get(i).equals(book))
+	    {
+		books.remove(i);
+		save();
+		return true;
+	    }
+	return false;
+    }
+
+
     void addDaisy(Book book, File zipFile) throws IOException
     {
 	requireNonNull(book, "book can't be null");

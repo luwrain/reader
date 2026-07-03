@@ -3,6 +3,9 @@
 
 package org.luwrain.app.reader;
 
+import org.luwrain.core.annotations.*;
+
+@ResourceStrings(langs = { "en", "ru" })
 public interface Strings
 {
     static final String NAME = "luwrain.reader";

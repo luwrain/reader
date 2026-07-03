@@ -13,8 +13,7 @@ import org.luwrain.popups.Popups;
 
 import static java.util.Objects.*;
 
-
-final class Conversations
+final class Conv
 {
     static public final SortedMap<String, Charset> AVAILABLE_CHARSETS = Charset.availableCharsets();
     static final LinkedList<String> enteredUrls = new LinkedList<String>();
