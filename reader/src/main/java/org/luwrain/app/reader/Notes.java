@@ -11,7 +11,6 @@ import com.google.gson.annotations.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-//import org.luwrain.io.api.books.v1.*;
 
 import static java.util.Objects.*;
 
@@ -19,6 +18,7 @@ final class Notes implements EditableListArea.Model
 {
     private final App app;
     private final Attributes attrs;
+    private final String bookId;
     private final List<Note> notes;
     private FutureTask task = null;
 
@@ -27,13 +27,13 @@ final class Notes implements EditableListArea.Model
 	requireNonNull(app, "app can't be null");
 	NullCheck.notEmpty(bookId, "bookId");
 	this.app = app;
+	this.bookId = bookId;
 	this.attrs = app.getAttributes();
 	this.notes = this.attrs.getBookNotes(bookId);
     }
 
-        boolean setBookmark(int pos)
+    boolean setBookmark(int pos)
     {
-	/*
 	if (pos < 0)
 	    throw new IllegalArgumentException("pos can't be negative");
 	final Note note = new Note();
@@ -43,38 +43,33 @@ final class Notes implements EditableListArea.Model
 	    if (this.notes.get(i).getType() != null && this.notes.get(i).getType().equals(Note.BOOKMARK))
 	    {
 		this.notes.set(i, note);
-			this.attrs.save();
-			return true;
+		attrs.save();
+		return true;
 	    }
-	this.notes.add(note);
-	this.attrs.save();
-	*/
+	this.notes.add(0, note);
+	attrs.save();
 	return true;
     }
 
     Note getBookmark()
     {
-	/*
 	for(Note n: notes)
 	    if (n.getType() != null && n.getType().equals(Note.BOOKMARK))
 		return n;
-	*/
 	return null;
     }
 
     boolean addNote(int pos, String text)
     {
-	/*
 	requireNonNull(text, "text can't be null");
 	if (pos < 0)
 	    throw new IllegalArgumentException("pos can't be negative");
 	final Note note = new Note();
 	note.setType(Note.NOTE);
 	note.setPos(String.valueOf(pos));
-	//	note.setText(text);
+	note.setText(text);
 	this.notes.add(0, note);
-	this.attrs.save();
-	*/
+	attrs.save();
 	return true;
     }
 
@@ -82,13 +77,24 @@ final class Notes implements EditableListArea.Model
     {
 	if (isBusy())
 	    return false;
+	if (pos < 0 || pos > this.notes.size())
+	    return false;
+	this.notes.addAll(pos, notes);
+	attrs.save();
 	return true;
     }
 
     boolean removeNotes(int posFrom, int posTo)
     {
 	if (isBusy())
-	return false;
+	    return false;
+	if (posFrom < 0 || posFrom >= getItemCount())
+	    return false;
+	if (posTo < 0 || posTo > getItemCount() || posTo <= posFrom)
+	    return false;
+	for (int i = posTo - 1; i >= posFrom; --i)
+	    this.notes.remove(i);
+	attrs.save();
 	return true;
     }
 
@@ -122,10 +128,10 @@ final class Notes implements EditableListArea.Model
 
     @Override public boolean removeFromModel(int posFrom, int posTo)
     {
-	if (posFrom < 0 || posFrom>= getItemCount())
+	if (posFrom < 0 || posFrom >= getItemCount())
 	    throw new IllegalArgumentException("pos (" + String.valueOf(posFrom) + ") must be non-negative and less than " + String.valueOf(getItemCount()));
-		if (posTo < 0 || posTo >= getItemCount())
-	    throw new IllegalArgumentException("pos (" + String.valueOf(posTo) + ") must be non-negative and less or equal than " + String.valueOf(getItemCount()));
+	if (posTo < 0 || posTo > getItemCount() || posTo <= posFrom)
+	    throw new IllegalArgumentException("pos (" + String.valueOf(posTo) + ") must be greater than posFrom and not greater than " + String.valueOf(getItemCount()));
 	return removeNotes(posFrom, posTo);
     }
 

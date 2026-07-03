@@ -45,7 +45,7 @@ public final class App extends AppBase<Strings>
     {
 	this.conf = requireNonNullElse(getLuwrain().loadConf(Config.class), new Config());
 	this.localRepo = new LocalRepo(this, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
-    	    	    this.attributes = new Attributes(this);
+	this.attributes = new Attributes(this);
 	this.conv = new Conv(getLuwrain(), getStrings());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
@@ -68,16 +68,21 @@ public final class App extends AppBase<Strings>
 	requireNonNull(uri, "uri can't be null");
 	final TaskId taskId = newTaskId();
 	runTask(taskId, ()->{
-		final var book = new BookFactory().newBook(getLuwrain(), uri.toString());
-		finishedTask(taskId, ()->{
-			this.bookContainer = new BookContainer(this, book, org.luwrain.util.Sha1.getSha1(uri.toString(), "UTF-8"));
-			this.mainLayout = new MainLayout(this);
-			setAreaLayout(mainLayout);
-			mainLayout.updateInitial();
-		    });
+		try {
+		    final var book = new BookFactory().newBook(getLuwrain(), uri.toString());
+		    final String bookId = org.luwrain.util.Sha1.getSha1(uri.toString(), "UTF-8");
+		    finishedTask(taskId, ()->{
+			    this.bookContainer = new BookContainer(this, book, bookId);
+			    this.mainLayout = new MainLayout(this);
+			    setAreaLayout(mainLayout);
+			    mainLayout.updateInitial();
+			});
+		}
+		catch (Exception e)
+		{
+		    finishedTask(taskId, ()->showErrorLayout(e));
+		}
 	    });
-	{
-	}
     }
 
     boolean stopAudio()

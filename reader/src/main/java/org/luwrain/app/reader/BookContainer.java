@@ -25,7 +25,7 @@ final class BookContainer
     private final Book book;
     final String bookId;
     final Notes notes;
-    private final LinkedList<HistoryItem> history = new LinkedList();
+    private final LinkedList<HistoryItem> history = new LinkedList<>();
     private Book.Section[] sections = new Book.Section[0];
     private Doc doc = null;
 
@@ -37,16 +37,21 @@ final class BookContainer
 	this.app = app;
 	this.book = book;
 	this.bookId = bookId;
-	/*
-	this.doc = this.book.getDefaultDocument();
 	this.notes = new Notes(app, bookId);
-	final var bookmark = notes.getBookmark();
-	if (bookmark != null  && bookmark.getPos() != null && !bookmark.getPos().isEmpty())
-	    doc.setProperty(View.DEFAULT_ITERATOR_INDEX_PROPERTY, bookmark.getPos());
-	final String title = doc.getProperty(Doc.PROP_TITLE);
-	app.setAppName(title != null ? title : "");
-	*/
-	notes = null;
+	try {
+	    this.doc = book.getDefaultDocument();
+	}
+	catch (Exception e)
+	{
+	    this.doc = null;
+	    app.showErrorLayout(e);
+	    return;
+	}
+	if (doc != null)
+	{
+	    final String title = doc.getProperty(Doc.PROP_TITLE);
+	    app.setAppName(title != null ? title : "");
+	}
     }
 
     boolean jump(String href, ReaderArea readerArea, int newRowNum, Runnable onSuccess)

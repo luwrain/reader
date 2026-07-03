@@ -15,7 +15,6 @@ import org.luwrain.io.bookdoc.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
-//import org.luwrain.io.api.books.v1.Note;
 import org.luwrain.app.reader.books.Book;
 
 import static org.luwrain.core.DefaultEventResponse.*;
@@ -108,8 +107,8 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 		};
 	}
 	this.readerActions = actions(
-				     new ActionInfo("back", "Вернуться", new InputEvent(InputEvent.Special.BACKSPACE), this::actBack),//FIXME:
-				     new ActionInfo("save-bookmark", "Поставить закладку", new InputEvent(InputEvent.Special.F2), this::actSaveBookmark),//FIXME:
+				     new ActionInfo("back", app.getStrings().actionRestoreBookmark(), new InputEvent(InputEvent.Special.BACKSPACE), this::actBack),
+				     new ActionInfo("save-bookmark", app.getStrings().actionSaveBookmark(), new InputEvent(InputEvent.Special.F2), this::actSaveBookmark),
 				     showSectionsTree, showNotes,
 				     openFile, openUrl
 				     );
@@ -146,7 +145,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	if (!this.bookContainer.notes.setBookmark(readerArea.getCurrentRowIndex()))
 	    return false;
-	app.setEventResponse(text(Sounds.OK, "Закладка установлена"));//FIXME:
+	app.setEventResponse(text(Sounds.OK, app.getStrings().bookmarkSaved()));
 	return true;
     }
 
@@ -217,7 +216,14 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	final File file = app.getConv().fileToOpen();
 	if (file == null)
-	    return false;
+	    return true;
+	try {
+	    app.open(file.toURI());
+	}
+	catch (Exception e)
+	{
+	    app.showErrorLayout(e);
+	}
 	return true;
     }
 
@@ -225,13 +231,20 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
     {
 	final URL url = app.getConv().urlToOpen(readerArea.getDocUrl());
 	if (url == null)
-	    return false;
-	return false;
+	    return true;
+	try {
+	    app.open(url.toURI());
+	}
+	catch (URISyntaxException e)
+	{
+	    app.showErrorLayout(e);
+	}
+	return true;
     }
 
     private int getSuitableWidth()
     {
-	return -1;
+	return app.getLuwrain().getScreenWidth() - 3;
     }
 
     private boolean actAddNote()
@@ -347,8 +360,11 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 	    requireNonNull(note, "note can't be null");
 	    requireNonNull(flags, "flags can't be null");
 	    if (note.getType() != null && note.getType().equals(Note.BOOKMARK))
-		return "Закладка по умолчанию";//FIXME:
-	    return " без комментария";
+		return app.getStrings().actionRestoreBookmark();
+	    final String comment = note.getText();
+	    if (comment != null && !comment.isEmpty())
+		return comment;
+	    return note.getPos() != null ? app.getStrings().actionAddNote() + " " + note.getPos() : app.getStrings().actionAddNote();
 	}
     }
 }

@@ -18,13 +18,13 @@ interface Settings
 
     String getLocalRepoMetadata(String defValue);
     void setLocalRepoMetadata(String value);
-        String getAttributes(String defValue);
+    String getAttributes(String defValue);
     void setAttributes(String value);
 
     static Settings create(Luwrain luwrain)
     {
 	requireNonNull(luwrain, "luwrain can't be null");
-	//FIXME:newreg return RegistryProxy.create(luwrain.getRegistry(), PATH, Settings.class);
-	return null;
-}
+	final File appDataDir = new File(luwrain.getAppDataDir("luwrain.reader").toFile(), "settings");
+	return new StandaloneSettings(appDataDir);
+    }
 }

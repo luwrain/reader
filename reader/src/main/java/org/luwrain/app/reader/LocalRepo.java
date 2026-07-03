@@ -11,7 +11,9 @@ import org.apache.commons.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;
-//import org.luwrain.io.api.books.v1.*;
+
+import com.google.gson.*;
+import com.google.gson.reflect.*;
 
 import static java.nio.file.Files.*;
 
@@ -21,73 +23,95 @@ final class LocalRepo
 {
     private File repoDir;
     private final App app;
+    private List<Book> books = null;
 
     LocalRepo(App app, File repoDir)
     {
-		requireNonNull(app, "app can't be null");
+	requireNonNull(app, "app can't be null");
 	requireNonNull(repoDir, "repoDir can't be null");
 	this.app = app;
 	this.repoDir = repoDir;
     }
 
-        Book findBook(String id)
+    Book[] getBooks()
     {
-	/*
+	load();
+	return books != null ? books.toArray(new Book[books.size()]) : new Book[0];
+    }
+
+    Book findBook(String id)
+    {
 	NullCheck.notEmpty(id, "id");
-	for(Book b: getBooks())
-	    if (b.getId().equals(id))
+	load();
+	if (books == null)
+	    return null;
+	for(Book b: books)
+	    if (b.getId() != null && b.getId().equals(id))
 		return b;
-	*/
 	return null;
+    }
+
+    boolean hasBook(Book book)
+    {
+	requireNonNull(book, "book can't be null");
+	if (book.getId() == null || book.getId().isEmpty())
+	    return false;
+	return findBook(book.getId()) != null;
     }
 
     void addBook(Book book)
     {
 	requireNonNull(book, "book can't be null");
-	/*
 	if (book.getId() == null || book.getId().isEmpty())
 	    throw new IllegalArgumentException("The book doesn't have an ID");
-	if (this.books == null)
-	    getBooks();
+	load();
+	if (books == null)
+	    books = new ArrayList<>();
 	for(Book b: books)
 	    if (b.getId().equals(book.getId()))
 		return;
 	books.add(book);
 	save();
-	*/
     }
 
     boolean removeBook(Book book)
     {
 	requireNonNull(book, "book can't be null");
-	/*
 	if (book.getId() == null || book.getId().isEmpty())
 	    throw new IllegalArgumentException("The book doesn't have an ID");
-	if (this.books == null)
-	    getBooks();
+	load();
+	if (books == null)
+	    return false;
 	for(int i = 0;i < books.size();i++)
-	    if (books.get(i).equals(book))
+	    if (books.get(i).getId().equals(book.getId()))
 	    {
 		books.remove(i);
 		save();
 		return true;
 	    }
-	*/
 	return false;
     }
 
+    boolean remove(Book book)
+    {
+	requireNonNull(book, "book can't be null");
+	if (!removeBook(book))
+	    return false;
+	final File bookDir = new File(repoDir, book.getId());
+	deleteDir(bookDir);
+	return true;
+    }
 
     void addDaisy(Book book, File zipFile) throws IOException
     {
 	requireNonNull(book, "book can't be null");
 	requireNonNull(zipFile, "zipFile can't be null");
-	/*&
 	final String id = book.getId();
 	if (id == null || id.isEmpty())
-	    throw new IllegalArgumentException("The book diesn't have an ID");
+	    throw new IllegalArgumentException("The book doesn't have an ID");
 	final File bookDir = new File(repoDir, id);
 	createDirectories(bookDir.toPath());
-        try (final BufferedInputStream is = new BufferedInputStream(new FileInputStream(zipFile))) {
+	try (final BufferedInputStream is = new BufferedInputStream(new FileInputStream(zipFile))) {
 	    final ZipInputStream stream = new ZipInputStream(is);
 	    {
 		ZipEntry entry = null;
@@ -104,49 +128,15 @@ final class LocalRepo
 		}
 	    }
 	}
-	metadata.addBook(book);
-	*/
-    }
-
-    boolean remove(Book book)
-    {
-	requireNonNull(book, "book can't be null");
-	/*
-	if (!metadata.removeBook(book))
-	    return false;
-	deleteDir(new File(repoDir, book.getId()));
-	*/
-	return true;
-    }
-
-    private void deleteDir(File file)
-    {
-	requireNonNull(file, "file can't be null");
-	if (!file.exists())
-	    return;
-	if (!file.isDirectory())
-	{
-	    file.delete();
-	    return;
-	}
-	final File[] files = file.listFiles();
-	if (files != null)
-	{
-	    for(File f: files)
-		if (f != null)
-		    deleteDir(f);
-	}
-	file.delete();
+	addBook(book);
     }
 
     File findDaisyMainFile(Book book)
     {
-	/*
 	requireNonNull(book, "book can't be null");
-	NullCheck.notEmpty(book.getId(), "book.getId()");
+	if (book.getId() == null || book.getId().isEmpty())
+	    return null;
 	return findNcc(new File(repoDir, book.getId()));
-	*/
-	return null;
     }
 
     private File findNcc(File file)
@@ -170,21 +160,66 @@ final class LocalRepo
 	return null;
     }
 
-    Book[] getBooks()
+    private void deleteDir(File file)
     {
-	/*
-	final List<Book> books = metadata.getBooks();
-	return books.toArray(new Book[books.size()]);
-	*/
-	return null;
+	requireNonNull(file, "file can't be null");
+	if (!file.exists())
+	    return;
+	if (!file.isDirectory())
+	{
+	    file.delete();
+	    return;
+	}
+	final File[] files = file.listFiles();
+	if (files != null)
+	{
+	    for(File f: files)
+		if (f != null)
+		    deleteDir(f);
+	}
+	file.delete();
     }
 
-    boolean hasBook(Book book)
+    private void load()
     {
-	/*
-	requireNonNull(book, "book can't be null");
-	return metadata.findBook(book.getId()) != null;
-	*/
-	return false;
+	if (books != null)
+	    return;
+	try {
+	    createDirectories(repoDir.toPath());
+	    final File metaFile = new File(repoDir, "repo.json");
+	    if (!metaFile.exists())
+	    {
+		books = new ArrayList<>();
+		return;
+	    }
+	    final Gson gson = new Gson();
+	    try (final Reader reader = new InputStreamReader(new FileInputStream(metaFile), "UTF-8")) {
+		final Book[] arr = gson.fromJson(reader, Book[].class);
+		books = arr != null ? new ArrayList<>(Arrays.asList(arr)) : new ArrayList<>();
+	    }
+	}
+	catch(IOException e)
+	{
+	    Log.error(App.LOG_COMPONENT, "unable to load local repo: " + e.getClass().getName() + ": " + e.getMessage());
+	    books = new ArrayList<>();
+	}
+    }
+
+    private void save()
+    {
+	if (books == null)
+	    return;
+	try {
+	    createDirectories(repoDir.toPath());
+	    final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	    final File metaFile = new File(repoDir, "repo.json");
+	    try (final Writer writer = new OutputStreamWriter(new FileOutputStream(metaFile), "UTF-8")) {
+		gson.toJson(books, writer);
+	    }
+	}
+	catch(IOException e)
+	{
+	    Log.error(App.LOG_COMPONENT, "unable to save local repo: " + e.getClass().getName() + ": " + e.getMessage());
+	}
     }
 }

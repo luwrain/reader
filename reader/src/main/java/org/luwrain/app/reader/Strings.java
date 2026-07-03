@@ -16,21 +16,34 @@ public interface Strings
     String errorAreaName();
 
     String actionAddNote();
+    String actionChangeCharset();
+    String actionChangeTextParaStyle();
+    String actionDeleteNote();
     String actionHideSectionsTree();
     String actionHideNotes();
     String actionOpenFile();
     String actionOpenUrl();
+    String actionRestoreBookmark();
+    String actionSaveBookmark();
     String actionShowNotes();
     String actionShowSectionsTree();
     String addNotePopupName();
     String addNotePopupPrefix();
+    String badUrl();
+    String bookmarkSaved();
     String bookTreeRoot();
+    String changeCharsetPopupName();
+    String fetching();
+    String noBookmark();
     String noContent();
     String noContentFetching();
+    String openAutodetectPopupName();
+    String openAutodetectPopupPrefix();
     String openPathPopupName();
     String openPathPopupPrefix();
     String openUrlPopupName();
     String openUrlPopupPrefix();
+    String pathToOpenMayNotBeDirectory();
 
     String propertiesAreaCharset(String value);
     String propertiesAreaContentType(String value);

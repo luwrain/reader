@@ -35,30 +35,28 @@ final class ErrorLayout extends LayoutBase
 
     private void fillContent()
     {
- 	if (ex instanceof InvalidHttpResponseCodeException)
+	if (ex instanceof InvalidHttpResponseCodeException)
 	{
 	    final InvalidHttpResponseCodeException e = (InvalidHttpResponseCodeException)ex;
 	    errorArea.update((lines)->{
 		    lines.add("");
-		    lines.add("Ошибка " + String.valueOf(e.getHttpCode()));
+		    lines.add("HTTP " + String.valueOf(e.getHttpCode()));
 		    lines.add("");
 		});
 	    return;
 	}
 
-	 	if (ex instanceof UnknownHostException)
+	if (ex instanceof UnknownHostException)
 	{
 	    final UnknownHostException e = (UnknownHostException)ex;
 	    errorArea.update((lines)->{
 		    lines.add("");
-		    lines.add("Неизвестный хост: " + e.getMessage());
+		    lines.add(app.getStrings().badUrl() + " " + e.getMessage());
 		    lines.add("");
 		});
 	    return;
 	}
 
-		
-	
 	final StringWriter sw = new StringWriter();
 	final PrintWriter pw = new PrintWriter(sw);
 	ex.printStackTrace(pw);

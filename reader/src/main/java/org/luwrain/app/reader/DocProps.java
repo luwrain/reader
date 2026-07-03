@@ -27,15 +27,19 @@ final class DocProps
 	this.doc = doc;
     }
 
-    boolean fillProperties(MutableLines lines)
+    String[] getLines()
     {
-	requireNonNull(lines, "lines can't be null");
-	lines.update((text)->{
-		text.add("");
-		text.add(strings.propertiesAreaUrl(doc.getProperty(Doc.PROP_URL)));
-		text.add(strings.propertiesAreaContentType(doc.getProperty("contenttype")));
-		text.add("");
-	    });
-	return true;
+	final String url = doc.getProperty(Doc.PROP_URL);
+	final String contentType = doc.getProperty("contenttype");
+	final String charset = doc.getProperty("charset");
+	final String format = doc.getProperty("format");
+	return new String[]{
+	    "",
+	    strings.propertiesAreaUrl(url != null ? url : ""),
+	    strings.propertiesAreaContentType(contentType != null ? contentType : ""),
+	    strings.propertiesAreaCharset(charset != null ? charset : ""),
+	    strings.propertiesAreaFormat(format != null ? format : ""),
+	    "",
+	};
     }
 }
