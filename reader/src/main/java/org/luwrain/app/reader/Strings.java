@@ -8,8 +8,6 @@ import org.luwrain.core.annotations.*;
 @ResourceStrings(langs = { "en", "ru" })
 public interface Strings
 {
-    static final String NAME = "luwrain.reader";
-
     String appName();
 
     String localRepoAreaName();

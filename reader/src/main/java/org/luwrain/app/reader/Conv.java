@@ -21,12 +21,10 @@ final class Conv
     private final Luwrain luwrain;
     private final Strings strings;
 
-    Conversations(Luwrain luwrain, Strings strings)
+    Conv(Luwrain luwrain, Strings strings)
     {
-	requireNonNull(luwrain, "luwrain can't be null");
-	requireNonNull(strings, "strings can't be null");
-	this.luwrain = luwrain;
-	this.strings = strings;
+	this.luwrain = requireNonNull(luwrain, "luwrain can't be null");
+	this.strings = requireNonNull(strings, "strings can't be null");
     }
 
     URL urlToOpen(String currentHref)

@@ -33,6 +33,7 @@ final class Notes implements EditableListArea.Model
 
         boolean setBookmark(int pos)
     {
+	/*
 	if (pos < 0)
 	    throw new IllegalArgumentException("pos can't be negative");
 	final Note note = new Note();
@@ -47,19 +48,23 @@ final class Notes implements EditableListArea.Model
 	    }
 	this.notes.add(note);
 	this.attrs.save();
+	*/
 	return true;
     }
 
     Note getBookmark()
     {
+	/*
 	for(Note n: notes)
 	    if (n.getType() != null && n.getType().equals(Note.BOOKMARK))
 		return n;
+	*/
 	return null;
     }
 
     boolean addNote(int pos, String text)
     {
+	/*
 	requireNonNull(text, "text can't be null");
 	if (pos < 0)
 	    throw new IllegalArgumentException("pos can't be negative");
@@ -69,6 +74,7 @@ final class Notes implements EditableListArea.Model
 	//	note.setText(text);
 	this.notes.add(0, note);
 	this.attrs.save();
+	*/
 	return true;
     }
 

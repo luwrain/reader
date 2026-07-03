@@ -20,28 +20,31 @@ import static java.util.Objects.*;
 final class LocalRepo
 {
     private File repoDir;
-    private final LocalRepoMetadata metadata;
+    private final App app;
 
-    LocalRepo(LocalRepoMetadata metadata, File repoDir)
+    LocalRepo(App app, File repoDir)
     {
-	requireNonNull(metadata, "metadata can't be null");
+		requireNonNull(app, "app can't be null");
 	requireNonNull(repoDir, "repoDir can't be null");
-	this.metadata = metadata;
+	this.app = app;
 	this.repoDir = repoDir;
     }
 
         Book findBook(String id)
     {
+	/*
 	NullCheck.notEmpty(id, "id");
 	for(Book b: getBooks())
 	    if (b.getId().equals(id))
 		return b;
+	*/
 	return null;
     }
 
     void addBook(Book book)
     {
 	requireNonNull(book, "book can't be null");
+	/*
 	if (book.getId() == null || book.getId().isEmpty())
 	    throw new IllegalArgumentException("The book doesn't have an ID");
 	if (this.books == null)
@@ -51,11 +54,13 @@ final class LocalRepo
 		return;
 	books.add(book);
 	save();
+	*/
     }
 
     boolean removeBook(Book book)
     {
 	requireNonNull(book, "book can't be null");
+	/*
 	if (book.getId() == null || book.getId().isEmpty())
 	    throw new IllegalArgumentException("The book doesn't have an ID");
 	if (this.books == null)
@@ -67,6 +72,7 @@ final class LocalRepo
 		save();
 		return true;
 	    }
+	*/
 	return false;
     }
 
@@ -75,6 +81,7 @@ final class LocalRepo
     {
 	requireNonNull(book, "book can't be null");
 	requireNonNull(zipFile, "zipFile can't be null");
+	/*&
 	final String id = book.getId();
 	if (id == null || id.isEmpty())
 	    throw new IllegalArgumentException("The book diesn't have an ID");
@@ -98,14 +105,17 @@ final class LocalRepo
 	    }
 	}
 	metadata.addBook(book);
+	*/
     }
 
     boolean remove(Book book)
     {
 	requireNonNull(book, "book can't be null");
+	/*
 	if (!metadata.removeBook(book))
 	    return false;
 	deleteDir(new File(repoDir, book.getId()));
+	*/
 	return true;
     }
 
@@ -131,9 +141,12 @@ final class LocalRepo
 
     File findDaisyMainFile(Book book)
     {
+	/*
 	requireNonNull(book, "book can't be null");
 	NullCheck.notEmpty(book.getId(), "book.getId()");
 	return findNcc(new File(repoDir, book.getId()));
+	*/
+	return null;
     }
 
     private File findNcc(File file)
@@ -159,13 +172,19 @@ final class LocalRepo
 
     Book[] getBooks()
     {
+	/*
 	final List<Book> books = metadata.getBooks();
 	return books.toArray(new Book[books.size()]);
+	*/
+	return null;
     }
 
     boolean hasBook(Book book)
     {
+	/*
 	requireNonNull(book, "book can't be null");
 	return metadata.findBook(book.getId()) != null;
+	*/
+	return false;
     }
 }

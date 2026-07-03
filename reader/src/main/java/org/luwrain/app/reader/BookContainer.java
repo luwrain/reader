@@ -38,13 +38,16 @@ final class BookContainer
 	this.app = app;
 	this.book = book;
 	this.bookId = bookId;
+	/*
 	this.doc = this.book.getDefaultDocument();
 	this.notes = new Notes(app, bookId);
-	final Note bookmark = notes.getBookmark();
+	final var bookmark = notes.getBookmark();
 	if (bookmark != null  && bookmark.getPos() != null && !bookmark.getPos().isEmpty())
 	    doc.setProperty(View.DEFAULT_ITERATOR_INDEX_PROPERTY, bookmark.getPos());
 	final String title = doc.getProperty(Doc.PROP_TITLE);
 	app.setAppName(title != null ? title : "");
+	*/
+	notes = null;
     }
 
     boolean jump(String href, ReaderArea readerArea, int newRowNum, Runnable onSuccess)

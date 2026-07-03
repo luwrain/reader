@@ -15,45 +15,23 @@ import static java.util.Objects.*;
 
 final class Attributes
 {
-    private final Gson gson = new Gson();
-    private final Settings sett;
+    final App app;
     private final Books books;
 
-    Attributes(Settings sett)
+    Attributes(App app)
     {
-	requireNonNull(sett, "sett can't be null");
-	this.sett = sett;
-	Books b = gson.fromJson(sett.getAttributes(""), Books.class);
-	if (b == null)
-	    b = new Books();
-	this.books = b;
-	if (books.attrs == null)
-	    books.attrs = new HashMap();
+	this.app = requireNonNull(app, "app can't be null");
+	books = null;
     }
 
     List<Note> getBookNotes(String bookId)
     {
-	NullCheck.notEmpty(bookId, "bookId");
-	if (!books.attrs.containsKey(bookId))
-	{
-	    final Attrs attrs = new Attrs();
-	    attrs.notes = new ArrayList();
-	    books.attrs.put(bookId, attrs);
-	    save();
-	    return attrs.notes;
-	}
-	final Attrs a = books.attrs.get(bookId);
-	final List<Note> n = a.notes;
-	a.notes = new ArrayList();
-	if (n != null)
-	    a.notes.addAll(n);
-	return a.notes;
-    }
+	return null;
+	    }
 
     void save()
     {
-	sett.setAttributes(gson.toJson(this.books));
-    }
+	    }
 
     static private final class Attrs
     {

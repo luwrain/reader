@@ -25,9 +25,8 @@ public final class App extends AppBase<Strings>
 
     boolean cancelled = false;
     private final String arg;
-    private Conversations conv = null;
-    private Settings sett = null;
-    private LocalRepoMetadata localRepoMetadata = null;
+    Conv conv = null;
+    Config conf;
     private LocalRepo localRepo = null;
     private Attributes attributes = null;
     private AudioPlaying audioPlaying = null;
@@ -40,26 +39,16 @@ public final class App extends AppBase<Strings>
     public App() { this(null); }
     public App(String arg)
     {
-	super(Strings.NAME, Strings.class, "luwrain.reader");
+	super(Strings.class, "luwrain.reader");
 	this.arg = arg;
     }
 
     @Override protected AreaLayout onAppInit()
     {
-	final Standalone standalone = new Standalone("lwr-books", "LWRBooks");
-	if (standalone.isStandalone())
-	{
-	    this.sett = new StandaloneSettings(standalone.getDataDir());
-	    this.localRepoMetadata = new LocalRepoMetadata(sett);
-	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(standalone.getDataDir(), "repo"));
-	} else
-	{
-	    this.sett = Settings.create(getLuwrain());	    
-	    this.localRepoMetadata = new LocalRepoMetadata(sett);
-	    this.localRepo = new LocalRepo(this.localRepoMetadata, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
-}
-    	    	    this.attributes = new Attributes(sett);
-	this.conv = new Conversations(getLuwrain(), getStrings());
+	this.conf = requireNonNullElse(getLuwrain().loadConf(Config.class), new Config());
+	this.localRepo = new LocalRepo(this, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
+    	    	    this.attributes = new Attributes(this);
+	this.conv = new Conv(getLuwrain(), getStrings());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
 	if (!audioPlaying.isLoaded())
 	    this.audioPlaying = null;
@@ -81,7 +70,7 @@ public final class App extends AppBase<Strings>
 	requireNonNull(uri, "uri can't be null");
 	final TaskId taskId = newTaskId();
 	runTask(taskId, ()->{
-		final Book book = new BookFactory().newBook(getLuwrain(), uri.toString());
+		final var book = new BookFactory().newBook(getLuwrain(), uri.toString());
 		finishedTask(taskId, ()->{
 			this.bookContainer = new BookContainer(this, book, org.luwrain.util.Sha1.getSha1(uri.toString(), "UTF-8"));
 			this.mainLayout = new MainLayout(this);
@@ -149,7 +138,7 @@ public final class App extends AppBase<Strings>
     }
 
     Attributes getAttributes() { return this.attributes; }
-    Conversations getConv() { return this.conv; }
+    Conv getConv() { return this.conv; }
     AudioPlaying getAudioPlaying() { return this.audioPlaying; }
 
     BookContainer getBookContainer()
