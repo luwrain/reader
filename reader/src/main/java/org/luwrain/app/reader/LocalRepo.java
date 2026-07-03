@@ -11,7 +11,7 @@ import org.apache.commons.io.*;
 
 import org.luwrain.core.*;
 import org.luwrain.util.*;
-import org.luwrain.io.api.books.v1.*;
+//import org.luwrain.io.api.books.v1.*;
 
 import static java.nio.file.Files.*;
 

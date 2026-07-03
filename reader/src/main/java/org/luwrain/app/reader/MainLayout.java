@@ -15,7 +15,7 @@ import org.luwrain.io.bookdoc.*;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.app.base.*;
-import org.luwrain.io.api.books.v1.Note;
+//import org.luwrain.io.api.books.v1.Note;
 import org.luwrain.app.reader.books.Book;
 
 import static org.luwrain.core.DefaultEventResponse.*;

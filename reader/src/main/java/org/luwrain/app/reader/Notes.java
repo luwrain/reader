@@ -11,7 +11,7 @@ import com.google.gson.annotations.*;
 
 import org.luwrain.core.*;
 import org.luwrain.controls.*;
-import org.luwrain.io.api.books.v1.*;
+//import org.luwrain.io.api.books.v1.*;
 
 import static java.util.Objects.*;
 

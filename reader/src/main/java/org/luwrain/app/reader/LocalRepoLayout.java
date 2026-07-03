@@ -11,8 +11,8 @@ import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
 import org.luwrain.app.base.*;
 
-import org.luwrain.io.api.books.v1.*;
-import org.luwrain.io.api.books.v1.collection.*;
+//import org.luwrain.io.api.books.v1.*;
+//import org.luwrain.io.api.books.v1.collection.*;
 
 import static java.util.Objects.*;
 

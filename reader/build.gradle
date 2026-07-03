@@ -13,7 +13,6 @@ dependencies {
   annotationProcessor project(':luwrain-base')
   implementation project(':luwrain')
   implementation project(':luwrain-bookdoc')
-  implementation 'org.luwrain:luwrain-books-api:0.2.0'
   implementation 'org.apache.pdfbox:pdfbox:2.0.29'
   implementation 'javax.activation:activation:1.1.1'
   testImplementation libraries.junit

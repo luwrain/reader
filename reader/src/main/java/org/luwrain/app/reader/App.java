@@ -8,9 +8,7 @@ import java.net.*;
 import java.io.*;
 
 import org.luwrain.core.*;
-import org.luwrain.core.events.*;
 import org.luwrain.controls.*;
-import org.luwrain.popups.Popups;
 import org.luwrain.controls.reader.*;
 import org.luwrain.app.reader.books.*;
 import org.luwrain.player.*;

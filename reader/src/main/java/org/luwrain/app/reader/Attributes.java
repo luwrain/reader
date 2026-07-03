@@ -5,11 +5,9 @@ package org.luwrain.app.reader;
 
 import java.util.*;
 
-import com.google.gson.*;
 import com.google.gson.annotations.*;
 
 import org.luwrain.core.*;
-import org.luwrain.io.api.books.v1.*;
 
 import static java.util.Objects.*;
 
