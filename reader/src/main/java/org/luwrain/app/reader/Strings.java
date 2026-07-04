@@ -9,16 +9,11 @@ import org.luwrain.core.annotations.*;
 public interface Strings
 {
     String appName();
-
     String localRepoAreaName();
     String treeAreaName();
     String notesAreaName();
     String errorAreaName();
-
     String actionAddNote();
-    String actionChangeCharset();
-    String actionChangeTextParaStyle();
-    String actionDeleteNote();
     String actionHideSectionsTree();
     String actionHideNotes();
     String actionOpenFile();
@@ -32,40 +27,18 @@ public interface Strings
     String badUrl();
     String bookmarkSaved();
     String bookTreeRoot();
-    String changeCharsetPopupName();
-    String fetching();
-    String noBookmark();
     String noContent();
     String noContentFetching();
-    String openAutodetectPopupName();
-    String openAutodetectPopupPrefix();
-    String openPathPopupName();
     String openPathPopupPrefix();
     String openUrlPopupName();
     String openUrlPopupPrefix();
-    String pathToOpenMayNotBeDirectory();
-
     String propertiesAreaCharset(String value);
     String propertiesAreaContentType(String value);
     String propertiesAreaFormat(String value);
     String propertiesAreaName();
     String propertiesAreaUrl(String value);
-
     String localRepoActDelete();
     String localRepoDeletePopupName();
     String localRepoDeletePopupText(String title);
     String localRepoBookCorrupted();
-
-    String wizardGreetingIntro();
-    String wizardGreetingRemote();
-    String wizardGreetingLocal();
-
-    String wizardLoginIntro();
-    String wizardLoginMail();
-    String wizardLoginPasswd();
-    String wizardLoginConnect();
-
-    String wizardConfirmationIntro();
-    String wizardConfirmationCode();
-    String wizardConfirmationConfirm();
 }

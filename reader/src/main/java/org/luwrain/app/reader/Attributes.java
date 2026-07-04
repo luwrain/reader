@@ -58,36 +58,11 @@ final class Attributes
 
     void save()
     {
-	final Settings settings = Settings.create(app.getLuwrain());
-	if (settings == null)
-	    return;
-	try {
-	    final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	    final String json = books != null ? gson.toJson(books) : "{}";
-	    settings.setAttributes(json);
-	}
-	catch (Exception e)
-	{
-	    Log.error(LOG_COMPONENT, "unable to save attributes: " + e.getClass().getName() + ": " + e.getMessage());
-	}
     }
 
     private Books load()
     {
-	final Settings settings = Settings.create(app.getLuwrain());
-	if (settings == null)
-	    return new Books();
-	try {
-	    final String json = settings.getAttributes("{}");
-	    final Gson gson = new Gson();
-	    final Books b = gson.fromJson(json, Books.class);
-	    return b != null ? b : new Books();
-	}
-	catch (Exception e)
-	{
-	    Log.error(LOG_COMPONENT, "unable to load attributes: " + e.getClass().getName() + ": " + e.getMessage());
-	    return new Books();
-	}
+	return null;
     }
 
     static private final class Attrs

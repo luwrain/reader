@@ -44,7 +44,7 @@ public final class App extends AppBase<Strings>
     @Override protected AreaLayout onAppInit()
     {
 	this.conf = requireNonNullElse(getLuwrain().loadConf(Config.class), new Config());
-	this.localRepo = new LocalRepo(this, new File(getLuwrain().getAppDataDir("luwrain.reader").toFile(), "repo"));
+	this.localRepo = new LocalRepo(this, new File(new File(getLuwrain().getDir("var:luwrain.reader")), "repo"));
 	this.attributes = new Attributes(this);
 	this.conv = new Conv(getLuwrain(), getStrings());
 	this.audioPlaying = new AudioPlaying(getLuwrain());
