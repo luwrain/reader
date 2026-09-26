@@ -256,7 +256,7 @@ final class Smil
 	    try {
 		float f = Float.parseFloat(m.group("sec"));
 		f *= 1000;
-		return new Float(f).longValue();
+		return Float.valueOf(f).longValue();
 	    }
 	    catch(NumberFormatException e)
 	    {
