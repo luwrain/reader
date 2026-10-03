@@ -27,7 +27,7 @@ class SectionsVisitor extends Visitor
 	    };
 	Visitor.walk(h, hrefsVisitor);
 	if (!hrefs.isEmpty())
-	    sections.add(new Book.Section(h.getLevel(), h.getText(), hrefs.get(0)));
+	    sections.add(new Book.Section(h.getLevel(), h.collectText(), hrefs.get(0)));
     }
 
     Book.Section[] getBookSections()

@@ -28,7 +28,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	requireNonNull(it, "it can't be null");
 	if (it.noContent())
 	    return;
-	final Node node = it.getNode();
+	final Container node = it.getContainer();
 	if (node == null)
 	    return;
 	if (brief)
@@ -39,7 +39,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
     protected String getAnnouncementText(Iterator it)
     {
 	requireNonNull(it, "it can't be null");
-	final Node node = it.getNode();
+	final Container node = it.getContainer();
 	if (node == null)
 	    return "";
 	final StringBuilder b = new StringBuilder();
@@ -48,7 +48,7 @@ public class DefaultAnnouncement implements ReaderArea.Announcement
 	    final Paragraph para = it.getParagraph();
 	    if (para != null)
 	    {
-		final Node parent2 = para.getParentNode();
+		final Container parent2 = para.getContainer();
 		if (parent2 instanceof TableCell)
 		{
 		    final TableCell cell = (TableCell)parent2;

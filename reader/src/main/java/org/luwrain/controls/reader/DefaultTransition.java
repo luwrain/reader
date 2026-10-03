@@ -60,7 +60,7 @@ public class DefaultTransition implements ReaderArea.Transition
 
     protected boolean onNextSection(Iterator it, boolean sameLevel)
     {
-	final Node currentNode = it.getNode();
+	final Container currentNode = it.getContainer();
 	if (currentNode == null)
 	    return false;
 	final int currentSectLevel;
@@ -96,7 +96,7 @@ public class DefaultTransition implements ReaderArea.Transition
     protected boolean onPrevSection(Iterator it, boolean sameLevel)
     {
 	requireNonNull(it, "it can't be null");
-	final Node currentNode = it.getNode();
+	final Container currentNode = it.getContainer();
 	if (currentNode == null)
 	    return false;
 	final int currentSectLevel;
