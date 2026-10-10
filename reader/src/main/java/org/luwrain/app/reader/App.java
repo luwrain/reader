@@ -18,7 +18,7 @@ import static java.util.Objects.*;
 
 public final class App extends AppBase<Strings>
 {
-    static final String LOG_COMPONENT = "reader";
+    //    static final String LOG_COMPONENT = "reader";
     static private final String DEFAULT_ENCODING = "UTF-8";
 
     boolean cancelled = false;

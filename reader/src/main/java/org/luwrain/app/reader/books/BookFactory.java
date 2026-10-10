@@ -12,6 +12,7 @@ import org.luwrain.io.bookdoc.*;
 import org.luwrain.util.*;
 
 import static java.util.Objects.*;
+import static org.luwrain.io.bookdoc.Loader.*;
 
 public final class BookFactory
 {
@@ -28,9 +29,12 @@ public final class BookFactory
 
     public Book newBook(Luwrain luwrain, String url) throws IOException
     {
+	/*
 	final UrlLoader loader = new UrlLoader(luwrain, new URL(url));
 	final UrlLoader.Result res = loader.load();
 	final Doc doc = res.doc;
+	*/
+	final Doc doc = newDefaultLoader(url, null).load();
 	final URL docUrl;
 	try {
 	    docUrl = new URL(doc.getProperty("url"));
@@ -45,6 +49,6 @@ public final class BookFactory
 	    Log.debug(LOG_COMPONENT, "opening the book as DAISY v2.2");
 	    return initDaisy2(luwrain, doc);
 	}
-	return new SingleFileBook(luwrain, res.doc);
+	return new SingleFileBook(luwrain, doc);
     }
 }

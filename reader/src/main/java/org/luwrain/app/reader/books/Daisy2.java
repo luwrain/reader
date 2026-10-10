@@ -14,6 +14,7 @@ import org.luwrain.app.reader.*;
 import org.luwrain.util.*;
 
 import static java.util.Objects.*;
+import static org.luwrain.io.bookdoc.Loader.*;
 
 final class Daisy2 implements Book
 {
@@ -243,7 +244,7 @@ final class Daisy2 implements Book
     {
 	if (docs.containsKey(url))
 	    return;
-	UrlLoader.Result res;
+	Result res;
 	try {
 	    res = loadDoc(url);
 	}
@@ -400,9 +401,14 @@ final class Daisy2 implements Book
 	return !links.isEmpty()?links.getFirst():null;
     }
 
-    private UrlLoader.Result loadDoc(URL url) throws MalformedURLException, IOException
+    private Result loadDoc(URL url) throws MalformedURLException, IOException
     {
+	/*
 	final UrlLoader loader = new UrlLoader(luwrain, url);
 	return loader.load();
+	*/
+	final var res = new Result();
+	res.doc = newDefaultLoader(url, null).load();
+	return res;
     }
 }

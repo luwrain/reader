@@ -6,20 +6,16 @@ plugins {
 }
 
 dependencies {
+  annotationProcessor libraries.autoService
+  annotationProcessor project(':luwrain-base')
   implementation libraries.base
   implementation libraries.apacheBase
-  annotationProcessor libraries.autoService
   implementation project(':luwrain-base')
-  annotationProcessor project(':luwrain-base')
   implementation project(':luwrain')
   implementation project(':luwrain-bookdoc')
   implementation 'org.apache.pdfbox:pdfbox:2.0.29'
   implementation 'javax.activation:activation:1.1.1'
   testImplementation libraries.junit
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }
 
 publishing {

@@ -79,7 +79,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	this.context = params.context;
 	if (params.announcement != null)
 	    this.announcement = params.announcement; else
-	    this.announcement = new DefaultAnnouncement(params.context, (Strings)params.context.getI18n().getStrings(Strings.NAME));
+	    this.announcement = new DefaultAnnouncement(params.context, (Strings)params.context.getI18n().getStrings(Strings.class));
 	this.transition = params.transition;
 	this.clickHandler = params.clickHandler;
 	if (params.doc != null)

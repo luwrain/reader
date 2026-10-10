@@ -200,7 +200,6 @@ final class LocalRepo
 	}
 	catch(IOException e)
 	{
-	    Log.error(App.LOG_COMPONENT, "unable to load local repo: " + e.getClass().getName() + ": " + e.getMessage());
 	    books = new ArrayList<>();
 	}
     }
@@ -219,7 +218,7 @@ final class LocalRepo
 	}
 	catch(IOException e)
 	{
-	    Log.error(App.LOG_COMPONENT, "unable to save local repo: " + e.getClass().getName() + ": " + e.getMessage());
+	    app.getLuwrain().crash(e);
 	}
     }
 }

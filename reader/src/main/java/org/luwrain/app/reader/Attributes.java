@@ -15,9 +15,6 @@ import static java.util.Objects.*;
 
 final class Attributes
 {
-    static private final String
-	LOG_COMPONENT = App.LOG_COMPONENT;
-
     final App app;
     private Books books;
 

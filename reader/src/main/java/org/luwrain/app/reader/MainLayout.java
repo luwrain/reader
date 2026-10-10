@@ -124,6 +124,7 @@ final class MainLayout extends LayoutBase implements TreeArea.ClickHandler, Read
 
     void updateInitial()
     {
+	//	SetContainerVisitor.walk(bookContainer.getDocument().getRoot(), new SetContainerVisitor());
 	this.readerArea.setDocument(bookContainer.getDocument(), app.getLuwrain().getScreenWidth() - 3);//FIXME:proper width
 	if (sectionsTreeShown)
 	    setActiveArea(this.treeArea); else

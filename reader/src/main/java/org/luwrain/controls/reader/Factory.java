@@ -20,7 +20,7 @@ public final class Factory
     public Strings newStrings(Luwrain luwrain)
     {
 	requireNonNull(luwrain, "luwrain can't be null");
-	return (Strings)luwrain.i18n().getStrings(Strings.NAME);
+	return (Strings)luwrain.i18n().getStrings(Strings.class.getName());
     }
 
     public DefaultAnnouncement newAnnouncement(Luwrain luwrain, ControlContext context)

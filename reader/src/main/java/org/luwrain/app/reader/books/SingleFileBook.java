@@ -11,6 +11,7 @@ import org.luwrain.core.*;
 import org.luwrain.io.bookdoc.*;
 
 import static java.util.Objects.*;
+import static org.luwrain.io.bookdoc.Loader.*;
 
 public final class SingleFileBook implements Book
 {
@@ -35,12 +36,14 @@ public final class SingleFileBook implements Book
 	return EnumSet.noneOf(Flags.class);
     }
 
-    @Override public Doc getDocument(String href) throws IOException
+    @Override public Doc getDocument(String url) throws IOException
     {
-	NullCheck.notEmpty(href, "href");
-	final UrlLoader loader = new UrlLoader(luwrain, new URL(href));
-	final UrlLoader.Result res = loader.load();
-	return res.doc;
+	requireNonNull(url, "url");
+	if (url.isBlank())
+	    throw new IllegalArgumentException("url can't be blank");
+	final var loader = newDefaultLoader(url, null);
+final var res = loader.load();
+return res;
     }
 
     @Override public Doc getDefaultDocument()
