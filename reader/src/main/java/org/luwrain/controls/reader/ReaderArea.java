@@ -18,22 +18,34 @@ import org.luwrain.io.bookdoc.view.Iterator;
 
 import static java.util.Objects.*;
 
+/**
+ * The reader area.
+ *
+ * <p>The area presents a {@link Doc} as a sequence of accessible rows using
+ * the view iterator model. It supports reading navigation, hyperlink lookup,
+ * text extraction and listening to sentence-sized fragments.</p>
+ */
 public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Provider
 {
+    /** The state of the reader area. */
     public enum State {LOADING, READY};
 
+    /** Handler for clicks on runs that have a link. */
     public interface ClickHandler
     {
 	boolean onReaderClick(ReaderArea area, Run run);
     }
 
+    /** Provides the announcement of the current row. */
     public interface Announcement
     {
 	void announce(Iterator it, boolean brief);
     }
 
+    /** Provides navigation between rows and document elements. */
     public interface Transition
     {
+	/** The supported navigation types. */
 	enum Type{
 	    NEXT, PREV,
 	    STRICT_NEXT, STRICT_PREV,
@@ -45,6 +57,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	boolean transition(Type type, Iterator it);
     }
 
+    /** Construction parameters for the reader area. */
     static public final class Params
     {
 	public ControlContext context = null;
@@ -69,7 +82,15 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     protected Layout layout = null;
     protected Iterator iterator = null;
     protected int hotPointX = 0;
+    private State state = State.READY;
 
+    /**
+     * Creates a reader area from the supplied parameters.
+     *
+     * @param params the construction parameters; must not be {@code null}
+     * @throws NullPointerException if {@code params}, its context, transition or name is {@code null}
+     * @throws IllegalArgumentException if the supplied width is negative
+     */
     public ReaderArea(Params params)
     {
 	requireNonNull(params, "params can't be null");
@@ -91,6 +112,16 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	this.name = params.name;
     }
 
+    /**
+     * Creates a reader area with an explicit announcement provider.
+     *
+     * @param context the control context; must not be {@code null}
+     * @param announcement the announcement provider; must not be {@code null}
+     * @param document the document to display; may be {@code null}
+     * @param width the display width; must not be negative if a document is supplied
+     * @throws NullPointerException if {@code context} or {@code announcement} is {@code null}
+     * @throws IllegalArgumentException if {@code document} is not {@code null} and {@code width} is negative
+     */
     public ReaderArea(ControlContext context, Announcement announcement, Doc document, int width)
     {
 	requireNonNull(context, "context can't be null");
@@ -107,28 +138,46 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	this.name = "";
     }
 
+    /**
+     * Creates a reader area with an explicit announcement provider and no document.
+     *
+     * @param context the control context; must not be {@code null}
+     * @param announcement the announcement provider; must not be {@code null}
+     * @throws NullPointerException if {@code context} or {@code announcement} is {@code null}
+     */
     public ReaderArea(ControlContext context, Announcement announcement)
     {
 	this(context, announcement, null, 0);
     }
 
+    /**
+     * Sets the document displayed by this area.
+     *
+     * @param document the document to display; must not be {@code null}
+     * @param width the display width; must not be negative
+     * @throws NullPointerException if {@code document} is {@code null}
+     * @throws IllegalArgumentException if {@code width} is negative
+     */
     public void setDocument(Doc document, int width)
     {
 	requireNonNull(document, "document can't be null");
 	if (width < 0)
 	    throw new IllegalArgumentException("width (" + width + ") may not be negative");
+	state = State.LOADING;
 	this.document = document;
 	this.view = new View(document, width);
 	this.layout = view.createLayout();
 	int defaultIndex = -1;
 	final String defaultIndexStr = document.getProperty(View.DEFAULT_ITERATOR_INDEX_PROPERTY);
 	if (defaultIndexStr != null && !defaultIndexStr.isEmpty())
+	{
 	    try {
 		defaultIndex = Integer.parseInt(defaultIndexStr);
 	    }
 	    catch (NumberFormatException e)
 	    {
 	    }
+	}
 	if (defaultIndex >= 0)
 	{
 	    try {
@@ -141,8 +190,19 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	} else
 	    iterator = view.getIterator();
 	hotPointX = 0;
+	state = State.READY;
 	context.onAreaNewContent(this);
 	context.onAreaNewHotPoint(this);
+    }
+
+    /**
+     * Returns the current state of this area.
+     *
+     * @return the current state
+     */
+    public State getState()
+    {
+	return state;
     }
 
     public boolean hasDocument()
@@ -160,6 +220,11 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return document;
     }
 
+    /**
+     * Returns the title of the current document.
+     *
+     * @return the document title, or an empty string if there is no attribute or document
+     */
     public String getDocTitle()
     {
 	if (!hasDocument())
@@ -168,6 +233,11 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return res != null?res:"";
     }
 
+    /**
+     * Returns the URL of the current document.
+     *
+     * @return the document URL, or an empty string if there is no attribute or document
+     */
     public String getDocUrl()
     {
 	if (!hasDocument())
@@ -176,6 +246,11 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return urlStr != null?urlStr:"";
     }
 
+    /**
+     * Returns the universal reference of the current document.
+     *
+     * @return the universal reference, or an empty string if no URL is available
+     */
     public String getDocUniRef()
     {
 	final String addr = getDocUrl();
@@ -191,6 +266,13 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return iterator.getRunUnderPos(hotPointX);
     }
 
+    /**
+     * Moves the hot point to the supplied run.
+     *
+     * @param run the run to find; must not be {@code null}
+     * @return {@code true} if the run was found, {@code false} otherwise
+     * @throws NullPointerException if {@code run} is {@code null}
+     */
     public boolean findRun(Run run)
     {
 	requireNonNull(run, "run can't be null");
@@ -215,6 +297,12 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	return !isEmpty()?iterator.getIndex():-1;
     }
 
+    /**
+     * Moves the reader to the specified row index.
+     *
+     * @param index the row index
+     * @return {@code true} if the row was found and selected, {@code false} otherwise
+     */
     public boolean setCurrentRowIndex(int index)
     {
 	if (isEmpty())
@@ -244,21 +332,25 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	Attributes attrs = run.getAttrs();
 	while (attrs != null)
 	{
-	    if (attrs.attrMap.containsKey("id"))
+	    final Object value = attrs.attrMap.get(Attributes.ID);
+	    if (value != null)
 	    {
-		final Object value = attrs.attrMap.get("id");
-		if (value != null)
-		{
-		    final String valueStr = value.toString();
-		    if (!valueStr.isEmpty())
-			res.add(valueStr);
-		}
+		final String valueStr = value.toString();
+		if (!valueStr.isEmpty())
+		    res.add(valueStr);
 	    }
 	    attrs = (attrs.parentAttr != null && !attrs.parentAttr.isEmpty()) ? attrs.parentAttr.get(0) : null;
 	}
 	return res.toArray(new String[res.size()]);
     }
 
+    /**
+     * Rebuilds the view with a new display width while trying to preserve the
+     * current run selection.
+     *
+     * @param width the new width; must not be negative
+     * @return {@code true} if the view was rebuilt, {@code false} if there is no document
+     */
     public boolean rebuildView(int width)
     {
 	if (isEmpty())
@@ -266,8 +358,16 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	final Run currentRun = getCurrentRun();
 	view = new View(document, width);
 	layout = view.createLayout();
+	boolean found = false;
 	if (currentRun != null)
-	    findRun(currentRun);
+	    found = findRun(currentRun);
+	if (!found)
+	{
+	    iterator = view.getIterator();
+	    hotPointX = 0;
+	}
+	if (iterator == null)
+	    return false;
 	hotPointX = Math.min(hotPointX, iterator.getText().length());
 	context.onAreaNewContent(this);
 	context.onAreaNewHotPoint(this);
@@ -394,10 +494,10 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 		final Run run = getCurrentRun();
 		if (isEmpty() || run == null)
 		    return false;
-		final String res = getCurrentRun().getHref();
+		final String res = run.getHref();
 		if (res == null || res.isEmpty())
 		    return false;
-		((UniRefHotPointQuery)query).answer("url:" + res);
+		((UniRefHotPointQuery)query).answer(UniRefProcs.TYPE_URL + ":" + res);
 		return true;
 	    }
 	default:
@@ -440,31 +540,13 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     {
 	if (isEmpty() || withDeleting)
 	    return false;
-	Run run1 = null;
-	Run run2 = null;
-	final Iterator it = new Iterator(view);
-	if (it.noContent())
+	if (!regionPoint.set(fromX, fromY, toX, toY))
+	    return true;
+	final ReaderArea.TextSelection selection = new TextSelection(view, fromX, fromY, toX, toY);
+	final List<String> lines = selection.collect();
+	if (lines == null || lines.isEmpty())
 	    return false;
-	do {
-	    if (it.coversPos(fromX, fromY))
-	    {
-		run1 = it.getRunUnderPos(fromX - it.getX());
-		if (run1 == null)
-		    throw new RuntimeException("The iterator is unable to provide a run under the covered point");
-	    }
-	    if (it.coversPos(toX, toY))
-	    {
-		run2 = it.getRunUnderPos(toX - it.getX());
-		if (run1 == null)
-		    throw new RuntimeException("The iterator is unable to provide a run under the covered point");
-	    }
-	} while(it.moveNext());
-	if (run1 == null || run2 == null)
-	    return false;
-	context.getClipboard().set(new String[]{
-		run1.getText(),
-		run2.getText(),
-	    });
+	context.getClipboard().set(lines.toArray(new String[lines.size()]));
 	return true;
     }
 
@@ -523,6 +605,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	{
 	    iterator = nearest;
 	    hotPointX = 0;
+	    context.onAreaNewHotPoint(this);
 	    return true;
 	}
 	return false;
@@ -620,6 +703,7 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	final String prevRowText = iterator.getText();
 	hotPointX = prevRowText.length();
 	context.setEventResponse(DefaultEventResponse.hint(Hint.LINE_BOUND));
+	context.onAreaNewHotPoint(this);
 	return true;
     }
 
@@ -732,16 +816,20 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 		    continue;
 		if (r.getHref() != null && !r.getHref().trim().isEmpty())
 		{
-		    hotPointX = iterator.runBeginsAt(r);
-		    context.say(r.getText());
-		    context.onAreaNewHotPoint(this);
-		    return true;
+		    final int pos = iterator.runBeginsAt(r);
+		    if (pos >= 0)
+		    {
+			hotPointX = pos;
+			context.say(r.getText());
+			context.onAreaNewHotPoint(this);
+			return true;
+		    }
 		}
 	    }
 	}
 	if (iterator.getIndex() + 1 >= iterator.getCount())
 	    return false;
-	if (!iterator.searchForward((node,para,row)->{
+	if (!iterator.searchForward((node,para,row)-> {
 		    final Run[] runs = row.getRuns();
 		    for(Run r: runs)
 			if (r.getHref() != null && !r.getHref().trim().isEmpty())
@@ -755,7 +843,10 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	    ++k;
 	if (k >= runs.length)
 	    return false;
-	hotPointX = iterator.runBeginsAt(runs[k]);
+	final int pos = iterator.runBeginsAt(runs[k]);
+	if (pos < 0)
+	    return false;
+	hotPointX = pos;
 	context.say(runs[k].getText());
 	context.onAreaNewHotPoint(this);
 	return true;
@@ -787,22 +878,14 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     {
 	requireNonNull(text, "text can't be null");
 	for(int i = startFrom;i < text.length();++i)
-	    if (charOfSentenceEnd(text.charAt(i)))
+	    if (SentenceUtils.isSentenceEndChar(text.charAt(i)))
 		return i;
 	return -1;
     }
 
     static protected boolean charOfSentenceEnd(char ch)
     {
-	switch(ch)
-	{
-	case '.':
-	case '!':
-	case '?':
-	    return true;
-	default:
-	    return false;
-	}
+	return SentenceUtils.isSentenceEndChar(ch);
     }
 
     static protected class ListeningInfo extends ListenableArea.ListeningInfo
@@ -823,13 +906,88 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	requireNonNull(itTo, "itTo can't be null");
 	final Iterator tmpIt = iterator.clone();
 	if (tmpIt.equals(itTo))
-	    return tmpIt.getText().substring(hotPointX, posTo);
+	    return tmpIt.getText().substring(Math.min(hotPointX, tmpIt.getText().length()), Math.min(posTo, tmpIt.getText().length()));
 	final StringBuilder b = new StringBuilder();
-	b.append(tmpIt.getText().substring(hotPointX));
+	b.append(tmpIt.getText().substring(Math.min(hotPointX, tmpIt.getText().length())));
 	while(tmpIt.moveNext() && !tmpIt.equals(itTo))
 	    b.append(" " + tmpIt.getText());
 	if (tmpIt.equals(itTo))
-	    b.append(" " + tmpIt.getText().substring(0, posTo));
+	    b.append(" " + tmpIt.getText().substring(0, Math.min(posTo, tmpIt.getText().length())));
 	return new String(b);
+    }
+
+    /**
+     * Collects the text covering the supplied selection coordinates.
+     */
+    static private final class TextSelection
+    {
+	private final View view;
+	private final int fromX;
+	private final int fromY;
+	private final int toX;
+	private final int toY;
+
+	TextSelection(View view, int fromX, int fromY, int toX, int toY)
+	{
+	    requireNonNull(view, "view can't be null");
+	    final int tmp;
+	    this.view = view;
+	    if (fromY == toY)
+	    {
+		if (fromX <= toX)
+		{
+		    this.fromX = fromX;
+		    this.toX = toX;
+		} else
+		{
+		    this.fromX = toX;
+		    this.toX = fromX;
+		}
+		this.fromY = fromY;
+		this.toY = toY;
+	    } else if (fromY < toY)
+	    {
+		this.fromX = fromX;
+		this.fromY = fromY;
+		this.toX = toX;
+		this.toY = toY;
+	    } else
+	    {
+		this.fromX = toX;
+		this.fromY = toY;
+		this.toX = fromX;
+		this.toY = fromY;
+	    }
+	}
+
+	List<String> collect()
+	{
+	    final List<String> res = new ArrayList<>();
+	    final Iterator it = view.getIterator();
+	    boolean found = false;
+	    while (it.canMoveNext())
+	    {
+		if (it.coversPos(fromX, fromY))
+		    found = true;
+		if (found)
+		{
+		    res.add(rowTextForSelection(it));
+		}
+		if (it.coversPos(toX, toY))
+		    break;
+		it.moveNext();
+	    }
+	    return found?res:null;
+	}
+
+	private String rowTextForSelection(Iterator it)
+	{
+	    final String text = it.getText();
+	    final int start = it.coversPos(fromX, fromY) ? Math.max(0, fromX - it.getX()) : 0;
+	    final int end = it.coversPos(toX, toY) ? Math.max(start, Math.min(text.length(), toX - it.getX())) : text.length();
+	    if (start >= text.length() || end <= start)
+		return "";
+	    return text.substring(start, end);
+	}
     }
 }
