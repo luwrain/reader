@@ -540,8 +540,6 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
     {
 	if (isEmpty() || withDeleting)
 	    return false;
-	if (!regionPoint.set(fromX, fromY, toX, toY))
-	    return true;
 	final ReaderArea.TextSelection selection = new TextSelection(view, fromX, fromY, toX, toY);
 	final List<String> lines = selection.collect();
 	if (lines == null || lines.isEmpty())
@@ -930,7 +928,6 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	TextSelection(View view, int fromX, int fromY, int toX, int toY)
 	{
 	    requireNonNull(view, "view can't be null");
-	    final int tmp;
 	    this.view = view;
 	    if (fromY == toY)
 	    {
@@ -983,8 +980,14 @@ public class ReaderArea implements Area, ListenableArea, ClipboardTranslator.Pro
 	private String rowTextForSelection(Iterator it)
 	{
 	    final String text = it.getText();
-	    final int start = it.coversPos(fromX, fromY) ? Math.max(0, fromX - it.getX()) : 0;
-	    final int end = it.coversPos(toX, toY) ? Math.max(start, Math.min(text.length(), toX - it.getX())) : text.length();
+	    final int start;
+	    if (it.coversPos(fromX, fromY))
+		start = Math.min(text.length(), Math.max(0, fromX - it.getX())); else
+		start = 0;
+	    final int end;
+	    if (it.coversPos(toX, toY))
+		end = Math.max(start, Math.min(text.length(), toX - it.getX())); else
+		end = text.length();
 	    if (start >= text.length() || end <= start)
 		return "";
 	    return text.substring(start, end);
